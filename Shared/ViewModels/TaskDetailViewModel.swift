@@ -34,7 +34,7 @@ final class TaskDetailViewModel {
         guard let id = task?.id else { return }
         isSaving = true
         do {
-            task = try await APIClient.shared.completeTask(id: id, body: CompleteTaskBody(summary: summary, outputs: nil))
+            task = try await APIClient.shared.completeTask(id: id, body: CompleteTaskBody(summary: summary, outputs: []))
         } catch {
             self.error = error.localizedDescription
         }

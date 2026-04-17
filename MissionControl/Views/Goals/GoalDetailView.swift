@@ -76,6 +76,7 @@ struct GoalDetailView: View {
                         Task { await viewModel.createInitiative(emoji: emoji, name: name, mission: mission) }
                     }
                 }
+                .errorAlert(message: $viewModel.error)
             } else if let error = viewModel.error {
                 ContentUnavailableView {
                     Label("Error", systemImage: "exclamationmark.triangle")

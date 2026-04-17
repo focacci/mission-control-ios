@@ -97,6 +97,7 @@ struct TaskDetailView: View {
                         Task { await viewModel.update(id: taskId, body: body) }
                     }
                 }
+                .errorAlert(message: $viewModel.error)
             } else if let error = viewModel.error {
                 ContentUnavailableView {
                     Label("Error", systemImage: "exclamationmark.triangle")

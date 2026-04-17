@@ -43,6 +43,7 @@ struct DashboardView: View {
                     }
                     .listStyle(.plain)
                     .refreshable { await viewModel.load() }
+                    .errorAlert(message: $viewModel.error)
                 }
             }
             .navigationTitle("Goals")

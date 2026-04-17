@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		1C4456DBD54DDF14ACE11C44 /* WatchTaskList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C156323685CC44B680A865D /* WatchTaskList.swift */; };
+		EE99FF0011223344556677BB /* View+ErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEE11FF22BB33CC44DD5500 /* View+ErrorAlert.swift */; };
+		DD88EE99FF00112233445566 /* View+ErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAEE11FF22BB33CC44DD5500 /* View+ErrorAlert.swift */; };
 		1D9EA653B32C3F77A0079999 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BB569E8D2910A7991D5C55 /* Task.swift */; };
 		200ADC6B9FE6BE3302378781 /* TaskDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C00013EDEAE09D6A94EB486 /* TaskDetailViewModel.swift */; };
 		21C50205BD2087D003F8B635 /* CompleteTaskSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513EBEA9872A4F80D2B6EF4B /* CompleteTaskSheet.swift */; };
@@ -73,9 +75,18 @@
 		E3BB569E8D2910A7991D5C55 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		EB3DB45FB47CCD110EDFCF9F /* TaskRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRow.swift; sourceTree = "<group>"; };
 		F2A3B4C5D6E7F8A9B0C1D2E3 /* TaskEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskEditSheet.swift; sourceTree = "<group>"; };
+		AAEE11FF22BB33CC44DD5500 /* View+ErrorAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ErrorAlert.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		FF001122334455667788 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				AAEE11FF22BB33CC44DD5500 /* View+ErrorAlert.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		2929C815A0EDC9904AAF2C37 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
@@ -149,6 +160,7 @@
 				DC909B04016532366BDF6F23 /* Models */,
 				2FDA77EC3BD4B1C480D69A94 /* Services */,
 				2929C815A0EDC9904AAF2C37 /* ViewModels */,
+				FF001122334455667788 /* Extensions */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -295,6 +307,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C21FF412AD952B2AF294CC22 /* APIClient.swift in Sources */,
+				EE99FF0011223344556677BB /* View+ErrorAlert.swift in Sources */,
 				21C50205BD2087D003F8B635 /* CompleteTaskSheet.swift in Sources */,
 				309202C4D767933F88AEE889 /* ContentView.swift in Sources */,
 				ADCC8DD7F2FE9743B2FD4704 /* DashboardView.swift in Sources */,
@@ -324,6 +337,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				33ADFDA31376F8EFD488AB28 /* APIClient.swift in Sources */,
+				DD88EE99FF00112233445566 /* View+ErrorAlert.swift in Sources */,
 				DD8FD59ED8E5EA663D95C3F9 /* DashboardViewModel.swift in Sources */,
 				92197F371846FA756FCD29DC /* Goal.swift in Sources */,
 				C4053FCC27CB97800CEF0F39 /* GoalDetailViewModel.swift in Sources */,

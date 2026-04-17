@@ -48,7 +48,7 @@ final class APIClient {
 
     private func fetch<T: Decodable>(_ path: String) async throws -> T {
         let (data, response) = try await session.data(from: try url(path))
-        try validate(response)
+        try validate(response, data: data)
         return try decode(data)
     }
 
@@ -64,7 +64,7 @@ final class APIClient {
             req.httpBody = try JSONEncoder().encode(body)
         }
         let (data, response) = try await session.data(for: req)
-        try validate(response)
+        try validate(response, data: data)
         return try decode(data)
     }
 
@@ -75,13 +75,18 @@ final class APIClient {
             req.setValue("application/json", forHTTPHeaderField: "Content-Type")
             req.httpBody = try JSONEncoder().encode(body)
         }
-        let (_, response) = try await session.data(for: req)
-        try validate(response)
+        let (data, response) = try await session.data(for: req)
+        try validate(response, data: data)
     }
 
-    private func validate(_ response: URLResponse) throws {
+    private struct APIErrorBody: Decodable { let error: String }
+
+    private func validate(_ response: URLResponse, data: Data) throws {
         guard let http = response as? HTTPURLResponse else { return }
         guard (200...299).contains(http.statusCode) else {
+            if let body = try? JSONDecoder().decode(APIErrorBody.self, from: data) {
+                throw APIError.serverError(body.error)
+            }
             throw APIError.httpError(http.statusCode)
         }
     }
@@ -292,7 +297,7 @@ struct UpdateTaskBody: Encodable {
 
 struct CompleteTaskBody: Encodable {
     let summary: String
-    let outputs: [OutputBody]?
+    let outputs: [OutputBody]
 }
 
 struct OutputBody: Encodable {

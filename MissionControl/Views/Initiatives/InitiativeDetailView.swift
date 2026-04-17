@@ -113,6 +113,7 @@ struct InitiativeDetailView: View {
                         blockingTaskId = nil
                     }
                 }
+                .errorAlert(message: $viewModel.error)
             } else if let error = viewModel.error {
                 ContentUnavailableView {
                     Label("Error", systemImage: "exclamationmark.triangle")
