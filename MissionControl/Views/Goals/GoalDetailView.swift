@@ -9,7 +9,7 @@ struct GoalDetailView: View {
 
     var body: some View {
         Group {
-            if viewModel.isLoading && viewModel.goal == nil {
+            if viewModel.goal == nil && viewModel.error == nil {
                 ProgressView("Loading…")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let goal = viewModel.goal {
@@ -58,14 +58,15 @@ struct GoalDetailView: View {
                                         .foregroundStyle(.blue)
                                 }
                             }
+                            .padding(.horizontal, 4)
 
                             if let initiatives = goal.initiatives, !initiatives.isEmpty {
                                 ForEach(initiatives) { initiative in
                                     NavigationLink(destination: InitiativeDetailView(initiativeId: initiative.id)) {
-                                        InitiativeRow(initiative: initiative)
+                                        InitiativeCard(initiative: initiative)
                                     }
                                     .buttonStyle(.plain)
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    .contextMenu {
                                         Button(role: .destructive) {
                                             Task { await viewModel.deleteInitiative(id: initiative.id) }
                                         } label: {
@@ -78,10 +79,10 @@ struct GoalDetailView: View {
                                     .foregroundStyle(.secondary)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 20)
+                                    .padding()
+                                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
                             }
                         }
-                        .padding()
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
                     }
                     .padding()
                 }
@@ -157,37 +158,52 @@ struct GoalDetailHeader: View {
     }
 }
 
-// MARK: - Initiative Row
+// MARK: - Initiative Card
 
-struct InitiativeRow: View {
+struct InitiativeCard: View {
     let initiative: Initiative
 
     var body: some View {
-        HStack(spacing: 12) {
-            Text(initiative.emoji)
-                .font(.title2)
+        HStack(alignment: .top, spacing: 12) {
+            // Left column: emoji pinned top, status badge pinned bottom
+            VStack(spacing: 0) {
+                Text(initiative.emoji)
+                    .font(.system(size: 28))
 
-            VStack(alignment: .leading, spacing: 3) {
+                Spacer()
+
+                Label(initiative.statusLabel, systemImage: initiative.statusIcon)
+                    .font(.caption)
+                    .foregroundStyle(initiative.statusColor)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(initiative.statusColor.opacity(0.15), in: Capsule())
+            }
+            .fixedSize(horizontal: true, vertical: false)
+
+            // Right column: name top, mission below
+            VStack(alignment: .leading, spacing: 4) {
                 Text(initiative.resolvedName)
-                    .font(.body)
-                    .fontWeight(.medium)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
                     .foregroundStyle(.primary)
 
                 if let mission = initiative.mission, !mission.isEmpty {
                     Text(mission)
-                        .font(.caption)
+                        .font(.subheadline)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(2)
                 }
+
+                Spacer()
             }
-
-            Spacer()
-
-            Image(systemName: initiative.statusIcon)
-                .foregroundStyle(initiative.statusColor)
-                .font(.title3)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity)
+        .padding()
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 3)
     }
 }
 

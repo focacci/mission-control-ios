@@ -22,7 +22,14 @@ final class GoalDetailViewModel {
     func update(id: String, body: UpdateGoalBody) async {
         isSaving = true
         do {
-            goal = try await APIClient.shared.updateGoal(id: id, body: body)
+            let updated = try await APIClient.shared.updateGoal(id: id, body: body)
+            let currentInitiatives = goal?.initiatives
+            goal = Goal(
+                id: updated.id, emoji: updated.emoji, name: updated.name,
+                displayName: updated.displayName, focus: updated.focus,
+                focusIcon: updated.focusIcon, timeline: updated.timeline,
+                story: updated.story, initiatives: currentInitiatives
+            )
         } catch {
             self.error = error.localizedDescription
         }
