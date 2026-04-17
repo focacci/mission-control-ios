@@ -26,7 +26,7 @@ final class GoalDetailViewModel {
             let currentInitiatives = goal?.initiatives
             goal = Goal(
                 id: updated.id, emoji: updated.emoji, name: updated.name,
-                displayName: updated.displayName, focus: updated.focus,
+                focus: updated.focus,
                 focusIcon: updated.focusIcon, timeline: updated.timeline,
                 story: updated.story, initiatives: currentInitiatives
             )
@@ -42,7 +42,7 @@ final class GoalDetailViewModel {
             if let g = goal {
                 let remaining = (g.initiatives ?? []).filter { $0.id != id }
                 goal = Goal(
-                    id: g.id, emoji: g.emoji, name: g.name, displayName: g.displayName,
+                    id: g.id, emoji: g.emoji, name: g.name,
                     focus: g.focus, focusIcon: g.focusIcon, timeline: g.timeline,
                     story: g.story, initiatives: remaining
                 )
@@ -63,7 +63,7 @@ final class GoalDetailViewModel {
                 var existing = g.initiatives ?? []
                 existing.append(ini)
                 goal = Goal(
-                    id: g.id, emoji: g.emoji, name: g.name, displayName: g.displayName,
+                    id: g.id, emoji: g.emoji, name: g.name,
                     focus: g.focus, focusIcon: g.focusIcon, timeline: g.timeline,
                     story: g.story, initiatives: existing
                 )

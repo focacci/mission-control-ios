@@ -23,7 +23,7 @@ struct WatchTaskDetail: View {
                             .foregroundStyle(task.statusColor)
                     }
 
-                    Text(task.resolvedName)
+                    Text(task.name)
                         .font(.headline)
 
                     if let objective = task.objective, !objective.isEmpty {
@@ -123,7 +123,7 @@ struct WatchTaskDetail: View {
                let idx = reqs.firstIndex(where: { $0.id == updated.id }) {
                 reqs[idx] = updated
                 task = MCTask(
-                    id: t.id, emoji: t.emoji, name: t.name, displayName: t.displayName,
+                    id: t.id, emoji: t.emoji, name: t.name,
                     initiativeId: t.initiativeId, status: t.status, objective: t.objective,
                     summary: t.summary, requirements: reqs, tests: t.tests,
                     outputs: t.outputs, initiative: t.initiative, slot: t.slot

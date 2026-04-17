@@ -74,7 +74,7 @@ struct TaskDetailView: View {
                     .padding()
                 }
                 .refreshable { await viewModel.load(id: taskId) }
-                .navigationTitle(task.resolvedName)
+                .navigationTitle(task.name)
                 .navigationBarTitleDisplayMode(.large)
             } else if let error = viewModel.error {
                 ContentUnavailableView {
@@ -130,7 +130,7 @@ struct TaskDetailHeader: View {
             Text(task.resolvedEmoji)
                 .font(.system(size: 56))
 
-            Text(task.resolvedName)
+            Text(task.name)
                 .font(.title2)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
@@ -143,7 +143,7 @@ struct TaskDetailHeader: View {
                 .background(task.statusColor.opacity(0.15), in: Capsule())
 
             if let initiative = task.initiative {
-                Label("\(initiative.emoji) \(initiative.resolvedName)", systemImage: "")
+                Label("\(initiative.emoji) \(initiative.name)", systemImage: "")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

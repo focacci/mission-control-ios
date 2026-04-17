@@ -14,7 +14,7 @@ struct TaskRow: View {
                 .font(.title3)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(task.resolvedName)
+                Text(task.name)
                     .font(.body)
                     .fontWeight(.medium)
                     .foregroundStyle(.primary)

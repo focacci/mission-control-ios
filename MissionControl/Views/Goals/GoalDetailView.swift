@@ -87,7 +87,7 @@ struct GoalDetailView: View {
                     .padding()
                 }
                 .refreshable { await viewModel.load(id: goalId) }
-                .navigationTitle(goal.resolvedName)
+                .navigationTitle(goal.name)
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
@@ -129,7 +129,7 @@ struct GoalDetailHeader: View {
             Text(goal.emoji)
                 .font(.system(size: 64))
 
-            Text(goal.resolvedName)
+            Text(goal.name)
                 .font(.title2)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
@@ -183,7 +183,7 @@ struct InitiativeCard: View {
 
             // Right column: name top, mission below
             VStack(alignment: .leading, spacing: 4) {
-                Text(initiative.resolvedName)
+                Text(initiative.name)
                     .font(.headline)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)

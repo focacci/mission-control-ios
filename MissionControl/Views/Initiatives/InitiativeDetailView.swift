@@ -69,7 +69,7 @@ struct InitiativeDetailView: View {
                     .padding()
                 }
                 .refreshable { await viewModel.load(id: initiativeId) }
-                .navigationTitle(initiative.resolvedName)
+                .navigationTitle(initiative.name)
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
@@ -119,7 +119,7 @@ struct InitiativeDetailHeader: View {
             Text(initiative.emoji)
                 .font(.system(size: 56))
 
-            Text(initiative.resolvedName)
+            Text(initiative.name)
                 .font(.title2)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)

@@ -5,7 +5,6 @@ struct MCTask: Codable, Identifiable, Hashable {
     let id: String
     let emoji: String?
     let name: String
-    let displayName: String?
     let initiativeId: String?
     let status: String         // pending | assigned | in-progress | done | blocked | cancelled
     let objective: String?
@@ -16,7 +15,6 @@ struct MCTask: Codable, Identifiable, Hashable {
     let initiative: InitiativeRef?
     let slot: SlotRef?
 
-    var resolvedName: String { displayName ?? name }
     var resolvedEmoji: String { emoji ?? "📋" }
 
     var statusColor: Color {
@@ -87,8 +85,6 @@ struct InitiativeRef: Codable, Identifiable, Hashable {
     let id: String
     let emoji: String
     let name: String
-    let displayName: String?
-    var resolvedName: String { displayName ?? name }
 }
 
 struct SlotRef: Codable, Identifiable, Hashable {

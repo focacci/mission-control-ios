@@ -17,7 +17,7 @@ struct GoalEditSheet: View {
         self.goal = goal
         self.onSave = onSave
         _emoji = State(initialValue: goal.emoji)
-        _name = State(initialValue: goal.resolvedName)
+        _name = State(initialValue: goal.name)
         _focus = State(initialValue: goal.focus)
         _timeline = State(initialValue: goal.timeline ?? "")
         _story = State(initialValue: goal.story ?? "")

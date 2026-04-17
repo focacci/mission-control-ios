@@ -31,7 +31,7 @@ struct WatchGoalList: View {
                                         .frame(width: 8, height: 8)
                                     Text(goal.emoji)
                                         .font(.title3)
-                                    Text(goal.resolvedName)
+                                    Text(goal.name)
                                         .font(.body)
                                         .lineLimit(2)
                                 }
@@ -79,7 +79,7 @@ struct WatchGoalDetail: View {
                 Text(goal.emoji)
                     .font(.system(size: 40))
 
-                Text(goal.resolvedName)
+                Text(goal.name)
                     .font(.headline)
                     .multilineTextAlignment(.center)
 
@@ -111,7 +111,7 @@ struct WatchGoalDetail: View {
             }
             .padding()
         }
-        .navigationTitle(goal.resolvedName)
+        .navigationTitle(goal.name)
         .navigationBarTitleDisplayMode(.inline)
         .task {
             isLoading = true

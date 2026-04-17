@@ -4,14 +4,11 @@ struct Initiative: Codable, Identifiable, Hashable {
     let id: String
     let emoji: String
     let name: String
-    let displayName: String?
     let goalId: String?
     let status: String         // active | backlog | paused | completed
     let mission: String?
     let goal: GoalRef?
     let tasks: [MCTask]?
-
-    var resolvedName: String { displayName ?? name }
 
     var statusColor: Color {
         switch status {
@@ -42,7 +39,4 @@ struct GoalRef: Codable, Identifiable, Hashable {
     let id: String
     let emoji: String
     let name: String
-    let displayName: String?
-
-    var resolvedName: String { displayName ?? name }
 }

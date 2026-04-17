@@ -34,7 +34,7 @@ struct WatchTaskList: View {
                                     Text(task.resolvedEmoji)
                                         .font(.title3)
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text(task.resolvedName)
+                                        Text(task.name)
                                             .font(.body)
                                             .lineLimit(2)
                                         let progress = task.requirementProgress
