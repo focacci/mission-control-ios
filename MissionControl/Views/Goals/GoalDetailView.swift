@@ -59,7 +59,7 @@ struct GoalDetailView: View {
                     .padding()
                 }
                 .refreshable { await viewModel.load(id: goalId) }
-                .navigationTitle(goal.name)
+                .navigationTitle("Goal")
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {

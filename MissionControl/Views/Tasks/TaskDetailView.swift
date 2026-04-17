@@ -74,7 +74,7 @@ struct TaskDetailView: View {
                     .padding()
                 }
                 .refreshable { await viewModel.load(id: taskId) }
-                .navigationTitle(task.name)
+                .navigationTitle("Task")
                 .navigationBarTitleDisplayMode(.large)
             } else if let error = viewModel.error {
                 ContentUnavailableView {

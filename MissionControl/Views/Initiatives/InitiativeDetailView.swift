@@ -69,7 +69,7 @@ struct InitiativeDetailView: View {
                     .padding()
                 }
                 .refreshable { await viewModel.load(id: initiativeId) }
-                .navigationTitle(initiative.name)
+                .navigationTitle("Initiative")
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
