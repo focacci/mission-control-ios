@@ -1,0 +1,71 @@
+# Xcode
+*.xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+
+# Build
+build/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# CocoaPods
+Pods/
+*.xcworkspace
+!*.xcodeproj/*.xcworkspace
+
+# Swift Package Manager
+.build/
+.swiftpm/
+*.resolved
+
+# Carthage
+Carthage/Build/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# App Store Connect / signing
+*.mobileprovision
+*.p12
+*.cer
+*.certSigningRequest
+AuthKey_*.p8
+
+# Environment / secrets
+.env
+.env.*
+Secrets.swift
+APIKeys.swift
+Config.xcconfig
+GoogleService-Info.plist
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Simulator
+*.siminfo
+
+# TestFlight
+*.xcarchive
