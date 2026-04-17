@@ -5,7 +5,6 @@ struct GoalDetailView: View {
     @State private var viewModel = GoalDetailViewModel()
     @State private var showingEdit = false
     @State private var showingAddInitiative = false
-    @State private var storyExpanded = false
 
     var body: some View {
         Group {
@@ -17,33 +16,6 @@ struct GoalDetailView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         // Header
                         GoalDetailHeader(goal: goal)
-
-                        // Story
-                        if let story = goal.story, !story.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Button {
-                                    withAnimation(.easeInOut) { storyExpanded.toggle() }
-                                } label: {
-                                    HStack {
-                                        Text("Story")
-                                            .font(.headline)
-                                            .foregroundStyle(.primary)
-                                        Spacer()
-                                        Image(systemName: storyExpanded ? "chevron.up" : "chevron.down")
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
-
-                                if storyExpanded {
-                                    Text(story)
-                                        .font(.body)
-                                        .foregroundStyle(.secondary)
-                                        .transition(.opacity.combined(with: .move(edge: .top)))
-                                }
-                            }
-                            .padding()
-                            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-                        }
 
                         // Initiatives
                         VStack(alignment: .leading, spacing: 12) {
@@ -123,6 +95,7 @@ struct GoalDetailView: View {
 
 struct GoalDetailHeader: View {
     let goal: Goal
+    @State private var storyExpanded = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -150,6 +123,14 @@ struct GoalDetailHeader: View {
                         .padding(.vertical, 6)
                         .background(.secondary.opacity(0.1), in: Capsule())
                 }
+            }
+
+            if let story = goal.story, !story.isEmpty {
+                Text(story)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         .frame(maxWidth: .infinity)
