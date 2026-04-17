@@ -117,8 +117,9 @@ struct TaskDetailView: View {
         }
         .sheet(isPresented: $showingBlock) {
             BlockReasonSheet(reason: $blockReason) {
-                Task { await viewModel.blockTask(reason: blockReason) }
+                let reason = blockReason
                 blockReason = ""
+                Task { await viewModel.blockTask(reason: reason) }
             }
         }
         .alert("Add Requirement", isPresented: $showingAddRequirement) {
