@@ -21,6 +21,7 @@
 		61A1EA2BA86794D4E090AC3E /* TaskRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB3DB45FB47CCD110EDFCF9F /* TaskRow.swift */; };
 		7253034D7B1F2B29A52110A8 /* Initiative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BBA4E20A95DBE5434A0C0CC /* Initiative.swift */; };
 		75E87D15AD1F50552AEC20D4 /* InitiativeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AD53C713E8989E976B0CA26 /* InitiativeDetailView.swift */; };
+		AA11BB22CC33DD44EE55FF66 /* InitiativeEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22CC33DD44EE55FF6677AA /* InitiativeEditSheet.swift */; };
 		92197F371846FA756FCD29DC /* Goal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D04724739E13A9765ACD16 /* Goal.swift */; };
 		94D2B6C30961142C65799CA3 /* GoalDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D77ABFCCEB5AFF2543E5C28C /* GoalDetailViewModel.swift */; };
 		9C9729F8E9CE32EA8583B1DC /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BB569E8D2910A7991D5C55 /* Task.swift */; };
@@ -44,6 +45,7 @@
 
 /* Begin PBXFileReference section */
 		2AD53C713E8989E976B0CA26 /* InitiativeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitiativeDetailView.swift; sourceTree = "<group>"; };
+		BB22CC33DD44EE55FF6677AA /* InitiativeEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitiativeEditSheet.swift; sourceTree = "<group>"; };
 		2DE5796F5D1F8B6774F47AD7 /* TaskDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailView.swift; sourceTree = "<group>"; };
 		3D0057D0081A53661B4D0EB4 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3D1D40C9C5FFCEAA565205AB /* GoalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDetailView.swift; sourceTree = "<group>"; };
@@ -152,6 +154,7 @@
 			isa = PBXGroup;
 			children = (
 				2AD53C713E8989E976B0CA26 /* InitiativeDetailView.swift */,
+				BB22CC33DD44EE55FF6677AA /* InitiativeEditSheet.swift */,
 			);
 			path = Initiatives;
 			sourceTree = "<group>";
@@ -300,6 +303,7 @@
 				C287CEC7D98C036C50D34C0F /* GoalEditSheet.swift in Sources */,
 				45412D0517FB2B7484B661B5 /* Initiative.swift in Sources */,
 				75E87D15AD1F50552AEC20D4 /* InitiativeDetailView.swift in Sources */,
+				AA11BB22CC33DD44EE55FF66 /* InitiativeEditSheet.swift in Sources */,
 				ED4500121FAFDDAF3615BAD4 /* InitiativeDetailViewModel.swift in Sources */,
 				5330C852D09BB43E679EA616 /* MissionControlApp.swift in Sources */,
 				C66626847DF32285C20C8F53 /* ServerHealth.swift in Sources */,

@@ -3,6 +3,7 @@ import SwiftUI
 struct InitiativeDetailView: View {
     let initiativeId: String
     @State private var viewModel = InitiativeDetailViewModel()
+    @State private var showingEdit = false
     @State private var showingAddTask = false
     @State private var blockingTaskId: String?
     @State private var blockReason = ""
@@ -19,51 +20,68 @@ struct InitiativeDetailView: View {
                         // Header
                         InitiativeDetailHeader(initiative: initiative)
 
-                        // Task sections
-                        if !viewModel.inProgressTasks.isEmpty {
-                            TaskSection(
-                                title: "In Progress",
-                                tasks: viewModel.inProgressTasks,
-                                viewModel: viewModel,
-                                onBlock: { id in
-                                    blockingTaskId = id
-                                    showingBlockSheet = true
+                        // Tasks
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Text("Tasks")
+                                    .font(.headline)
+                                Spacer()
+                                Button {
+                                    showingAddTask = true
+                                } label: {
+                                    Image(systemName: "plus.circle.fill")
+                                        .foregroundStyle(.blue)
                                 }
-                            )
-                        }
+                            }
+                            .padding(.horizontal, 4)
 
-                        if !viewModel.blockedTasks.isEmpty {
-                            TaskSection(
-                                title: "Blocked",
-                                tasks: viewModel.blockedTasks,
-                                viewModel: viewModel,
-                                onBlock: nil
-                            )
-                        }
+                            if !viewModel.inProgressTasks.isEmpty {
+                                TaskSection(
+                                    title: "In Progress",
+                                    tasks: viewModel.inProgressTasks,
+                                    viewModel: viewModel,
+                                    onBlock: { id in
+                                        blockingTaskId = id
+                                        showingBlockSheet = true
+                                    }
+                                )
+                            }
 
-                        if !viewModel.activeTasks.isEmpty {
-                            TaskSection(
-                                title: "Pending / Assigned",
-                                tasks: viewModel.activeTasks,
-                                viewModel: viewModel,
-                                onBlock: nil
-                            )
-                        }
+                            if !viewModel.blockedTasks.isEmpty {
+                                TaskSection(
+                                    title: "Blocked",
+                                    tasks: viewModel.blockedTasks,
+                                    viewModel: viewModel,
+                                    onBlock: nil
+                                )
+                            }
 
-                        if !viewModel.doneTasks.isEmpty {
-                            TaskSection(
-                                title: "Completed",
-                                tasks: viewModel.doneTasks,
-                                viewModel: viewModel,
-                                onBlock: nil
-                            )
-                        }
+                            if !viewModel.activeTasks.isEmpty {
+                                TaskSection(
+                                    title: "Pending / Assigned",
+                                    tasks: viewModel.activeTasks,
+                                    viewModel: viewModel,
+                                    onBlock: nil
+                                )
+                            }
 
-                        if viewModel.tasks.isEmpty {
-                            Text("No tasks yet")
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 30)
+                            if !viewModel.doneTasks.isEmpty {
+                                TaskSection(
+                                    title: "Completed",
+                                    tasks: viewModel.doneTasks,
+                                    viewModel: viewModel,
+                                    onBlock: nil
+                                )
+                            }
+
+                            if viewModel.tasks.isEmpty {
+                                Text("No tasks yet")
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 20)
+                                    .padding()
+                                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                            }
                         }
                     }
                     .padding()
@@ -73,11 +91,12 @@ struct InitiativeDetailView: View {
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
-                        Button {
-                            showingAddTask = true
-                        } label: {
-                            Image(systemName: "plus")
-                        }
+                        Button("Edit") { showingEdit = true }
+                    }
+                }
+                .sheet(isPresented: $showingEdit) {
+                    InitiativeEditSheet(initiative: initiative) { body in
+                        Task { await viewModel.update(id: initiativeId, body: body) }
                     }
                 }
                 .sheet(isPresented: $showingAddTask) {

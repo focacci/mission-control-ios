@@ -61,6 +61,14 @@ final class InitiativeDetailViewModel {
         }
     }
 
+    func update(id: String, body: UpdateInitiativeBody) async {
+        do {
+            initiative = try await APIClient.shared.updateInitiative(id: id, body: body)
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
     func createTask(name: String, objective: String, emoji: String?) async {
         guard let initiativeId = initiative?.id else { return }
         do {
