@@ -14,7 +14,7 @@ struct GoalCard: View {
                     .frame(width: 10, height: 10)
             }
 
-            Text(goal.resolvedName)
+            Text(goal.name)
                 .font(.headline)
                 .lineLimit(2)
                 .minimumScaleFactor(0.85)

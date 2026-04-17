@@ -5,10 +5,6 @@ struct DashboardView: View {
     @State private var selectedGoal: Goal?
     @State private var showingAddGoal = false
 
-    private let columns = [
-        GridItem(.adaptive(minimum: 160, maximum: 200), spacing: 16)
-    ]
-
     var body: some View {
         NavigationSplitView {
             Group {
@@ -32,7 +28,7 @@ struct DashboardView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     ScrollView {
-                        LazyVGrid(columns: columns, spacing: 16) {
+                        LazyVStack(spacing: 16) {
                             ForEach(viewModel.goals) { goal in
                                 GoalCard(goal: goal)
                                     .onTapGesture { selectedGoal = goal }
