@@ -50,6 +50,7 @@ struct DashboardView: View {
                 }
             }
             .navigationTitle("Goals")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
