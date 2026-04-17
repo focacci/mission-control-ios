@@ -98,20 +98,24 @@ struct GoalDetailHeader: View {
     @State private var storyExpanded = false
 
     var body: some View {
-        VStack(spacing: 12) {
-            Text(goal.emoji)
-                .font(.system(size: 64))
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Text(goal.emoji)
+                    .font(.system(size: 56))
 
-            Text(goal.name)
-                .font(.title2)
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
+                Text(goal.name)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.leading)
+
+                Spacer()
+            }
 
             HStack(spacing: 12) {
                 Label(goal.focusLabel, systemImage: "circle.fill")
                     .font(.subheadline)
                     .foregroundStyle(goal.focusColor)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 6)
                     .padding(.vertical, 6)
                     .background(goal.focusColor.opacity(0.15), in: Capsule())
 
@@ -123,6 +127,8 @@ struct GoalDetailHeader: View {
                         .padding(.vertical, 6)
                         .background(.secondary.opacity(0.1), in: Capsule())
                 }
+
+                Spacer()
             }
 
             if let story = goal.story, !story.isEmpty {
