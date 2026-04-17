@@ -10,9 +10,6 @@ struct TaskRow: View {
                 .font(.title3)
                 .frame(width: 24)
 
-            Text(task.resolvedEmoji)
-                .font(.title3)
-
             VStack(alignment: .leading, spacing: 2) {
                 Text(task.name)
                     .font(.body)

@@ -180,6 +180,7 @@ final class TaskDetailViewModel {
             tests: tests ?? t.tests,
             outputs: outputs ?? t.outputs,
             initiative: t.initiative,
+            goal: t.goal,
             slot: t.slot
         )
     }

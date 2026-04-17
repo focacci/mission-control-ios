@@ -13,6 +13,7 @@ struct MCTask: Codable, Identifiable, Hashable {
     let tests: [TaskTest]?
     let outputs: [TaskOutput]?
     let initiative: InitiativeRef?
+    let goal: GoalRef?
     let slot: SlotRef?
 
     var resolvedEmoji: String { emoji ?? "📋" }
