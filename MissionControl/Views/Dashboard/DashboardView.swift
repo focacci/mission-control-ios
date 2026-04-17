@@ -49,7 +49,7 @@ struct DashboardView: View {
                     .refreshable { await viewModel.load() }
                 }
             }
-            .navigationTitle("Mission Control")
+            .navigationTitle("Goals")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {

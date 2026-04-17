@@ -5,7 +5,7 @@ struct ContentView: View {
         TabView {
             DashboardView()
                 .tabItem {
-                    Label("Dashboard", systemImage: "square.grid.2x2")
+                    Label("Goals", systemImage: "trophy")
                 }
 
             SettingsView()
