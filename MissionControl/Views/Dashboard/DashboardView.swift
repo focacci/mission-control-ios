@@ -27,21 +27,24 @@ struct DashboardView: View {
                     .padding()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: 16) {
-                            ForEach(viewModel.goals) { goal in
-                                GoalCard(goal: goal)
-                                    .onTapGesture { selectedGoal = goal }
-                                    .contextMenu {
-                                        Button(role: .destructive) {
-                                            Task { await viewModel.deleteGoal(id: goal.id) }
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
-                                        }
-                                    }
+                    List(viewModel.goals, selection: $selectedGoal) { goal in
+                        NavigationLink(value: goal) {
+                            GoalCard(goal: goal)
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                Task { await viewModel.deleteGoal(id: goal.id) }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
                         }
-                        .padding()
+                    }
+                    .listStyle(.plain)
+                    .navigationDestination(for: Goal.self) { goal in
+                        GoalDetailView(goalId: goal.id)
                     }
                     .refreshable { await viewModel.load() }
                 }

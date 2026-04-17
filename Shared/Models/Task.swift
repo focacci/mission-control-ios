@@ -1,7 +1,7 @@
 import SwiftUI
 
 // Named MCTask to avoid conflict with Swift concurrency's Task
-struct MCTask: Codable, Identifiable {
+struct MCTask: Codable, Identifiable, Hashable {
     let id: String
     let emoji: String?
     let name: String
@@ -65,25 +65,25 @@ struct MCTask: Codable, Identifiable {
     var isTerminal: Bool  { status == "done" || status == "cancelled" }
 }
 
-struct Requirement: Codable, Identifiable {
+struct Requirement: Codable, Identifiable, Hashable {
     let id: String
     let description: String
     let completed: Bool
 }
 
-struct TaskTest: Codable, Identifiable {
+struct TaskTest: Codable, Identifiable, Hashable {
     let id: String
     let description: String
     let passed: Bool
 }
 
-struct TaskOutput: Codable, Identifiable {
+struct TaskOutput: Codable, Identifiable, Hashable {
     let id: String
     let label: String
     let url: String?
 }
 
-struct InitiativeRef: Codable, Identifiable {
+struct InitiativeRef: Codable, Identifiable, Hashable {
     let id: String
     let emoji: String
     let name: String
@@ -91,6 +91,6 @@ struct InitiativeRef: Codable, Identifiable {
     var resolvedName: String { displayName ?? name }
 }
 
-struct SlotRef: Codable, Identifiable {
+struct SlotRef: Codable, Identifiable, Hashable {
     let id: String
 }

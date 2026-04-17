@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct Goal: Codable, Identifiable {
+struct Goal: Codable, Identifiable, Hashable {
     let id: String
     let emoji: String
     let name: String

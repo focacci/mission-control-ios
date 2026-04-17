@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct Initiative: Codable, Identifiable {
+struct Initiative: Codable, Identifiable, Hashable {
     let id: String
     let emoji: String
     let name: String
@@ -38,7 +38,7 @@ struct Initiative: Codable, Identifiable {
 }
 
 // Lightweight goal reference returned inside initiative detail
-struct GoalRef: Codable, Identifiable {
+struct GoalRef: Codable, Identifiable, Hashable {
     let id: String
     let emoji: String
     let name: String
