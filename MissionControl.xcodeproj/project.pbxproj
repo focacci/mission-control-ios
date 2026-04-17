@@ -38,6 +38,7 @@
 		C66626847DF32285C20C8F53 /* ServerHealth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 517A1C942EC1FAB24F183895 /* ServerHealth.swift */; };
 		CBE924C9BC4B4851B0B2F5D4 /* InitiativeDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F6710A3AFC155620FCA56B4 /* InitiativeDetailViewModel.swift */; };
 		D47CA65C5B932B39A6D10E97 /* TaskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE5796F5D1F8B6774F47AD7 /* TaskDetailView.swift */; };
+		F1A2B3C4D5E6F7A8B9C0D1E2 /* TaskEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A3B4C5D6E7F8A9B0C1D2E3 /* TaskEditSheet.swift */; };
 		DD8FD59ED8E5EA663D95C3F9 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F1EEEE1BA1C4B36F979E86 /* DashboardViewModel.swift */; };
 		E616796500D447B8F2137B90 /* ServerHealth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 517A1C942EC1FAB24F183895 /* ServerHealth.swift */; };
 		ED4500121FAFDDAF3615BAD4 /* InitiativeDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F6710A3AFC155620FCA56B4 /* InitiativeDetailViewModel.swift */; };
@@ -71,6 +72,7 @@
 		D77ABFCCEB5AFF2543E5C28C /* GoalDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDetailViewModel.swift; sourceTree = "<group>"; };
 		E3BB569E8D2910A7991D5C55 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		EB3DB45FB47CCD110EDFCF9F /* TaskRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRow.swift; sourceTree = "<group>"; };
+		F2A3B4C5D6E7F8A9B0C1D2E3 /* TaskEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskEditSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -107,6 +109,7 @@
 			children = (
 				513EBEA9872A4F80D2B6EF4B /* CompleteTaskSheet.swift */,
 				2DE5796F5D1F8B6774F47AD7 /* TaskDetailView.swift */,
+				F2A3B4C5D6E7F8A9B0C1D2E3 /* TaskEditSheet.swift */,
 				EB3DB45FB47CCD110EDFCF9F /* TaskRow.swift */,
 			);
 			path = Tasks;
@@ -311,6 +314,7 @@
 				9C9729F8E9CE32EA8583B1DC /* Task.swift in Sources */,
 				D47CA65C5B932B39A6D10E97 /* TaskDetailView.swift in Sources */,
 				200ADC6B9FE6BE3302378781 /* TaskDetailViewModel.swift in Sources */,
+				F1A2B3C4D5E6F7A8B9C0D1E2 /* TaskEditSheet.swift in Sources */,
 				61A1EA2BA86794D4E090AC3E /* TaskRow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

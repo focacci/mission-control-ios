@@ -3,6 +3,7 @@ import SwiftUI
 struct TaskDetailView: View {
     let taskId: String
     @State private var viewModel = TaskDetailViewModel()
+    @State private var showingEdit = false
     @State private var showingComplete = false
     @State private var showingBlock = false
     @State private var blockReason = ""
@@ -76,6 +77,16 @@ struct TaskDetailView: View {
                 .refreshable { await viewModel.load(id: taskId) }
                 .navigationTitle("Task")
                 .navigationBarTitleDisplayMode(.large)
+                .toolbar {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("Edit") { showingEdit = true }
+                    }
+                }
+                .sheet(isPresented: $showingEdit) {
+                    TaskEditSheet(task: task) { body in
+                        Task { await viewModel.update(id: taskId, body: body) }
+                    }
+                }
             } else if let error = viewModel.error {
                 ContentUnavailableView {
                     Label("Error", systemImage: "exclamationmark.triangle")

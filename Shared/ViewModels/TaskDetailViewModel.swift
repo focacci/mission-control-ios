@@ -52,6 +52,16 @@ final class TaskDetailViewModel {
         isSaving = false
     }
 
+    func update(id: String, body: UpdateTaskBody) async {
+        isSaving = true
+        do {
+            task = try await APIClient.shared.updateTask(id: id, body: body)
+        } catch {
+            self.error = error.localizedDescription
+        }
+        isSaving = false
+    }
+
     func cancelTask() async {
         guard let id = task?.id else { return }
         isSaving = true
