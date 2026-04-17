@@ -19,9 +19,10 @@ struct GoalCard: View {
                     .padding(.vertical, 3)
                     .background(goal.focusColor.opacity(0.15), in: Capsule())
             }
+            .fixedSize(horizontal: true, vertical: false)
 
             // Right column: name top-left, timeline bottom-right
-            VStack(alignment: .leading, spacing:  4) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(goal.name)
                     .font(.headline)
                     .lineLimit(2)
@@ -36,7 +37,9 @@ struct GoalCard: View {
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .frame(maxWidth: .infinity)
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 3)
