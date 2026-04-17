@@ -62,7 +62,7 @@ struct GoalDetailView: View {
 
                             if let initiatives = goal.initiatives, !initiatives.isEmpty {
                                 ForEach(initiatives) { initiative in
-                                    NavigationLink(destination: InitiativeDetailView(initiativeId: initiative.id)) {
+                                    NavigationLink(value: initiative) {
                                         InitiativeCard(initiative: initiative)
                                     }
                                     .buttonStyle(.plain)
@@ -87,6 +87,9 @@ struct GoalDetailView: View {
                     .padding()
                 }
                 .refreshable { await viewModel.load(id: goalId) }
+                .navigationDestination(for: Initiative.self) { initiative in
+                    InitiativeDetailView(initiativeId: initiative.id)
+                }
                 .navigationTitle(goal.resolvedName)
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {

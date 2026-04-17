@@ -69,6 +69,9 @@ struct InitiativeDetailView: View {
                     .padding()
                 }
                 .refreshable { await viewModel.load(id: initiativeId) }
+                .navigationDestination(for: MCTask.self) { task in
+                    TaskDetailView(taskId: task.id)
+                }
                 .navigationTitle(initiative.resolvedName)
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {
@@ -161,7 +164,7 @@ struct TaskSection: View {
 
             VStack(spacing: 2) {
                 ForEach(tasks) { task in
-                    NavigationLink(destination: TaskDetailView(taskId: task.id)) {
+                    NavigationLink(value: task) {
                         TaskRow(task: task)
                     }
                     .buttonStyle(.plain)
