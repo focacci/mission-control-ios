@@ -67,8 +67,12 @@ struct SettingsView: View {
                     LabeledContent("Version", value: "\(appVersion) (\(buildNumber))")
                     LabeledContent("Model", value: "iOS/iPadOS + watchOS")
 
-                    Link(destination: URL(string: "https://github.com")!) {
-                        Label("View Source", systemImage: "arrow.up.right.square")
+                    Link(destination: URL(string: "https://github.com/focacci/mission-control-ios")!) {
+                        Label("View iOS Source", systemImage: "arrow.up.right.square")
+                    }
+
+                    Link(destination: URL(string: "https://github.com/focacci/mission-control-api")!) {
+                        Label("View API Source", systemImage: "arrow.up.right.square")
                     }
                 }
             }
