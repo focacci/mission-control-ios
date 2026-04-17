@@ -182,8 +182,10 @@ struct TaskSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
-                .font(.headline)
-                .padding(.horizontal, 4)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity)
+                .multilineTextAlignment(.center)
 
             VStack(spacing: 2) {
                 ForEach(tasks) { task in
