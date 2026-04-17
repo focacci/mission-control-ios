@@ -23,7 +23,7 @@ final class APIClient {
     private init() {}
 
     var baseURL: String {
-        get { UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://192.168.1.197:3737" }
+        get { UserDefaults.standard.string(forKey: "apiBaseURL") ?? "http://10.0.0.12:3737" }
         set { UserDefaults.standard.set(newValue, forKey: "apiBaseURL") }
     }
 

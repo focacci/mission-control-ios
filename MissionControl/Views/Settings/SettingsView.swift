@@ -16,7 +16,7 @@ struct SettingsView: View {
                     HStack {
                         Image(systemName: "server.rack")
                             .foregroundStyle(.secondary)
-                        TextField("http://192.168.1.197:3737", text: $baseURL)
+                        TextField("http://10.0.0.12:3737", text: $baseURL)
                             .autocorrectionDisabled()
                             .keyboardType(.URL)
                             .autocapitalization(.none)
