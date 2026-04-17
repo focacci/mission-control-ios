@@ -2,11 +2,10 @@ import SwiftUI
 
 struct DashboardView: View {
     @State private var viewModel = DashboardViewModel()
-    @State private var selectedGoal: Goal?
     @State private var showingAddGoal = false
 
     var body: some View {
-        NavigationSplitView {
+        NavigationStack {
             Group {
                 if viewModel.isLoading && viewModel.goals.isEmpty {
                     ProgressView("Loading…")
@@ -27,7 +26,7 @@ struct DashboardView: View {
                     .padding()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    List(viewModel.goals, selection: $selectedGoal) { goal in
+                    List(viewModel.goals) { goal in
                         NavigationLink(value: goal) {
                             GoalCard(goal: goal)
                         }
@@ -43,9 +42,6 @@ struct DashboardView: View {
                         }
                     }
                     .listStyle(.plain)
-                    .navigationDestination(for: Goal.self) { goal in
-                        GoalDetailView(goalId: goal.id)
-                    }
                     .refreshable { await viewModel.load() }
                 }
             }
@@ -60,6 +56,15 @@ struct DashboardView: View {
                     }
                 }
             }
+            .navigationDestination(for: Goal.self) { goal in
+                GoalDetailView(goalId: goal.id)
+            }
+            .navigationDestination(for: Initiative.self) { initiative in
+                InitiativeDetailView(initiativeId: initiative.id)
+            }
+            .navigationDestination(for: MCTask.self) { task in
+                TaskDetailView(taskId: task.id)
+            }
             .sheet(isPresented: $showingAddGoal) {
                 AddGoalSheet { emoji, name, focus, timeline, story in
                     Task {
@@ -72,16 +77,6 @@ struct DashboardView: View {
                 }
             }
             .task { await viewModel.load() }
-        } detail: {
-            if let goal = selectedGoal {
-                GoalDetailView(goalId: goal.id)
-            } else {
-                ContentUnavailableView(
-                    "Select a Goal",
-                    systemImage: "target",
-                    description: Text("Choose a goal from the sidebar to view details.")
-                )
-            }
         }
     }
 }

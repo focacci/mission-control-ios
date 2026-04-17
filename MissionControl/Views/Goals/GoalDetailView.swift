@@ -87,9 +87,6 @@ struct GoalDetailView: View {
                     .padding()
                 }
                 .refreshable { await viewModel.load(id: goalId) }
-                .navigationDestination(for: Initiative.self) { initiative in
-                    InitiativeDetailView(initiativeId: initiative.id)
-                }
                 .navigationTitle(goal.resolvedName)
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {

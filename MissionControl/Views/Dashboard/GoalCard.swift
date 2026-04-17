@@ -23,7 +23,7 @@ struct GoalCard: View {
 
             // Right column: name top-left, timeline bottom-right
             VStack(alignment: .leading, spacing: 4) {
-                Text(goal.name)
+                Text(goal.resolvedName)
                     .font(.headline)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)

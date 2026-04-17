@@ -69,9 +69,6 @@ struct InitiativeDetailView: View {
                     .padding()
                 }
                 .refreshable { await viewModel.load(id: initiativeId) }
-                .navigationDestination(for: MCTask.self) { task in
-                    TaskDetailView(taskId: task.id)
-                }
                 .navigationTitle(initiative.resolvedName)
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {
