@@ -22,15 +22,25 @@ struct TaskDetailView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         TaskDetailHeader(task: task)
 
-                        // Action buttons
-                        if !task.isTerminal {
-                            TaskActionBar(
-                                task: task,
-                                isSaving: viewModel.isSaving,
-                                onStart:    { Task { await viewModel.startTask() } },
-                                onComplete: { showingComplete = true },
-                                onBlock:    { showingBlock = true }
-                            )
+                        SectionCard(title: "Status", icon: "flag.fill") {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Label(task.statusLabel, systemImage: task.statusIcon)
+                                    .font(.subheadline)
+                                    .foregroundStyle(task.statusColor)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(task.statusColor.opacity(0.15), in: Capsule())
+
+                                if !task.isTerminal {
+                                    TaskActionBar(
+                                        task: task,
+                                        isSaving: viewModel.isSaving,
+                                        onStart:    { Task { await viewModel.startTask() } },
+                                        onComplete: { showingComplete = true },
+                                        onBlock:    { showingBlock = true }
+                                    )
+                                }
+                            }
                         }
 
                         // Summary (if done)
@@ -143,13 +153,6 @@ struct TaskDetailHeader: View {
                 .fontWeight(.bold)
                 .multilineTextAlignment(.leading)
 
-            Label(task.statusLabel, systemImage: task.statusIcon)
-                .font(.subheadline)
-                .foregroundStyle(task.statusColor)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(task.statusColor.opacity(0.15), in: Capsule())
-
             if task.goal != nil || task.initiative != nil {
                 HStack(spacing: 8) {
                     if let goal = task.goal {
@@ -221,8 +224,6 @@ struct TaskActionBar: View {
                 .disabled(isSaving)
             }
         }
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
 }
 
