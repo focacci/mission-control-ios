@@ -115,28 +115,35 @@ struct InitiativeDetailHeader: View {
     let initiative: Initiative
 
     var body: some View {
-        VStack(spacing: 10) {
-            Text(initiative.emoji)
-                .font(.system(size: 56))
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Text(initiative.emoji)
+                    .font(.system(size: 56))
 
-            Text(initiative.name)
-                .font(.title2)
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
+                Text(initiative.name)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.leading)
 
-            Label(initiative.statusLabel, systemImage: initiative.statusIcon)
-                .font(.subheadline)
-                .foregroundStyle(initiative.statusColor)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(initiative.statusColor.opacity(0.15), in: Capsule())
+                Spacer()
+            }
+
+            HStack(spacing: 12) {
+                Label(initiative.statusLabel, systemImage: initiative.statusIcon)
+                    .font(.subheadline)
+                    .foregroundStyle(initiative.statusColor)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(initiative.statusColor.opacity(0.15), in: Capsule())
+
+                Spacer()
+            }
 
             if let mission = initiative.mission, !mission.isEmpty {
                 Text(mission)
                     .font(.body)
                     .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .frame(maxWidth: .infinity)

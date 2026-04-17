@@ -126,26 +126,37 @@ struct TaskDetailHeader: View {
     let task: MCTask
 
     var body: some View {
-        VStack(spacing: 10) {
-            Text(task.resolvedEmoji)
-                .font(.system(size: 56))
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Text(task.resolvedEmoji)
+                    .font(.system(size: 56))
 
-            Text(task.name)
-                .font(.title2)
-                .fontWeight(.bold)
-                .multilineTextAlignment(.center)
+                Text(task.name)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.leading)
 
-            Label(task.statusLabel, systemImage: task.statusIcon)
-                .font(.subheadline)
-                .foregroundStyle(task.statusColor)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(task.statusColor.opacity(0.15), in: Capsule())
+                Spacer()
+            }
 
-            if let initiative = task.initiative {
-                Label("\(initiative.emoji) \(initiative.name)", systemImage: "")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            HStack(spacing: 12) {
+                Label(task.statusLabel, systemImage: task.statusIcon)
+                    .font(.subheadline)
+                    .foregroundStyle(task.statusColor)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(task.statusColor.opacity(0.15), in: Capsule())
+
+                if let initiative = task.initiative {
+                    Text("\(initiative.emoji) \(initiative.name)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(.secondary.opacity(0.1), in: Capsule())
+                }
+
+                Spacer()
             }
         }
         .frame(maxWidth: .infinity)
