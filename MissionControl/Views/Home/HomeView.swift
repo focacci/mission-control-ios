@@ -112,7 +112,7 @@ private struct PrayerScriptureCard: View {
                                                          ? .green : .secondary)
                                         .frame(width: 20)
 
-                                    Text("\(item.index).\(item.name)")
+                                    Text("\(item.index). \(item.name)")
                                         .font(.subheadline)
                                         .foregroundStyle(state.checkedMysteries.contains(item.index)
                                                          ? .secondary : .primary)
