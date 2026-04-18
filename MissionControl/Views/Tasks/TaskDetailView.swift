@@ -18,7 +18,7 @@ struct TaskDetailView: View {
                 ProgressView("Loading…")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let task = viewModel.task {
-                ScrollView {
+                ScrollView(.vertical) {
                     VStack(alignment: .leading, spacing: 20) {
                         TaskDetailHeader(task: task)
 
@@ -83,6 +83,7 @@ struct TaskDetailView: View {
                         }
                     }
                     .padding()
+                    .containerRelativeFrame(.horizontal)
                 }
                 .refreshable { await viewModel.load(id: taskId) }
                 .navigationTitle("Task")
@@ -160,6 +161,7 @@ struct TaskDetailHeader: View {
                     if let goal = task.goal {
                         Text("\(goal.emoji) \(goal.name)")
                             .font(.subheadline)
+                            .lineLimit(1)
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
@@ -170,12 +172,15 @@ struct TaskDetailHeader: View {
                     if let initiative = task.initiative {
                         Text("\(initiative.emoji) \(initiative.name)")
                             .font(.subheadline)
+                            .lineLimit(1)
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .background(.clear, in: Capsule())
                             .overlay(Capsule().strokeBorder(.secondary.opacity(0.4), lineWidth: 1))
                     }
+
+                    Spacer()
                 }
             }
         }

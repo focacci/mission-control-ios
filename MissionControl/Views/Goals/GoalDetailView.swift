@@ -12,7 +12,7 @@ struct GoalDetailView: View {
                 ProgressView("Loading…")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let goal = viewModel.goal {
-                ScrollView {
+                ScrollView(.vertical) {
                     VStack(alignment: .leading, spacing: 20) {
                         // Header
                         GoalDetailHeader(goal: goal)
@@ -57,6 +57,7 @@ struct GoalDetailView: View {
                         }
                     }
                     .padding()
+                    .containerRelativeFrame(.horizontal)
                 }
                 .refreshable { await viewModel.load(id: goalId) }
                 .navigationTitle("Goal")

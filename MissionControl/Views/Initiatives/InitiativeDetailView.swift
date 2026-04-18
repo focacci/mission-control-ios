@@ -15,7 +15,7 @@ struct InitiativeDetailView: View {
                 ProgressView("Loading…")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let initiative = viewModel.initiative {
-                ScrollView {
+                ScrollView(.vertical) {
                     VStack(alignment: .leading, spacing: 20) {
                         // Header
                         InitiativeDetailHeader(initiative: initiative)
@@ -85,6 +85,7 @@ struct InitiativeDetailView: View {
                         }
                     }
                     .padding()
+                    .containerRelativeFrame(.horizontal)
                 }
                 .refreshable { await viewModel.load(id: initiativeId) }
                 .navigationTitle("Initiative")
