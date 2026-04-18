@@ -3,7 +3,6 @@ import Observation
 
 enum ScheduleViewMode: String, CaseIterable {
     case day   = "Day"
-    case week  = "Week"
     case month = "Month"
 }
 
@@ -13,10 +12,7 @@ final class ScheduleViewModel {
     var weekResponse: WeekResponse?
     var isLoading = false
     var error: String?
-    var isGenerating = false
-    var generateError: String?
 
-    // The currently focused date (day selected in day/month view, anchor for week view)
     var focusDate: Date = Date()
 
     var focusDateISO: String { focusDate.isoDate }
@@ -52,7 +48,6 @@ final class ScheduleViewModel {
         }
     }
 
-    // Slots grouped by date for month dot display
     var datesWithSlots: Set<String> {
         Set((weekResponse?.slots ?? []).filter { $0.type == "task" }.map { $0.date })
     }
@@ -62,21 +57,12 @@ final class ScheduleViewModel {
         error = nil
         do {
             weekResponse = try await APIClient.shared.scheduleWeek(weekStart: weekStart)
+        } catch APIError.serverError(let msg) where msg.lowercased().hasPrefix("no week plan") {
+            weekResponse = nil
         } catch {
             self.error = error.localizedDescription
         }
         isLoading = false
-    }
-
-    func generatePlan() async {
-        isGenerating = true
-        generateError = nil
-        do {
-            weekResponse = try await APIClient.shared.generateWeekPlan(weekStart: weekStart)
-        } catch {
-            generateError = error.localizedDescription
-        }
-        isGenerating = false
     }
 
     func markDone(slot: ScheduleSlot) async {

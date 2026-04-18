@@ -14,10 +14,7 @@ struct TaskDetailView: View {
 
     var body: some View {
         Group {
-            if viewModel.isLoading && viewModel.task == nil {
-                ProgressView("Loading…")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let task = viewModel.task {
+            if let task = viewModel.task {
                 ScrollView(.vertical) {
                     VStack(alignment: .leading, spacing: 20) {
                         TaskDetailHeader(task: task)
@@ -108,6 +105,9 @@ struct TaskDetailView: View {
                     Button("Retry") { Task { await viewModel.load(id: taskId) } }
                         .buttonStyle(.borderedProminent)
                 }
+            } else {
+                ProgressView("Loading…")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .task { await viewModel.load(id: taskId) }

@@ -36,17 +36,10 @@ struct ScheduleView: View {
                         ErrorState(message: error) {
                             Task { await viewModel.load() }
                         }
-                    } else if viewModel.weekResponse == nil {
-                        NoPlanState(isGenerating: viewModel.isGenerating,
-                                    error: viewModel.generateError) {
-                            Task { await viewModel.generatePlan() }
-                        }
                     } else {
                         switch viewModel.mode {
                         case .day:
                             DayScheduleView(viewModel: viewModel)
-                        case .week:
-                            WeekScheduleView(viewModel: viewModel)
                         case .month:
                             MonthScheduleView(viewModel: viewModel)
                         }
@@ -148,52 +141,6 @@ private struct ErrorState: View {
                 .buttonStyle(.borderedProminent)
         }
         .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-// MARK: - No Plan State
-
-private struct NoPlanState: View {
-    let isGenerating: Bool
-    let error: String?
-    let onGenerate: () -> Void
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "calendar.badge.plus")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondary)
-
-            Text("No plan for this week")
-                .font(.headline)
-
-            Text("Generate a week plan to schedule your tasks.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-
-            if let error {
-                Text(error)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-                    .multilineTextAlignment(.center)
-            }
-
-            Button {
-                onGenerate()
-            } label: {
-                if isGenerating {
-                    ProgressView()
-                        .tint(.white)
-                } else {
-                    Text("Generate Week Plan")
-                }
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(isGenerating)
-        }
-        .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
