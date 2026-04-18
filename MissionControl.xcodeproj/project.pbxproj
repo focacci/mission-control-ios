@@ -59,7 +59,6 @@
 		C4053FCC27CB97800CEF0F39 /* GoalDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D77ABFCCEB5AFF2543E5C28C /* GoalDetailViewModel.swift */; };
 		C66626847DF32285C20C8F53 /* ServerHealth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 517A1C942EC1FAB24F183895 /* ServerHealth.swift */; };
 		CBE924C9BC4B4851B0B2F5D4 /* InitiativeDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F6710A3AFC155620FCA56B4 /* InitiativeDetailViewModel.swift */; };
-		CD4CE36B52DDBDA91D389164 /* RosaryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AF098E62F1B0EF6F173C70D /* RosaryCard.swift */; };
 		D47CA65C5B932B39A6D10E97 /* TaskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE5796F5D1F8B6774F47AD7 /* TaskDetailView.swift */; };
 		D52E905F51EA39410B964F45 /* SlotRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFE18C4B7A99813255CC721 /* SlotRow.swift */; };
 		D61FBB50CDE668EDC8481511 /* TaskEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCF120F8D716BA3DD6CD6C08 /* TaskEditSheet.swift */; };
@@ -94,7 +93,6 @@
 		4BF55F93FA2531E7F621514C /* MissionControl.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MissionControl.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		513EBEA9872A4F80D2B6EF4B /* CompleteTaskSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompleteTaskSheet.swift; sourceTree = "<group>"; };
 		517A1C942EC1FAB24F183895 /* ServerHealth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerHealth.swift; sourceTree = "<group>"; };
-		5AF098E62F1B0EF6F173C70D /* RosaryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RosaryCard.swift; sourceTree = "<group>"; };
 		5DB0C4B089A88464E97507DF /* WatchTaskDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchTaskDetail.swift; sourceTree = "<group>"; };
 		5F8AE533D1CBDA389517E60F /* BoardData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardData.swift; sourceTree = "<group>"; };
 		626C5F933008054ADD6960DB /* GoalEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalEditSheet.swift; sourceTree = "<group>"; };
@@ -325,8 +323,7 @@
 			isa = PBXGroup;
 			children = (
 				FB79D70DEC5A71FF3E1D5D75 /* HomeView.swift */,
-				5AF098E62F1B0EF6F173C70D /* RosaryCard.swift */,
-				A65921FC7704E24A5756B7C7 /* WeekBarView.swift */,
+					A65921FC7704E24A5756B7C7 /* WeekBarView.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -432,8 +429,7 @@
 				D8C30801C5C012FC5D6E1DEE /* InitiativeEditSheet.swift in Sources */,
 				5330C852D09BB43E679EA616 /* MissionControlApp.swift in Sources */,
 				B93DD612D843B2A9DB03F08A /* MonthScheduleView.swift in Sources */,
-				CD4CE36B52DDBDA91D389164 /* RosaryCard.swift in Sources */,
-				9165BFEC23DEBDE2B5ACE33C /* ScheduleSlot.swift in Sources */,
+					9165BFEC23DEBDE2B5ACE33C /* ScheduleSlot.swift in Sources */,
 				9DC8EBF78ED3CB4E2EE8D10D /* ScheduleView.swift in Sources */,
 				8CA10A0496C4E28D2130E062 /* ScheduleViewModel.swift in Sources */,
 				C66626847DF32285C20C8F53 /* ServerHealth.swift in Sources */,

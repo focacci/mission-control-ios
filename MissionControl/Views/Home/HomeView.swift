@@ -17,8 +17,8 @@ struct HomeView: View {
                     .padding(.bottom, 8)
 
                     VStack(spacing: 16) {
-                        RosaryCard(mystery: RosaryMystery.forDate(Date()),
-                                   state: rosaryState)
+                        PrayerScriptureCard(mystery: RosaryMystery.forDate(Date()),
+                                           state: rosaryState)
 
                         DailyNoteCard(note: dailyNote, showEditor: $showingNoteEditor)
 
@@ -37,6 +37,141 @@ struct HomeView: View {
                 DailyNoteEditorView(note: dailyNote)
             }
         }
+    }
+}
+
+// MARK: - Prayer & Scripture Card
+
+private struct ScriptureReading {
+    let citation: String
+    let preview: String
+}
+
+private let placeholderReadings: [ScriptureReading] = [
+    ScriptureReading(citation: "Genesis 1:1–2:3", preview: "In the beginning, God created the heavens and the earth."),
+    ScriptureReading(citation: "John 1:1–18",     preview: "In the beginning was the Word, and the Word was with God."),
+    ScriptureReading(citation: "Psalm 23",         preview: "The Lord is my shepherd; I shall not want."),
+]
+
+private struct PrayerScriptureCard: View {
+    let mystery: RosaryMystery
+    @Bindable var state: RosaryState
+    @State private var isExpanded = true
+
+    var allChecked: Bool {
+        mystery.mysteries.allSatisfy { state.checkedMysteries.contains($0.index) }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+
+            // Collapsible header
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
+            } label: {
+                HStack {
+                    Label("Prayer & Scripture", systemImage: "cross")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .contentShape(Rectangle())
+                .padding(14)
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 14) {
+                    Divider()
+
+                    // Rosary mysteries
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Rosary: \(mystery.rawValue) Mysteries")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                            Spacer()
+                            if allChecked {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                                    .font(.subheadline)
+                            }
+                        }
+
+                        ForEach(mystery.mysteries, id: \.index) { item in
+                            Button {
+                                state.toggle(index: item.index)
+                            } label: {
+                                HStack(spacing: 10) {
+                                    Image(systemName: state.checkedMysteries.contains(item.index)
+                                          ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(state.checkedMysteries.contains(item.index)
+                                                         ? .green : .secondary)
+                                        .frame(width: 20)
+
+                                    Text("\(item.index).\(item.name)")
+                                        .font(.subheadline)
+                                        .foregroundStyle(state.checkedMysteries.contains(item.index)
+                                                         ? .secondary : .primary)
+                                        .strikethrough(state.checkedMysteries.contains(item.index),
+                                                       color: .secondary)
+
+                                    Spacer()
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+
+                    Divider()
+
+                    // Scripture readings
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Daily Scripture")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+
+                        ForEach(placeholderReadings, id: \.citation) { reading in
+                            Button {
+                                state.toggleScripture(citation: reading.citation)
+                            } label: {
+                                HStack(alignment: .top, spacing: 10) {
+                                    Image(systemName: state.checkedScriptures.contains(reading.citation)
+                                          ? "checkmark.circle.fill" : "circle")
+                                        .foregroundStyle(state.checkedScriptures.contains(reading.citation)
+                                                         ? .green : .secondary)
+                                        .frame(width: 20)
+                                        .padding(.top, 2)
+
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(reading.citation)
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                            .foregroundStyle(state.checkedScriptures.contains(reading.citation)
+                                                             ? .secondary : .primary)
+                                            .strikethrough(state.checkedScriptures.contains(reading.citation),
+                                                           color: .secondary)
+                                        Text(reading.preview)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                            .lineLimit(2)
+                                    }
+
+                                    Spacer()
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.bottom, 14)
+                }
+                .padding(.horizontal, 14)
+            }
+        }
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
 }
 

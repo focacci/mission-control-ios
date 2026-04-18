@@ -129,14 +129,19 @@ final class RosaryState {
     private let date: String
 
     var checkedMysteries: Set<Int> {
-        didSet { persist() }
+        didSet { persistMysteries() }
+    }
+
+    var checkedScriptures: Set<String> {
+        didSet { persistScriptures() }
     }
 
     init(date: String = Date().isoDate) {
         self.date = date
-        let key = "rosary-\(date)"
-        let saved = UserDefaults.standard.array(forKey: key) as? [Int] ?? []
+        let saved = UserDefaults.standard.array(forKey: "rosary-\(date)") as? [Int] ?? []
         self.checkedMysteries = Set(saved)
+        let savedScriptures = UserDefaults.standard.array(forKey: "scripture-\(date)") as? [String] ?? []
+        self.checkedScriptures = Set(savedScriptures)
     }
 
     func toggle(index: Int) {
@@ -147,8 +152,20 @@ final class RosaryState {
         }
     }
 
-    private func persist() {
+    func toggleScripture(citation: String) {
+        if checkedScriptures.contains(citation) {
+            checkedScriptures.remove(citation)
+        } else {
+            checkedScriptures.insert(citation)
+        }
+    }
+
+    private func persistMysteries() {
         UserDefaults.standard.set(Array(checkedMysteries), forKey: "rosary-\(date)")
+    }
+
+    private func persistScriptures() {
+        UserDefaults.standard.set(Array(checkedScriptures), forKey: "scripture-\(date)")
     }
 }
 
