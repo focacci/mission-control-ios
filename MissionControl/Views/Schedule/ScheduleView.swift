@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ScheduleView: View {
     @State private var viewModel = ScheduleViewModel()
+    @State private var showingScheduleTask = false
+    @State private var slotToAssign: ScheduleSlot?
 
     var body: some View {
         NavigationStack {
@@ -39,7 +41,10 @@ struct ScheduleView: View {
                     } else {
                         switch viewModel.mode {
                         case .day:
-                            DayScheduleView(viewModel: viewModel)
+                            DayScheduleView(viewModel: viewModel, onAssignToSlot: { slot in
+                                slotToAssign = slot
+                                showingScheduleTask = true
+                            })
                         case .month:
                             MonthScheduleView(viewModel: viewModel)
                         }
@@ -48,11 +53,30 @@ struct ScheduleView: View {
             }
             .navigationTitle("Schedule")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        slotToAssign = nil
+                        showingScheduleTask = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                }
+            }
             .navigationDestination(for: ScheduleSlot.self) { slot in
                 if let taskId = slot.taskId {
                     TaskDetailView(taskId: taskId)
                 } else {
                     SlotDetailView(slot: slot, viewModel: viewModel)
+                }
+            }
+            .sheet(isPresented: $showingScheduleTask, onDismiss: { slotToAssign = nil }) {
+                ScheduleTaskSheet(
+                    targetDate: slotToAssign.flatMap { ISO8601DateFormatter.shared.date(from: $0.date) }
+                        ?? viewModel.focusDate,
+                    preselectedSlot: slotToAssign
+                ) {
+                    Task { await viewModel.load() }
                 }
             }
             .task { await viewModel.load() }

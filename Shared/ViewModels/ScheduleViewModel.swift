@@ -83,6 +83,24 @@ final class ScheduleViewModel {
         }
     }
 
+    func assignTask(taskId: String, slotId: String) async {
+        do {
+            _ = try await APIClient.shared.assignTask(taskId: taskId, slotId: slotId)
+            await load()
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func unassignTask(slotId: String) async {
+        do {
+            let updated = try await APIClient.shared.unassignTask(slotId: slotId)
+            replace(slot: updated)
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
     func stepWeek(by delta: Int) {
         focusDate = Calendar.current.date(byAdding: .weekOfYear, value: delta, to: focusDate) ?? focusDate
     }

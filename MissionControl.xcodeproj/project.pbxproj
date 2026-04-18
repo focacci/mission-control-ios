@@ -37,6 +37,7 @@
 		9C9729F8E9CE32EA8583B1DC /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BB569E8D2910A7991D5C55 /* Task.swift */; };
 		9D9E3ADEDABD84BBBFABFFA9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0057D0081A53661B4D0EB4 /* SettingsView.swift */; };
 		9DC8EBF78ED3CB4E2EE8D10D /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B907B9C061ED212157D3FFF7 /* ScheduleView.swift */; };
+		9F1A2B3C4D5E6F7A8B9C0D1E /* ScheduleTaskSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1A2B3C4D5E6F7A8B9C0D1E /* ScheduleTaskSheet.swift */; };
 		A2DF9AE4D54C68E1F8A29028 /* WatchTaskDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB0C4B089A88464E97507DF /* WatchTaskDetail.swift */; };
 		A90E690AC7A5884639F6832F /* TaskDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C00013EDEAE09D6A94EB486 /* TaskDetailViewModel.swift */; };
 		AC4AAD7D0F6CFE1F74FA99CD /* MissionControlWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C188665B80A8B294010B439D /* MissionControlWatchApp.swift */; };
@@ -104,6 +105,7 @@
 		A65921FC7704E24A5756B7C7 /* WeekBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekBarView.swift; sourceTree = "<group>"; };
 		A6F1EEEE1BA1C4B36F979E86 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
 		B5B1D1DDFD73BEEC8D7CA352 /* MissionControlWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MissionControlWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9E1A2B3C4D5E6F7A8B9C0D1E /* ScheduleTaskSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleTaskSheet.swift; sourceTree = "<group>"; };
 		B907B9C061ED212157D3FFF7 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
 		BCF01256B8E7CD1D7D50A1ED /* InitiativeEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitiativeEditSheet.swift; sourceTree = "<group>"; };
 		BFFE18C4B7A99813255CC721 /* SlotRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotRow.swift; sourceTree = "<group>"; };
@@ -135,6 +137,7 @@
 				98C30F27A4B6AA739AD7AB58 /* DayScheduleView.swift */,
 				0814209C981AD7A323B8FBA7 /* MonthScheduleView.swift */,
 				B907B9C061ED212157D3FFF7 /* ScheduleView.swift */,
+				9E1A2B3C4D5E6F7A8B9C0D1E /* ScheduleTaskSheet.swift */,
 				777B9574054F2D6131853773 /* SlotDetailView.swift */,
 				BFFE18C4B7A99813255CC721 /* SlotRow.swift */,
 				640E9524A42EBBB89A66EB4F /* WeekScheduleView.swift */,
@@ -446,6 +449,7 @@
 				B93DD612D843B2A9DB03F08A /* MonthScheduleView.swift in Sources */,
 				9165BFEC23DEBDE2B5ACE33C /* ScheduleSlot.swift in Sources */,
 				9DC8EBF78ED3CB4E2EE8D10D /* ScheduleView.swift in Sources */,
+				9F1A2B3C4D5E6F7A8B9C0D1E /* ScheduleTaskSheet.swift in Sources */,
 				8CA10A0496C4E28D2130E062 /* ScheduleViewModel.swift in Sources */,
 				C66626847DF32285C20C8F53 /* ServerHealth.swift in Sources */,
 				9D9E3ADEDABD84BBBFABFFA9 /* SettingsView.swift in Sources */,

@@ -277,6 +277,10 @@ final class APIClient {
                        body: AssignTaskBody(taskId: taskId, slotId: slotId))
     }
 
+    func unassignTask(slotId: String) async throws -> ScheduleSlot {
+        try await send("/api/schedule/slots/\(slotId)/task", method: "DELETE")
+    }
+
     // MARK: - Board
 
     func board() async throws -> BoardResponse {

@@ -417,12 +417,23 @@ private struct DailyNoteCard: View {
 private struct TodayTasksCard: View {
     let slots: [ScheduleSlot]
     let viewModel: HomeViewModel
+    @State private var showingScheduleTask = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("Today's Tasks", systemImage: "checklist")
-                .font(.headline)
-                .padding(.horizontal, 4)
+            HStack {
+                Label("Today's Tasks", systemImage: "checklist")
+                    .font(.headline)
+                Spacer()
+                Button {
+                    showingScheduleTask = true
+                } label: {
+                    Image(systemName: "plus.circle")
+                        .font(.title3)
+                        .foregroundStyle(.tint)
+                }
+            }
+            .padding(.horizontal, 4)
 
             if slots.isEmpty {
                 Text("No tasks scheduled today")
@@ -459,6 +470,11 @@ private struct TodayTasksCard: View {
         .navigationDestination(for: ScheduleSlot.self) { slot in
             if let taskId = slot.taskId {
                 TaskDetailView(taskId: taskId)
+            }
+        }
+        .sheet(isPresented: $showingScheduleTask) {
+            ScheduleTaskSheet(targetDate: Date()) {
+                Task { await viewModel.load() }
             }
         }
     }

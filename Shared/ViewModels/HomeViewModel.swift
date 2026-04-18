@@ -63,6 +63,15 @@ final class HomeViewModel {
         }
     }
 
+    func assignTask(taskId: String, slotId: String) async {
+        do {
+            _ = try await APIClient.shared.assignTask(taskId: taskId, slotId: slotId)
+            await load()
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
     private func replace(slot: ScheduleSlot) {
         if let idx = todaySlots.firstIndex(where: { $0.id == slot.id }) {
             todaySlots[idx] = slot

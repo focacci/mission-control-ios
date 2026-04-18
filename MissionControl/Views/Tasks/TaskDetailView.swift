@@ -4,6 +4,7 @@ struct TaskDetailView: View {
     let taskId: String
     @State private var viewModel = TaskDetailViewModel()
     @State private var showingEdit = false
+    @State private var showingSchedule = false
     @State private var showingComplete = false
     @State private var showingBlock = false
     @State private var blockReason = ""
@@ -87,7 +88,19 @@ struct TaskDetailView: View {
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
-                        Button("Edit") { showingEdit = true }
+                        HStack(spacing: 4) {
+                            Button {
+                                showingSchedule = true
+                            } label: {
+                                Image(systemName: "calendar.badge.plus")
+                            }
+                            Button("Edit") { showingEdit = true }
+                        }
+                    }
+                }
+                .sheet(isPresented: $showingSchedule) {
+                    ScheduleTaskSheet(preselectedTask: task) {
+                        Task { await viewModel.load(id: taskId) }
                     }
                 }
                 .sheet(isPresented: $showingEdit) {
