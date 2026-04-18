@@ -1,0 +1,199 @@
+import SwiftUI
+
+struct ScheduleView: View {
+    @State private var viewModel = ScheduleViewModel()
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                // Week navigation bar + mode picker
+                VStack(spacing: 8) {
+                    WeekNavBar(
+                        weekDates: viewModel.weekDates,
+                        focusDate: $viewModel.focusDate,
+                        onPrev: { viewModel.stepWeek(by: -1) },
+                        onNext: { viewModel.stepWeek(by: 1) }
+                    )
+
+                    Picker("View", selection: $viewModel.mode) {
+                        ForEach(ScheduleViewMode.allCases, id: \.self) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal, 16)
+                }
+                .padding(.bottom, 8)
+                .background(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
+
+                // Content
+                Group {
+                    if viewModel.isLoading && viewModel.weekResponse == nil {
+                        ProgressView("Loading…")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else if let error = viewModel.error {
+                        ErrorState(message: error) {
+                            Task { await viewModel.load() }
+                        }
+                    } else if viewModel.weekResponse == nil {
+                        NoPlanState(isGenerating: viewModel.isGenerating,
+                                    error: viewModel.generateError) {
+                            Task { await viewModel.generatePlan() }
+                        }
+                    } else {
+                        switch viewModel.mode {
+                        case .day:
+                            DayScheduleView(viewModel: viewModel)
+                        case .week:
+                            WeekScheduleView(viewModel: viewModel)
+                        case .month:
+                            MonthScheduleView(viewModel: viewModel)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Schedule")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(for: ScheduleSlot.self) { slot in
+                if let taskId = slot.taskId {
+                    TaskDetailView(taskId: taskId)
+                } else {
+                    SlotDetailView(slot: slot, viewModel: viewModel)
+                }
+            }
+            .task { await viewModel.load() }
+            .onChange(of: viewModel.weekStart) { _, _ in
+                Task { await viewModel.load() }
+            }
+        }
+    }
+}
+
+// MARK: - Week Nav Bar (fixed Sun–Sat with arrows)
+
+private struct WeekNavBar: View {
+    let weekDates: [Date]
+    @Binding var focusDate: Date
+    let onPrev: () -> Void
+    let onNext: () -> Void
+
+    private let dayLetters = ["S", "M", "T", "W", "T", "F", "S"]
+    private let todayISO = Date().isoDate
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Button(action: onPrev) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 14, weight: .semibold))
+                    .frame(width: 36, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .foregroundStyle(.secondary)
+
+            ForEach(Array(weekDates.enumerated()), id: \.offset) { index, date in
+                let iso = date.isoDate
+                let isToday = iso == todayISO
+                let isSelected = iso == focusDate.isoDate
+
+                VStack(spacing: 3) {
+                    Text(dayLetters[index])
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(isToday ? Color.accentColor : .secondary)
+
+                    Text("\(Calendar.current.component(.day, from: date))")
+                        .font(.system(size: 13, weight: isSelected ? .bold : .regular))
+                        .foregroundStyle(isSelected ? .white : (isToday ? Color.accentColor : .primary))
+                        .frame(width: 28, height: 28)
+                        .background {
+                            if isSelected {
+                                Circle().fill(Color.accentColor)
+                            } else if isToday {
+                                Circle().strokeBorder(Color.accentColor, lineWidth: 1.5)
+                            }
+                        }
+                }
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
+                .onTapGesture { focusDate = date }
+            }
+
+            Button(action: onNext) {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .frame(width: 36, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 4)
+    }
+}
+
+// MARK: - Error State
+
+private struct ErrorState: View {
+    let message: String
+    let retry: () -> Void
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.largeTitle)
+                .foregroundStyle(.orange)
+            Text(message)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+            Button("Retry", action: retry)
+                .buttonStyle(.borderedProminent)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+// MARK: - No Plan State
+
+private struct NoPlanState: View {
+    let isGenerating: Bool
+    let error: String?
+    let onGenerate: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "calendar.badge.plus")
+                .font(.system(size: 48))
+                .foregroundStyle(.secondary)
+
+            Text("No plan for this week")
+                .font(.headline)
+
+            Text("Generate a week plan to schedule your tasks.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            if let error {
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .multilineTextAlignment(.center)
+            }
+
+            Button {
+                onGenerate()
+            } label: {
+                if isGenerating {
+                    ProgressView()
+                        .tint(.white)
+                } else {
+                    Text("Generate Week Plan")
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .disabled(isGenerating)
+        }
+        .padding(32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}

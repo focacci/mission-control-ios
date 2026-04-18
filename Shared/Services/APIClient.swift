@@ -244,6 +244,44 @@ final class APIClient {
     func deleteOutput(taskId: String, outputId: String) async throws {
         try await sendNoBody("/api/tasks/\(taskId)/outputs/\(outputId)", method: "DELETE")
     }
+
+    // MARK: - Schedule
+
+    func scheduleToday() async throws -> [ScheduleSlot] {
+        try await fetch("/api/schedule/today")
+    }
+
+    func scheduleWeek(weekStart: String? = nil) async throws -> WeekResponse {
+        var path = "/api/schedule/week"
+        if let ws = weekStart { path += "?weekStart=\(ws)" }
+        return try await fetch(path)
+    }
+
+    func generateWeekPlan(weekStart: String? = nil) async throws -> GenerateWeekResponse {
+        let body = weekStart.map { ["weekStart": $0] } ?? [:]
+        return try await send("/api/schedule/generate", method: "POST", body: body)
+    }
+
+    func doneSlot(id: String, note: String? = nil) async throws -> ScheduleSlot {
+        try await send("/api/schedule/slots/\(id)/done", method: "POST",
+                       body: note.map { ["note": $0] } ?? [:])
+    }
+
+    func skipSlot(id: String, reason: String? = nil) async throws -> ScheduleSlot {
+        try await send("/api/schedule/slots/\(id)/skip", method: "POST",
+                       body: reason.map { ["reason": $0] } ?? [:])
+    }
+
+    func assignTask(taskId: String, slotId: String) async throws -> ScheduleSlot {
+        try await send("/api/schedule/assign", method: "POST",
+                       body: AssignTaskBody(taskId: taskId, slotId: slotId))
+    }
+
+    // MARK: - Board
+
+    func board() async throws -> BoardResponse {
+        try await fetch("/api/board")
+    }
 }
 
 // MARK: - Request Bodies
@@ -303,4 +341,9 @@ struct CompleteTaskBody: Encodable {
 struct OutputBody: Encodable {
     let label: String
     let url: String?
+}
+
+struct AssignTaskBody: Encodable {
+    let taskId: String
+    let slotId: String
 }
