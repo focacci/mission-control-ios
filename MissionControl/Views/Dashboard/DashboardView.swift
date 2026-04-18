@@ -1,13 +1,22 @@
 import SwiftUI
 
+enum DashboardSection: String, CaseIterable {
+    case goals = "Goals"
+    case initiatives = "Initiatives"
+    case tasks = "Tasks"
+}
+
 struct DashboardView: View {
     @State private var viewModel = DashboardViewModel()
+    @State private var selectedSection: DashboardSection = .goals
     @State private var showingAddGoal = false
+    @State private var showingAddInitiative = false
+    @State private var showingAddTask = false
 
     var body: some View {
         NavigationStack {
             Group {
-                if viewModel.isLoading && viewModel.goals.isEmpty {
+                if viewModel.isLoading && viewModel.goals.isEmpty && viewModel.initiatives.isEmpty && viewModel.tasks.isEmpty {
                     ProgressView("Loading…")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if let error = viewModel.error {
@@ -26,32 +35,103 @@ struct DashboardView: View {
                     .padding()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    List(viewModel.goals) { goal in
-                        NavigationLink(value: goal) {
-                            GoalCard(goal: goal)
-                        }
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                        .contextMenu {
-                            Button(role: .destructive) {
-                                Task { await viewModel.deleteGoal(id: goal.id) }
-                            } label: {
-                                Label("Delete", systemImage: "trash")
+                    switch selectedSection {
+                    case .goals:
+                        List(viewModel.goals) { goal in
+                            NavigationLink(value: goal) {
+                                GoalCard(goal: goal)
+                            }
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    Task { await viewModel.deleteGoal(id: goal.id) }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
                             }
                         }
+                        .listStyle(.plain)
+                        .refreshable { await viewModel.load() }
+                        .errorAlert(message: $viewModel.error)
+
+                    case .initiatives:
+                        List(viewModel.initiatives) { initiative in
+                            NavigationLink(value: initiative) {
+                                InitiativeCard(initiative: initiative)
+                            }
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    Task { await viewModel.deleteInitiative(id: initiative.id) }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
+                        .listStyle(.plain)
+                        .refreshable { await viewModel.load() }
+                        .errorAlert(message: $viewModel.error)
+
+                    case .tasks:
+                        List(viewModel.tasks) { task in
+                            NavigationLink(value: task) {
+                                TaskRow(task: task)
+                            }
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    Task { await viewModel.deleteTask(id: task.id) }
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
+                        .listStyle(.plain)
+                        .refreshable { await viewModel.load() }
+                        .errorAlert(message: $viewModel.error)
                     }
-                    .listStyle(.plain)
-                    .refreshable { await viewModel.load() }
-                    .errorAlert(message: $viewModel.error)
                 }
             }
-            .navigationTitle("Goals")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Menu {
+                        ForEach(DashboardSection.allCases, id: \.self) { section in
+                            Button {
+                                selectedSection = section
+                            } label: {
+                                if selectedSection == section {
+                                    Label(section.rawValue, systemImage: "checkmark")
+                                } else {
+                                    Text(section.rawValue)
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(selectedSection.rawValue)
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                            Image(systemName: "chevron.down")
+                                .font(.caption.bold())
+                        }
+                        .foregroundStyle(.primary)
+                    }
+                }
+
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        showingAddGoal = true
+                        switch selectedSection {
+                        case .goals: showingAddGoal = true
+                        case .initiatives: showingAddInitiative = true
+                        case .tasks: showingAddTask = true
+                        }
                     } label: {
                         Image(systemName: "plus")
                     }
@@ -72,6 +152,28 @@ struct DashboardView: View {
                         _ = try? await APIClient.shared.createGoal(
                             CreateGoalBody(emoji: emoji, name: name, focus: focus,
                                           timeline: timeline, story: story)
+                        )
+                        await viewModel.load()
+                    }
+                }
+            }
+            .sheet(isPresented: $showingAddInitiative) {
+                AddInitiativeSheet { emoji, name, mission in
+                    Task {
+                        _ = try? await APIClient.shared.createInitiative(
+                            CreateInitiativeBody(emoji: emoji, name: name, goalId: nil,
+                                                 mission: mission, status: nil)
+                        )
+                        await viewModel.load()
+                    }
+                }
+            }
+            .sheet(isPresented: $showingAddTask) {
+                AddTaskSheet { name, objective, emoji in
+                    Task {
+                        _ = try? await APIClient.shared.createTask(
+                            CreateTaskBody(name: name, objective: objective, initiativeId: nil,
+                                          emoji: emoji, requirements: nil, tests: nil)
                         )
                         await viewModel.load()
                     }

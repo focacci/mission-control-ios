@@ -8,6 +8,16 @@
 
 /* Begin PBXBuildFile section */
 		116C29A190703945B955AE20 /* BoardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8AE533D1CBDA389517E60F /* BoardData.swift */; };
+		E1A2B3C4D5E6F7A8B9C0D1E2 /* SectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E6F7A8B9C0D1E2 /* SectionCard.swift */; };
+		E2A3B4C5D6E7F8A9B0C1D2E3 /* GoalDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A3B4C5D6E7F8A9B0C1D2E3 /* GoalDetailHeader.swift */; };
+		E3A4B5C6D7E8F9A0B1C2D3E4 /* InitiativeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A4B5C6D7E8F9A0B1C2D3E4 /* InitiativeCard.swift */; };
+		E4A5B6C7D8E9F0A1B2C3D4E5 /* InitiativeDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4A5B6C7D8E9F0A1B2C3D4E5 /* InitiativeDetailHeader.swift */; };
+		E5A6B7C8D9E0F1A2B3C4D5E6 /* TaskSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5A6B7C8D9E0F1A2B3C4D5E6 /* TaskSection.swift */; };
+		E6A7B8C9D0E1F2A3B4C5D6E7 /* TaskDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7B8C9D0E1F2A3B4C5D6E7 /* TaskDetailHeader.swift */; };
+		E7A8B9C0D1E2F3A4B5C6D7E8 /* TaskActionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A8B9C0D1E2F3A4B5C6D7E8 /* TaskActionBar.swift */; };
+		E8A9B0C1D2E3F4A5B6C7D8E9 /* RequirementsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8A9B0C1D2E3F4A5B6C7D8E9 /* RequirementsCard.swift */; };
+		E9A0B1C2D3E4F5A6B7C8D9E0 /* TestsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A0B1C2D3E4F5A6B7C8D9E0 /* TestsCard.swift */; };
+		EAA1B2C3D4E5F6A7B8C9D0E1 /* OutputsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA1B2C3D4E5F6A7B8C9D0E1 /* OutputsCard.swift */; };
 		148D9D2A14AF628A58B81DFD /* ScheduleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C72F628F3AECDECD652C88EA /* ScheduleViewModel.swift */; };
 		1C4456DBD54DDF14ACE11C44 /* WatchTaskList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C156323685CC44B680A865D /* WatchTaskList.swift */; };
 		1D9EA653B32C3F77A0079999 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BB569E8D2910A7991D5C55 /* Task.swift */; };
@@ -65,6 +75,16 @@
 
 /* Begin PBXFileReference section */
 		0814209C981AD7A323B8FBA7 /* MonthScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthScheduleView.swift; sourceTree = "<group>"; };
+		F1A2B3C4D5E6F7A8B9C0D1E2 /* SectionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionCard.swift; sourceTree = "<group>"; };
+		F2A3B4C5D6E7F8A9B0C1D2E3 /* GoalDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDetailHeader.swift; sourceTree = "<group>"; };
+		F3A4B5C6D7E8F9A0B1C2D3E4 /* InitiativeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitiativeCard.swift; sourceTree = "<group>"; };
+		F4A5B6C7D8E9F0A1B2C3D4E5 /* InitiativeDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitiativeDetailHeader.swift; sourceTree = "<group>"; };
+		F5A6B7C8D9E0F1A2B3C4D5E6 /* TaskSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskSection.swift; sourceTree = "<group>"; };
+		F6A7B8C9D0E1F2A3B4C5D6E7 /* TaskDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailHeader.swift; sourceTree = "<group>"; };
+		F7A8B9C0D1E2F3A4B5C6D7E8 /* TaskActionBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskActionBar.swift; sourceTree = "<group>"; };
+		F8A9B0C1D2E3F4A5B6C7D8E9 /* RequirementsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequirementsCard.swift; sourceTree = "<group>"; };
+		F9A0B1C2D3E4F5A6B7C8D9E0 /* TestsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestsCard.swift; sourceTree = "<group>"; };
+		FAA1B2C3D4E5F6A7B8C9D0E1 /* OutputsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutputsCard.swift; sourceTree = "<group>"; };
 		2AD53C713E8989E976B0CA26 /* InitiativeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitiativeDetailView.swift; sourceTree = "<group>"; };
 		2DE5796F5D1F8B6774F47AD7 /* TaskDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailView.swift; sourceTree = "<group>"; };
 		3D0057D0081A53661B4D0EB4 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -219,10 +239,28 @@
 			path = Initiatives;
 			sourceTree = "<group>";
 		};
+		D0A1B2C3D4E5F6A7B8C9D0CC /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				F1A2B3C4D5E6F7A8B9C0D1E2 /* SectionCard.swift */,
+				F2A3B4C5D6E7F8A9B0C1D2E3 /* GoalDetailHeader.swift */,
+				F3A4B5C6D7E8F9A0B1C2D3E4 /* InitiativeCard.swift */,
+				F4A5B6C7D8E9F0A1B2C3D4E5 /* InitiativeDetailHeader.swift */,
+				F5A6B7C8D9E0F1A2B3C4D5E6 /* TaskSection.swift */,
+				F6A7B8C9D0E1F2A3B4C5D6E7 /* TaskDetailHeader.swift */,
+				F7A8B9C0D1E2F3A4B5C6D7E8 /* TaskActionBar.swift */,
+				F8A9B0C1D2E3F4A5B6C7D8E9 /* RequirementsCard.swift */,
+				F9A0B1C2D3E4F5A6B7C8D9E0 /* TestsCard.swift */,
+				FAA1B2C3D4E5F6A7B8C9D0E1 /* OutputsCard.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		B94BFA24FB5CC3298603B329 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				BAA08C8C2C8F0B859A273A2B /* Dashboard */,
+				D0A1B2C3D4E5F6A7B8C9D0CC /* Components */,
 				CBC5AF0F3D9A3C4935288E74 /* Goals */,
 				FCD50AF9D6672D6CC21E657A /* Home */,
 				964B24F1197AA0476E48C368 /* Initiatives */,
@@ -366,6 +404,16 @@
 			files = (
 				C21FF412AD952B2AF294CC22 /* APIClient.swift in Sources */,
 				3BA3B71A5AFAE6DE02B5BFC6 /* BoardData.swift in Sources */,
+				E1A2B3C4D5E6F7A8B9C0D1E2 /* SectionCard.swift in Sources */,
+				E2A3B4C5D6E7F8A9B0C1D2E3 /* GoalDetailHeader.swift in Sources */,
+				E3A4B5C6D7E8F9A0B1C2D3E4 /* InitiativeCard.swift in Sources */,
+				E4A5B6C7D8E9F0A1B2C3D4E5 /* InitiativeDetailHeader.swift in Sources */,
+				E5A6B7C8D9E0F1A2B3C4D5E6 /* TaskSection.swift in Sources */,
+				E6A7B8C9D0E1F2A3B4C5D6E7 /* TaskDetailHeader.swift in Sources */,
+				E7A8B9C0D1E2F3A4B5C6D7E8 /* TaskActionBar.swift in Sources */,
+				E8A9B0C1D2E3F4A5B6C7D8E9 /* RequirementsCard.swift in Sources */,
+				E9A0B1C2D3E4F5A6B7C8D9E0 /* TestsCard.swift in Sources */,
+				EAA1B2C3D4E5F6A7B8C9D0E1 /* OutputsCard.swift in Sources */,
 				21C50205BD2087D003F8B635 /* CompleteTaskSheet.swift in Sources */,
 				309202C4D767933F88AEE889 /* ContentView.swift in Sources */,
 				ADCC8DD7F2FE9743B2FD4704 /* DashboardView.swift in Sources */,

@@ -10,7 +10,7 @@ struct ContentView: View {
 
             DashboardView()
                 .tabItem {
-                    Label("Goals", systemImage: "trophy")
+                    Label("Plan", systemImage: "list.bullet")
                 }
 
             ScheduleView()
