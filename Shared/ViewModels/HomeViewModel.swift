@@ -178,6 +178,7 @@ extension ISO8601DateFormatter {
     static let shared: ISO8601DateFormatter = {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withFullDate]
+        f.timeZone = TimeZone(identifier: "America/New_York")!
         return f
     }()
 }
