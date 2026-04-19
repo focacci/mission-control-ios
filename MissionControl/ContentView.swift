@@ -18,10 +18,6 @@ struct ContentView: View {
                     Label("Schedule", systemImage: "calendar")
                 }
 
-            SettingsView()
-                .tabItem {
-                    Label("Settings", systemImage: "gearshape")
-                }
         }
     }
 }

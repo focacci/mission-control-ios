@@ -5,6 +5,7 @@ struct HomeView: View {
     @State private var rosaryState = RosaryState()
     @State private var dailyNote = DailyNote()
     @State private var showingNoteEditor = false
+    @State private var showingSettings = false
 
     var body: some View {
         NavigationStack {
@@ -19,14 +20,25 @@ struct HomeView: View {
                         TodayTasksCard(slots: viewModel.todayTaskSlots)
                     }
                     .padding(.horizontal, 16)
+                    .padding(.top, 8)
                     .padding(.bottom, 24)
                 }
             }
             .navigationTitle(Date().formatted(.dateTime.weekday(.wide).month().day()))
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .refreshable { await viewModel.load() }
             .errorAlert(message: $viewModel.error)
             .task { await viewModel.load() }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showingSettings = true } label: {
+                        Image(systemName: "gearshape")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
+            }
             .fullScreenCover(isPresented: $showingNoteEditor) {
                 DailyNoteEditorView(note: dailyNote)
             }
