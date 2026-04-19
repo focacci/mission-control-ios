@@ -57,22 +57,25 @@ struct DashboardView: View {
                         .errorAlert(message: $viewModel.error)
 
                     case .initiatives:
-                        List(viewModel.initiatives) { initiative in
-                            NavigationLink(value: initiative) {
-                                InitiativeCard(initiative: initiative)
-                            }
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                            .contextMenu {
-                                Button(role: .destructive) {
-                                    Task { await viewModel.deleteInitiative(id: initiative.id) }
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                        ScrollView {
+                            LazyVStack(spacing: 0) {
+                                ForEach(viewModel.initiatives) { initiative in
+                                    NavigationLink(value: initiative) {
+                                        InitiativeCard(initiative: initiative)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .contextMenu {
+                                        Button(role: .destructive) {
+                                            Task { await viewModel.deleteInitiative(id: initiative.id) }
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                    }
                                 }
                             }
                         }
-                        .listStyle(.plain)
                         .refreshable { await viewModel.load() }
                         .errorAlert(message: $viewModel.error)
 
