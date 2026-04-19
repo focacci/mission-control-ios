@@ -57,8 +57,6 @@ final class ScheduleViewModel {
         error = nil
         do {
             weekResponse = try await APIClient.shared.scheduleWeek(weekStart: weekStart)
-        } catch APIError.serverError(let msg) where msg.lowercased().hasPrefix("no week plan") {
-            weekResponse = nil
         } catch {
             self.error = error.localizedDescription
         }
@@ -114,9 +112,9 @@ final class ScheduleViewModel {
         if let idx = slots.firstIndex(where: { $0.id == slot.id }) {
             slots[idx] = slot
             weekResponse = WeekResponse(
-                weekPlan: weekResponse!.weekPlan,
+                weekPlan: weekResponse?.weekPlan,
                 slots: slots,
-                allocations: weekResponse!.allocations
+                allocations: weekResponse?.allocations ?? []
             )
         }
     }

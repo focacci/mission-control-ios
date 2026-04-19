@@ -93,7 +93,7 @@ struct WeekGoalAllocation: Codable, Identifiable, Hashable {
 // MARK: - Week Response
 
 struct WeekResponse: Codable {
-    let weekPlan: WeekPlan
+    let weekPlan: WeekPlan?
     let slots: [ScheduleSlot]
     let allocations: [WeekGoalAllocation]
 }
