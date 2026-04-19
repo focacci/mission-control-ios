@@ -9,8 +9,10 @@ struct ScheduleTaskSheet: View {
 
     @State private var goals: [Goal] = []
     @State private var selectedGoal: Goal?
+    @State private var goalExpanded = true
     @State private var initiatives: [Initiative] = []
     @State private var selectedInitiative: Initiative?
+    @State private var initiativeExpanded = true
     @State private var tasks: [MCTask] = []
     @State private var selectedTask: MCTask?
     @State private var selectedDate: Date
@@ -83,50 +85,109 @@ struct ScheduleTaskSheet: View {
                     }
                 } else {
                     // Step 1: Goal
-                    Section("Goal") {
+                    Section {
                         if isLoading && goals.isEmpty {
                             HStack { Spacer(); ProgressView(); Spacer() }
                         } else if goals.isEmpty {
                             Text("No goals available")
                                 .foregroundStyle(.secondary)
-                        } else {
-                            ForEach(goals) { goal in
-                                GoalPickerRow(goal: goal, isSelected: selectedGoal?.id == goal.id) {
-                                    guard selectedGoal?.id != goal.id else { return }
-                                    selectedGoal = goal
+                        } else if let sg = selectedGoal, !goalExpanded {
+                            GoalPickerRow(goal: sg, isSelected: true) {
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    selectedGoal = nil
                                     selectedInitiative = nil
                                     selectedTask = nil
                                     initiatives = []
                                     tasks = []
+                                    goalExpanded = true
+                                    initiativeExpanded = true
+                                }
+                            }
+                            .transition(.opacity)
+                        } else {
+                            ForEach(goals) { goal in
+                                GoalPickerRow(goal: goal, isSelected: selectedGoal?.id == goal.id) {
+                                    withAnimation(.easeInOut(duration: 0.25)) {
+                                        selectedGoal = goal
+                                        selectedInitiative = nil
+                                        selectedTask = nil
+                                        initiatives = []
+                                        tasks = []
+                                        goalExpanded = false
+                                        initiativeExpanded = true
+                                    }
                                     Task { await loadInitiatives(for: goal.id) }
                                 }
+                            }
+                            .transition(.opacity)
+                        }
+                    } header: {
+                        HStack {
+                            Text("Goal")
+                            if selectedGoal != nil && !goalExpanded {
+                                Spacer()
+                                Button("Change") {
+                                    withAnimation(.easeInOut(duration: 0.25)) {
+                                        goalExpanded = true
+                                    }
+                                }
+                                .font(.caption)
+                                .textCase(nil)
                             }
                         }
                     }
 
                     // Step 2: Initiative (revealed after goal selection)
                     if selectedGoal != nil {
-                        Section("Initiative") {
+                        Section {
                             if isLoadingInitiatives {
                                 HStack { Spacer(); ProgressView(); Spacer() }
                             } else if initiatives.isEmpty {
                                 Text("No open initiatives")
                                     .foregroundStyle(.secondary)
+                            } else if let si = selectedInitiative, !initiativeExpanded {
+                                InitiativePickerRow(initiative: si, isSelected: true) {
+                                    withAnimation(.easeInOut(duration: 0.25)) {
+                                        selectedInitiative = nil
+                                        selectedTask = nil
+                                        tasks = []
+                                        initiativeExpanded = true
+                                    }
+                                }
+                                .transition(.opacity)
                             } else {
                                 ForEach(initiatives) { initiative in
                                     InitiativePickerRow(
                                         initiative: initiative,
                                         isSelected: selectedInitiative?.id == initiative.id
                                     ) {
-                                        guard selectedInitiative?.id != initiative.id else { return }
-                                        selectedInitiative = initiative
-                                        selectedTask = nil
-                                        tasks = []
+                                        withAnimation(.easeInOut(duration: 0.25)) {
+                                            selectedInitiative = initiative
+                                            selectedTask = nil
+                                            tasks = []
+                                            initiativeExpanded = false
+                                        }
                                         Task { await loadTasks(for: initiative.id) }
                                     }
                                 }
+                                .transition(.opacity)
+                            }
+                        } header: {
+                            HStack {
+                                Text("Initiative")
+                                if selectedInitiative != nil && !initiativeExpanded {
+                                    Spacer()
+                                    Button("Change") {
+                                        withAnimation(.easeInOut(duration: 0.25)) {
+                                            initiativeExpanded = true
+                                        }
+                                    }
+                                    .font(.caption)
+                                    .textCase(nil)
+                                }
                             }
                         }
+                        .transition(.opacity)
                     }
 
                     // Step 3: Task (revealed after initiative selection)
@@ -145,14 +206,13 @@ struct ScheduleTaskSheet: View {
                                 }
                             }
                         }
+                        .transition(.opacity)
                     }
                 }
 
-                // Week navigation
-                Section("Week") {
-                    DatePicker("", selection: $selectedDate, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                        .labelsHidden()
+                // Day picker
+                Section("Date") {
+                    WeekDayStrip(selectedDate: $selectedDate)
                         .onChange(of: selectedDate) { _, _ in
                             selectedSlot = nil
                             Task { await loadSlots() }
@@ -169,7 +229,7 @@ struct ScheduleTaskSheet: View {
                     } else {
                         ForEach(availableSlots) { slot in
                             SlotPickerRow(slot: slot, isSelected: selectedSlot?.id == slot.id) {
-                                selectedSlot = slot
+                                selectedSlot = selectedSlot?.id == slot.id ? nil : slot
                             }
                         }
                     }
@@ -262,6 +322,104 @@ struct ScheduleTaskSheet: View {
 
 }
 
+// MARK: - Week Day Strip
+
+private struct WeekDayStrip: View {
+    @Binding var selectedDate: Date
+
+    private var weekDays: [Date] {
+        let cal = Calendar.current
+        let weekday = cal.component(.weekday, from: selectedDate) - 1
+        let sunday = cal.date(byAdding: .day, value: -weekday, to: selectedDate) ?? selectedDate
+        return (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: sunday) }
+    }
+
+    private func shiftWeek(by weeks: Int) {
+        selectedDate = Calendar.current.date(byAdding: .weekOfYear, value: weeks, to: selectedDate) ?? selectedDate
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Button { shiftWeek(by: -1) } label: {
+                Image(systemName: "chevron.left")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 24)
+            }
+            .buttonStyle(.plain)
+
+            HStack(spacing: 4) {
+                ForEach(weekDays, id: \.self) { day in
+                    DayCell(
+                        date: day,
+                        isSelected: Calendar.current.isDate(day, inSameDayAs: selectedDate)
+                    )
+                    .onTapGesture { selectedDate = day }
+                }
+            }
+
+            Button { shiftWeek(by: 1) } label: {
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 24)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+private struct DayCell: View {
+    let date: Date
+    let isSelected: Bool
+
+    private static let dayLetterFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "E"
+        return f
+    }()
+
+    private static let dayNumFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "d"
+        return f
+    }()
+
+    private var dayLetter: String {
+        String(Self.dayLetterFormatter.string(from: date).prefix(1))
+    }
+
+    private var dayNum: String {
+        Self.dayNumFormatter.string(from: date)
+    }
+
+    private var isToday: Bool {
+        Calendar.current.isDateInToday(date)
+    }
+
+    var body: some View {
+        VStack(spacing: 3) {
+            Text(dayLetter)
+                .font(.caption2)
+                .fontWeight(.medium)
+                .foregroundStyle(isSelected ? .white : .secondary)
+            Text(dayNum)
+                .font(.subheadline)
+                .fontWeight(isSelected ? .bold : isToday ? .semibold : .regular)
+                .foregroundStyle(isSelected ? .white : isToday ? Color.accentColor : .primary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(isSelected ? Color.accentColor : Color.clear)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .strokeBorder(isToday && !isSelected ? Color.accentColor.opacity(0.4) : .clear, lineWidth: 1.5)
+        )
+    }
+}
+
 // MARK: - Goal Picker Row
 
 private struct GoalPickerRow: View {
@@ -271,7 +429,7 @@ private struct GoalPickerRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 8) {
+            HStack(spacing: 10) {
                 Text(goal.emoji)
                     .font(.body)
 
@@ -279,7 +437,7 @@ private struct GoalPickerRow: View {
                     Text(goal.name)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(isSelected ? Color.accentColor : .primary)
                     if let icon = goal.focusIcon {
                         Text(icon + " " + goal.focusLabel)
                             .font(.caption)
@@ -290,12 +448,15 @@ private struct GoalPickerRow: View {
                 Spacer()
 
                 if isSelected {
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(.tint)
-                        .fontWeight(.semibold)
-                        .font(.caption)
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Color.accentColor)
+                        .font(.subheadline)
                 }
             }
+            .padding(.vertical, 2)
+            .padding(.horizontal, 4)
+            .background(isSelected ? Color.accentColor.opacity(0.08) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
     }
@@ -310,7 +471,7 @@ private struct InitiativePickerRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 8) {
+            HStack(spacing: 10) {
                 Text(initiative.emoji)
                     .font(.body)
 
@@ -318,7 +479,7 @@ private struct InitiativePickerRow: View {
                     Text(initiative.name)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(isSelected ? Color.accentColor : .primary)
                     Text(initiative.statusLabel)
                         .font(.caption)
                         .foregroundStyle(initiative.statusColor)
@@ -327,12 +488,15 @@ private struct InitiativePickerRow: View {
                 Spacer()
 
                 if isSelected {
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(.tint)
-                        .fontWeight(.semibold)
-                        .font(.caption)
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Color.accentColor)
+                        .font(.subheadline)
                 }
             }
+            .padding(.vertical, 2)
+            .padding(.horizontal, 4)
+            .background(isSelected ? Color.accentColor.opacity(0.08) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
     }
@@ -347,7 +511,7 @@ private struct TaskPickerRow: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 8) {
+            HStack(spacing: 10) {
                 Text(task.emoji ?? "📋")
                     .font(.body)
 
@@ -355,7 +519,7 @@ private struct TaskPickerRow: View {
                     Text(task.name)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(isSelected ? Color.accentColor : .primary)
 
                     if let obj = task.objective, !obj.isEmpty {
                         Text(obj)
@@ -368,11 +532,15 @@ private struct TaskPickerRow: View {
                 Spacer()
 
                 if isSelected {
-                    Image(systemName: "checkmark")
-                        .foregroundStyle(.tint)
-                        .fontWeight(.semibold)
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Color.accentColor)
+                        .font(.subheadline)
                 }
             }
+            .padding(.vertical, 2)
+            .padding(.horizontal, 4)
+            .background(isSelected ? Color.accentColor.opacity(0.08) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
     }
@@ -390,21 +558,26 @@ private struct SlotPickerRow: View {
             HStack(spacing: 12) {
                 Text(slot.time)
                     .font(.system(.subheadline, design: .monospaced))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(isSelected ? Color.accentColor : .secondary)
                     .frame(width: 48, alignment: .leading)
 
                 Text(slot.type == "task" ? "Task Slot" : "Open Slot")
                     .font(.subheadline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(isSelected ? Color.accentColor : .primary)
+                    .fontWeight(isSelected ? .medium : .regular)
 
                 Spacer()
 
                 if isSelected {
-                    Image(systemName: "checkmark")
-                        .foregroundStyle(.tint)
-                        .fontWeight(.semibold)
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(Color.accentColor)
+                        .font(.subheadline)
                 }
             }
+            .padding(.vertical, 4)
+            .padding(.horizontal, 4)
+            .background(isSelected ? Color.accentColor.opacity(0.08) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
     }
