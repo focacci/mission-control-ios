@@ -32,6 +32,8 @@ struct DayScheduleView: View {
                         // Empty assignable slot — tap to open task assignment sheet
                         Button { onAssignToSlot(slot) } label: {
                             SlotRow(slot: slot)
+                                .frame(maxWidth: .infinity)
+                                .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .listRowBackground(Color.clear)
