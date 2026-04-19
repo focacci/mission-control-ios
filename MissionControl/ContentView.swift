@@ -23,6 +23,11 @@ struct ContentView: View {
                     Label("Faith", systemImage: "cross")
                 }
 
+            HealthView()
+                .tabItem {
+                    Label("Health", systemImage: "heart")
+                }
+
         }
     }
 }

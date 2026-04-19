@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		076B7C4A2A94046C91EEC97D /* TaskSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6682FA0C31CE54CB492EF4A4 /* TaskSection.swift */; };
 		0AA68E122AC36DA27B23AB73 /* FaithView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5399609CF0E6AAD7853503E /* FaithView.swift */; };
+		A1B2C3D4E5F60001A2B3C4D5 /* HealthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60001A2B3C4D5E6 /* HealthView.swift */; };
 		116C29A190703945B955AE20 /* BoardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8AE533D1CBDA389517E60F /* BoardData.swift */; };
 		148D9D2A14AF628A58B81DFD /* ScheduleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C72F628F3AECDECD652C88EA /* ScheduleViewModel.swift */; };
 		151B66BEB836930D35CED133 /* InitiativeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CFDFA79DF46142C45570BB3 /* InitiativeCard.swift */; };
@@ -120,6 +121,7 @@
 		D77ABFCCEB5AFF2543E5C28C /* GoalDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDetailViewModel.swift; sourceTree = "<group>"; };
 		E3BB569E8D2910A7991D5C55 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		E5399609CF0E6AAD7853503E /* FaithView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaithView.swift; sourceTree = "<group>"; };
+		B2C3D4E5F60001A2B3C4D5E6 /* HealthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthView.swift; sourceTree = "<group>"; };
 		E6A73598454895161B01FB7E /* RequirementsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequirementsCard.swift; sourceTree = "<group>"; };
 		E9AD74C49B84A68CAB671956 /* OutputsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutputsCard.swift; sourceTree = "<group>"; };
 		EB3DB45FB47CCD110EDFCF9F /* TaskRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskRow.swift; sourceTree = "<group>"; };
@@ -135,6 +137,14 @@
 				E5399609CF0E6AAD7853503E /* FaithView.swift */,
 			);
 			path = Faith;
+			sourceTree = "<group>";
+		};
+		C3D4E5F60001A2B3C4D5E6F7 /* Health */ = {
+			isa = PBXGroup;
+			children = (
+				B2C3D4E5F60001A2B3C4D5E6 /* HealthView.swift */,
+			);
+			path = Health;
 			sourceTree = "<group>";
 		};
 		1FBD7CB7230AA3F0D162A2A4 /* Schedule */ = {
@@ -271,6 +281,7 @@
 				61B8E8A33A125D9E3496F287 /* Components */,
 				BAA08C8C2C8F0B859A273A2B /* Dashboard */,
 				013E99F6A723CD0ABA8BFD47 /* Faith */,
+				C3D4E5F60001A2B3C4D5E6F7 /* Health */,
 				CBC5AF0F3D9A3C4935288E74 /* Goals */,
 				FCD50AF9D6672D6CC21E657A /* Home */,
 				964B24F1197AA0476E48C368 /* Initiatives */,
@@ -418,6 +429,7 @@
 				380AB7D93281F336693B4BF2 /* DashboardViewModel.swift in Sources */,
 				DCD26085F50A68A4139323B2 /* DayScheduleView.swift in Sources */,
 				0AA68E122AC36DA27B23AB73 /* FaithView.swift in Sources */,
+				A1B2C3D4E5F60001A2B3C4D5 /* HealthView.swift in Sources */,
 				C351B3DE8AF3E80759737351 /* Goal.swift in Sources */,
 				B3E2B416380FC3F599D60E76 /* GoalCard.swift in Sources */,
 				6184CBDFF26887CE765EAAAD /* GoalDetailHeader.swift in Sources */,
