@@ -62,6 +62,18 @@ final class TaskDetailViewModel {
         isSaving = false
     }
 
+    func unschedule() async {
+        guard let slotId = task?.slot?.id, let id = task?.id else { return }
+        isSaving = true
+        do {
+            _ = try await APIClient.shared.unassignTask(slotId: slotId)
+            await load(id: id)
+        } catch {
+            self.error = error.localizedDescription
+        }
+        isSaving = false
+    }
+
     func cancelTask() async {
         guard let id = task?.id else { return }
         isSaving = true

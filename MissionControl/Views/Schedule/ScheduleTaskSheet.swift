@@ -5,6 +5,7 @@ struct ScheduleTaskSheet: View {
 
     private let preselectedTask: MCTask?
     private let preselectedSlot: ScheduleSlot?
+    private let preselectedSlotId: String?
     private let onAssigned: (() -> Void)?
 
     @State private var goals: [Goal] = []
@@ -28,10 +29,12 @@ struct ScheduleTaskSheet: View {
         preselectedTask: MCTask? = nil,
         targetDate: Date? = nil,
         preselectedSlot: ScheduleSlot? = nil,
+        preselectedSlotId: String? = nil,
         onAssigned: (() -> Void)? = nil
     ) {
         self.preselectedTask = preselectedTask
         self.preselectedSlot = preselectedSlot
+        self.preselectedSlotId = preselectedSlotId
         self.onAssigned = onAssigned
 
         let initialDate: Date
@@ -57,10 +60,11 @@ struct ScheduleTaskSheet: View {
 
     private var availableSlots: [ScheduleSlot] {
         let dateISO = selectedDate.isoDate
+        let pinnedId = preselectedSlot?.id ?? preselectedSlotId
         return (weekResponse?.slots ?? [])
             .filter {
                 $0.date == dateISO
-                    && $0.taskId == nil
+                    && ($0.taskId == nil || $0.id == pinnedId)
                     && $0.status != "done"
                     && $0.status != "skipped"
             }
@@ -294,6 +298,7 @@ struct ScheduleTaskSheet: View {
 
     private func loadSlots() async {
         isLoading = true
+        let savedSlotId = selectedSlot?.id ?? preselectedSlot?.id ?? preselectedSlotId
         selectedSlot = nil
         do {
             var response = try await APIClient.shared.scheduleWeek(weekStart: weekStart)
@@ -301,6 +306,9 @@ struct ScheduleTaskSheet: View {
                 response = try await APIClient.shared.generateWeekPlan(weekStart: weekStart)
             }
             weekResponse = response
+            if let id = savedSlotId {
+                selectedSlot = response.slots.first { $0.id == id }
+            }
         } catch {
             self.error = error.localizedDescription
         }

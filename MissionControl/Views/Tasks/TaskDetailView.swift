@@ -5,6 +5,7 @@ struct TaskDetailView: View {
     @State private var viewModel = TaskDetailViewModel()
     @State private var showingEdit = false
     @State private var showingSchedule = false
+    @State private var showingReschedule = false
     @State private var showingComplete = false
     @State private var showingBlock = false
     @State private var blockReason = ""
@@ -28,6 +29,33 @@ struct TaskDetailView: View {
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
                                     .background(task.statusColor.opacity(0.15), in: Capsule())
+
+                                if let slot = task.slot {
+                                    Divider()
+
+                                    HStack(spacing: 8) {
+                                        Label(slot.time, systemImage: "calendar.badge.clock")
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+
+                                        Spacer()
+
+                                        Button("Reschedule") {
+                                            showingReschedule = true
+                                        }
+                                        .font(.caption)
+                                        .buttonStyle(.bordered)
+                                        .disabled(viewModel.isSaving)
+
+                                        Button("Unschedule") {
+                                            Task { await viewModel.unschedule() }
+                                        }
+                                        .font(.caption)
+                                        .buttonStyle(.bordered)
+                                        .tint(.red)
+                                        .disabled(viewModel.isSaving)
+                                    }
+                                }
 
                                 if !task.isTerminal {
                                     TaskActionBar(
@@ -100,6 +128,15 @@ struct TaskDetailView: View {
                 }
                 .sheet(isPresented: $showingSchedule) {
                     ScheduleTaskSheet(preselectedTask: task) {
+                        Task { await viewModel.load(id: taskId) }
+                    }
+                }
+                .sheet(isPresented: $showingReschedule) {
+                    ScheduleTaskSheet(
+                        preselectedTask: task,
+                        targetDate: task.slot.flatMap { ISO8601DateFormatter.shared.date(from: $0.date) },
+                        preselectedSlotId: task.slot?.id
+                    ) {
                         Task { await viewModel.load(id: taskId) }
                     }
                 }

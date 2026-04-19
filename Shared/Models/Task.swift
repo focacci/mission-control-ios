@@ -90,4 +90,8 @@ struct InitiativeRef: Codable, Identifiable, Hashable {
 
 struct SlotRef: Codable, Identifiable, Hashable {
     let id: String
+    let date: String
+    let time: String
+    let datetime: String
+    let type: String
 }
