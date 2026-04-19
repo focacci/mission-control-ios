@@ -4,12 +4,9 @@ struct DayScheduleView: View {
     let viewModel: ScheduleViewModel
     let onAssignToSlot: (ScheduleSlot) -> Void
 
-    var taskSlots: [ScheduleSlot] {
-        viewModel.slotsForFocusDate.filter { $0.type != "maintenance" }
-    }
-
     var body: some View {
-        if taskSlots.isEmpty {
+        let slots = viewModel.slotsForFocusDate
+        if slots.isEmpty {
             VStack(spacing: 8) {
                 Image(systemName: "calendar")
                     .font(.largeTitle)
@@ -20,9 +17,10 @@ struct DayScheduleView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
             List {
-                ForEach(taskSlots) { slot in
+                ForEach(slots) { slot in
+                    let isAssignable = slot.taskId == nil && (slot.type == "flex" || slot.type == "task")
                     if slot.taskId != nil {
-                        // Filled slot — navigate to task, swipe to unassign/done/skip
+                        // Filled task slot — navigate to task, swipe to unassign/done/skip
                         NavigationLink(value: slot) {
                             SlotRow(slot: slot)
                         }
@@ -30,7 +28,7 @@ struct DayScheduleView: View {
                         .swipeActions(edge: .trailing) {
                             slotActions(slot: slot)
                         }
-                    } else if slot.type == "task" || slot.type == "flex" {
+                    } else if isAssignable {
                         // Empty assignable slot — tap to open task assignment sheet
                         Button { onAssignToSlot(slot) } label: {
                             SlotRow(slot: slot)
@@ -38,14 +36,11 @@ struct DayScheduleView: View {
                         .buttonStyle(.plain)
                         .listRowBackground(Color.clear)
                     } else {
-                        // Brief / planning — navigate to slot detail
+                        // Fixed slot (brief, planning, maintenance)
                         NavigationLink(value: slot) {
                             SlotRow(slot: slot)
                         }
                         .listRowBackground(Color.clear)
-                        .swipeActions(edge: .trailing) {
-                            slotActions(slot: slot)
-                        }
                     }
                 }
             }

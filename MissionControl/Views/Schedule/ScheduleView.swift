@@ -8,23 +8,13 @@ struct ScheduleView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Week navigation bar + mode picker
-                VStack(spacing: 8) {
-                    WeekNavBar(
-                        weekDates: viewModel.weekDates,
-                        focusDate: $viewModel.focusDate,
-                        onPrev: { viewModel.stepWeek(by: -1) },
-                        onNext: { viewModel.stepWeek(by: 1) }
-                    )
-
-                    Picker("View", selection: $viewModel.mode) {
-                        ForEach(ScheduleViewMode.allCases, id: \.self) { mode in
-                            Text(mode.rawValue).tag(mode)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal, 16)
-                }
+                // Week navigation bar
+                WeekNavBar(
+                    weekDates: viewModel.weekDates,
+                    focusDate: $viewModel.focusDate,
+                    onPrev: { viewModel.stepWeek(by: -1) },
+                    onNext: { viewModel.stepWeek(by: 1) }
+                )
                 .padding(.bottom, 8)
                 .background(Color(.systemBackground))
                 .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
@@ -39,15 +29,10 @@ struct ScheduleView: View {
                             Task { await viewModel.load() }
                         }
                     } else {
-                        switch viewModel.mode {
-                        case .day:
-                            DayScheduleView(viewModel: viewModel, onAssignToSlot: { slot in
-                                slotToAssign = slot
-                                showingScheduleTask = true
-                            })
-                        case .month:
-                            MonthScheduleView(viewModel: viewModel)
-                        }
+                        DayScheduleView(viewModel: viewModel, onAssignToSlot: { slot in
+                            slotToAssign = slot
+                            showingScheduleTask = true
+                        })
                     }
                 }
             }

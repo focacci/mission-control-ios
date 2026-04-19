@@ -45,7 +45,13 @@ struct ScheduleSlot: Codable, Identifiable, Hashable {
         switch type {
         case "maintenance": return "Maintenance"
         case "planning":    return "Planning"
-        case "brief":       return "Brief"
+        case "brief":
+            switch time {
+            case "07:00": return "Morning Brief"
+            case "12:30": return "Afternoon Brief"
+            case "19:00": return "Evening Brief"
+            default:      return "Brief"
+            }
         case "task":        return task?.name ?? "Task"
         default:            return "Flex"
         }
