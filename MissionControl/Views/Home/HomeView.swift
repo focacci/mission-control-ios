@@ -10,12 +10,6 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 0) {
-                    WeekBarView(
-                        weekDates: viewModel.weekDates,
-                        selectedDate: viewModel.selectedDate
-                    )
-                    .padding(.bottom, 8)
-
                     VStack(spacing: 16) {
                         PrayerScriptureCard(mystery: RosaryMystery.forDate(Date()),
                                            state: rosaryState)

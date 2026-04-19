@@ -24,7 +24,6 @@
 		5330C852D09BB43E679EA616 /* MissionControlApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3A0C88E4BC3F8B5E50F748 /* MissionControlApp.swift */; };
 		56EFBDA9A992BFAF8F980944 /* View+ErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E703CF245AF6F5A4A9BD47 /* View+ErrorAlert.swift */; };
 		61A1EA2BA86794D4E090AC3E /* TaskRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB3DB45FB47CCD110EDFCF9F /* TaskRow.swift */; };
-		6A79E48D515BAC7AE3229E6F /* WeekBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A65921FC7704E24A5756B7C7 /* WeekBarView.swift */; };
 		6E557257E97161C7740FC895 /* ScheduleSlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6570890967C69B599B52CF1 /* ScheduleSlot.swift */; };
 		7253034D7B1F2B29A52110A8 /* Initiative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BBA4E20A95DBE5434A0C0CC /* Initiative.swift */; };
 		75E87D15AD1F50552AEC20D4 /* InitiativeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AD53C713E8989E976B0CA26 /* InitiativeDetailView.swift */; };
@@ -102,7 +101,6 @@
 		96E703CF245AF6F5A4A9BD47 /* View+ErrorAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ErrorAlert.swift"; sourceTree = "<group>"; };
 		96FF3A61AEA2F04D203FE009 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		98C30F27A4B6AA739AD7AB58 /* DayScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayScheduleView.swift; sourceTree = "<group>"; };
-		A65921FC7704E24A5756B7C7 /* WeekBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeekBarView.swift; sourceTree = "<group>"; };
 		A6F1EEEE1BA1C4B36F979E86 /* DashboardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewModel.swift; sourceTree = "<group>"; };
 		B5B1D1DDFD73BEEC8D7CA352 /* MissionControlWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MissionControlWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E1A2B3C4D5E6F7A8B9C0D1E /* ScheduleTaskSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleTaskSheet.swift; sourceTree = "<group>"; };
@@ -329,7 +327,6 @@
 			isa = PBXGroup;
 			children = (
 				FB79D70DEC5A71FF3E1D5D75 /* HomeView.swift */,
-				A65921FC7704E24A5756B7C7 /* WeekBarView.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -461,7 +458,6 @@
 				D61FBB50CDE668EDC8481511 /* TaskEditSheet.swift in Sources */,
 				61A1EA2BA86794D4E090AC3E /* TaskRow.swift in Sources */,
 				B29CE6C04A6868099D65BD1F /* View+ErrorAlert.swift in Sources */,
-				6A79E48D515BAC7AE3229E6F /* WeekBarView.swift in Sources */,
 				FD05B9FCAA035F9061FB412F /* WeekScheduleView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
