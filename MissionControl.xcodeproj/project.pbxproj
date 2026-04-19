@@ -72,6 +72,9 @@
 		E616796500D447B8F2137B90 /* ServerHealth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 517A1C942EC1FAB24F183895 /* ServerHealth.swift */; };
 		ED4500121FAFDDAF3615BAD4 /* InitiativeDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F6710A3AFC155620FCA56B4 /* InitiativeDetailViewModel.swift */; };
 		FD05B9FCAA035F9061FB412F /* WeekScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640E9524A42EBBB89A66EB4F /* WeekScheduleView.swift */; };
+		EE001122334455667788BBCC /* ChatContextStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB001122334455667788BBCC /* ChatContextStore.swift */; };
+		FF001122334455667788BBCC /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC001122334455667788BBCC /* ChatView.swift */; };
+		AB001122334455667788BBCC /* FloatingChatButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD001122334455667788BBCC /* FloatingChatButton.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -128,9 +131,23 @@
 		EBA2B33DCF67DFD46162D41B /* InitiativeDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitiativeDetailHeader.swift; sourceTree = "<group>"; };
 		FB79D70DEC5A71FF3E1D5D75 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		FCF120F8D716BA3DD6CD6C08 /* TaskEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskEditSheet.swift; sourceTree = "<group>"; };
+		BB001122334455667788BBCC /* ChatContextStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatContextStore.swift; sourceTree = "<group>"; };
+		CC001122334455667788BBCC /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		DD001122334455667788BBCC /* FloatingChatButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FloatingChatButton.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		AA001122334455667788BBCC /* Chat */ = {
+			isa = PBXGroup;
+			children = (
+				BB001122334455667788BBCC /* ChatContextStore.swift */,
+				CC001122334455667788BBCC /* ChatView.swift */,
+				DD001122334455667788BBCC /* FloatingChatButton.swift */,
+			);
+			path = Chat;
+			sourceTree = "<group>";
+		};
+
 		013E99F6A723CD0ABA8BFD47 /* Faith */ = {
 			isa = PBXGroup;
 			children = (
@@ -278,6 +295,7 @@
 		B94BFA24FB5CC3298603B329 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				AA001122334455667788BBCC /* Chat */,
 				61B8E8A33A125D9E3496F287 /* Components */,
 				BAA08C8C2C8F0B859A273A2B /* Dashboard */,
 				013E99F6A723CD0ABA8BFD47 /* Faith */,
@@ -467,6 +485,9 @@
 				076B7C4A2A94046C91EEC97D /* TaskSection.swift in Sources */,
 				68C0E503E21626C829442A22 /* TestsCard.swift in Sources */,
 				B29CE6C04A6868099D65BD1F /* View+ErrorAlert.swift in Sources */,
+				EE001122334455667788BBCC /* ChatContextStore.swift in Sources */,
+				FF001122334455667788BBCC /* ChatView.swift in Sources */,
+				AB001122334455667788BBCC /* FloatingChatButton.swift in Sources */,
 				FD05B9FCAA035F9061FB412F /* WeekScheduleView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
