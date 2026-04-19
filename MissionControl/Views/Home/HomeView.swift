@@ -22,7 +22,7 @@ struct HomeView: View {
 
                         DailyNoteCard(note: dailyNote, showEditor: $showingNoteEditor)
 
-                        TodayTasksCard(slots: viewModel.todayTaskSlots, viewModel: viewModel)
+                        TodayTasksCard(slots: viewModel.todayTaskSlots)
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 24)
@@ -416,24 +416,12 @@ private struct DailyNoteCard: View {
 
 private struct TodayTasksCard: View {
     let slots: [ScheduleSlot]
-    let viewModel: HomeViewModel
-    @State private var showingScheduleTask = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Label("Today's Tasks", systemImage: "checklist")
-                    .font(.headline)
-                Spacer()
-                Button {
-                    showingScheduleTask = true
-                } label: {
-                    Image(systemName: "plus.circle")
-                        .font(.title3)
-                        .foregroundStyle(.tint)
-                }
-            }
-            .padding(.horizontal, 4)
+            Label("Today's Tasks", systemImage: "checklist")
+                .font(.headline)
+                .padding(.horizontal, 4)
 
             if slots.isEmpty {
                 Text("No tasks scheduled today")
@@ -447,21 +435,6 @@ private struct TodayTasksCard: View {
                         HomeSlotRow(slot: slot)
                     }
                     .buttonStyle(.plain)
-                    .swipeActions(edge: .trailing) {
-                        Button {
-                            Task { await viewModel.doneSlot(slot) }
-                        } label: {
-                            Label("Done", systemImage: "checkmark")
-                        }
-                        .tint(.green)
-
-                        Button {
-                            Task { await viewModel.skipSlot(slot) }
-                        } label: {
-                            Label("Skip", systemImage: "forward")
-                        }
-                        .tint(.orange)
-                    }
                 }
             }
         }
@@ -472,11 +445,6 @@ private struct TodayTasksCard: View {
                 TaskDetailView(taskId: taskId)
             }
         }
-        .sheet(isPresented: $showingScheduleTask) {
-            ScheduleTaskSheet(targetDate: Date()) {
-                Task { await viewModel.load() }
-            }
-        }
     }
 }
 
@@ -485,6 +453,20 @@ private struct TodayTasksCard: View {
 struct HomeSlotRow: View {
     let slot: ScheduleSlot
 
+    private var statusIcon: String {
+        slot.task?.statusIcon ?? slot.statusIcon
+    }
+
+    private var statusColor: Color {
+        slot.task?.statusColor ?? slot.statusColor
+    }
+
+    private var breadcrumb: String? {
+        guard let task = slot.task else { return nil }
+        guard let goalName = task.goal?.name, let initiativeName = task.initiative?.name else { return nil }
+        return "\(goalName) > \(initiativeName)"
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             Text(slot.time)
@@ -492,8 +474,8 @@ struct HomeSlotRow: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 42, alignment: .leading)
 
-            Image(systemName: slot.statusIcon)
-                .foregroundStyle(slot.statusColor)
+            Image(systemName: statusIcon)
+                .foregroundStyle(statusColor)
                 .frame(width: 18)
 
             VStack(alignment: .leading, spacing: 2) {
@@ -502,8 +484,8 @@ struct HomeSlotRow: View {
                     .fontWeight(.medium)
                     .foregroundStyle(slot.isDimmed ? .secondary : .primary)
 
-                if let task = slot.task {
-                    Text(task.objective ?? "")
+                if let crumb = breadcrumb {
+                    Text(crumb)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
