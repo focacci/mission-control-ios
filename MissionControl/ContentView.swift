@@ -18,6 +18,11 @@ struct ContentView: View {
                     Label("Schedule", systemImage: "calendar")
                 }
 
+            FaithView()
+                .tabItem {
+                    Label("Faith", systemImage: "cross")
+                }
+
         }
     }
 }
