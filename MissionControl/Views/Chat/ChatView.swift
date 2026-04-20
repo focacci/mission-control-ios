@@ -124,14 +124,10 @@ struct ChatView: View {
                     .fill(.blue.opacity(0.12))
                     .frame(width: 36, height: 36)
 
-                if let emoji = chatContext.displayEmoji {
-                    Text(emoji)
-                        .font(.system(size: 18))
-                } else {
-                    Image(systemName: chatContext.displayIcon)
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.blue)
-                }
+                Image(systemName: chatContext.displayIcon)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(.blue)
+
             }
 
             VStack(alignment: .leading, spacing: 2) {
