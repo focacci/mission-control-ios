@@ -31,8 +31,6 @@ struct WatchTaskList: View {
                         ForEach(tasks) { task in
                             NavigationLink(destination: WatchTaskDetail(taskId: task.id)) {
                                 HStack(spacing: 8) {
-                                    Text(task.resolvedEmoji)
-                                        .font(.title3)
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(task.name)
                                             .font(.body)

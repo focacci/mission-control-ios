@@ -82,7 +82,6 @@ struct ScheduleTaskSheet: View {
                 if let fixed = preselectedTask {
                     Section("Task") {
                         HStack(spacing: 8) {
-                            Text(fixed.emoji ?? "📋")
                             Text(fixed.name)
                                 .fontWeight(.medium)
                         }
@@ -439,7 +438,6 @@ private struct GoalPickerRow: View {
         Button(action: onTap) {
             HStack(spacing: 10) {
                 Text(goal.emoji)
-                    .font(.body)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(goal.name)
@@ -481,7 +479,6 @@ private struct InitiativePickerRow: View {
         Button(action: onTap) {
             HStack(spacing: 10) {
                 Text(initiative.emoji)
-                    .font(.body)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(initiative.name)
@@ -520,8 +517,6 @@ private struct TaskPickerRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 10) {
-                Text(task.emoji ?? "📋")
-                    .font(.body)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(task.name)

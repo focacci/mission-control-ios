@@ -5,14 +5,12 @@ struct TaskEditSheet: View {
     let onSave: (UpdateTaskBody) -> Void
     @Environment(\.dismiss) private var dismiss
 
-    @State private var emoji: String
     @State private var name: String
     @State private var objective: String
 
     init(task: MCTask, onSave: @escaping (UpdateTaskBody) -> Void) {
         self.task = task
         self.onSave = onSave
-        _emoji = State(initialValue: task.emoji ?? "")
         _name = State(initialValue: task.name)
         _objective = State(initialValue: task.objective ?? "")
     }
@@ -21,13 +19,6 @@ struct TaskEditSheet: View {
         NavigationStack {
             Form {
                 Section("Task Info") {
-                    HStack {
-                        Text("Emoji")
-                        Spacer()
-                        TextField("📋", text: $emoji)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 50)
-                    }
                     TextField("Task name", text: $name)
                 }
 

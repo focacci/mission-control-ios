@@ -16,8 +16,6 @@ struct WatchTaskDetail: View {
                 VStack(alignment: .leading, spacing: 10) {
                     // Header
                     HStack {
-                        Text(task.resolvedEmoji)
-                            .font(.title2)
                         Spacer()
                         Image(systemName: task.statusIcon)
                             .foregroundStyle(task.statusColor)
@@ -126,7 +124,7 @@ struct WatchTaskDetail: View {
                     id: t.id, emoji: t.emoji, name: t.name,
                     initiativeId: t.initiativeId, status: t.status, objective: t.objective,
                     summary: t.summary, requirements: reqs, tests: t.tests,
-                    outputs: t.outputs, initiative: t.initiative, slot: t.slot
+                    outputs: t.outputs, initiative: t.initiative, goal: t.goal, slot: t.slot
                 )
             }
         } catch {

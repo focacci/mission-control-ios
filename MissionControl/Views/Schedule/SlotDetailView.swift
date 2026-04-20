@@ -28,7 +28,6 @@ struct SlotDetailView: View {
                 Section("Assigned Task") {
                     NavigationLink(value: task) {
                         HStack {
-                            Text(task.resolvedEmoji)
                             Text(task.name)
                         }
                     }

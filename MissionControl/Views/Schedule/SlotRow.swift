@@ -35,11 +35,6 @@ struct SlotRow: View {
                 }
 
                 Spacer()
-
-                if let task = slot.task {
-                    Text(task.resolvedEmoji)
-                        .font(.caption)
-                }
             }
         }
         .padding(.vertical, 4)
