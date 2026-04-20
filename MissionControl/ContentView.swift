@@ -3,40 +3,48 @@ import SwiftUI
 struct ContentView: View {
     @State private var chatContextStore = ChatContextStore()
     @State private var showingChat = false
+    @State private var selectedTab = 0
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            TabView {
-                HomeView()
-                    .tabItem { Label("Home", systemImage: "house") }
-                    .onAppear { chatContextStore.context = .home }
+        TabView(selection: $selectedTab) {
+            HomeView()
+                .floatingChatButton(isPresented: $showingChat)
+                .tabItem { Label("Home", systemImage: "house") }
+                .tag(0)
+                .onAppear { chatContextStore.context = .home }
 
-                DashboardView()
-                    .tabItem { Label("Plan", systemImage: "list.bullet") }
-                    .onAppear { chatContextStore.context = .dashboard(section: "Goals") }
+            DashboardView()
+                .floatingChatButton(isPresented: $showingChat)
+                .tabItem { Label("Plan", systemImage: "list.bullet") }
+                .tag(1)
+                .onAppear { chatContextStore.context = .dashboard(section: "Goals") }
 
-                ScheduleView()
-                    .tabItem { Label("Schedule", systemImage: "calendar") }
-                    .onAppear { chatContextStore.context = .schedule(date: .now) }
+            ScheduleView()
+                .floatingChatButton(isPresented: $showingChat)
+                .tabItem { Label("Schedule", systemImage: "calendar") }
+                .tag(2)
+                .onAppear { chatContextStore.context = .schedule(date: .now) }
 
-                NavigationStack {
-                    ChatView()
-                }
-                .tabItem { Label("Agents", systemImage: "bubble.left.and.text.bubble.right") }
-                .onAppear { chatContextStore.context = .agents }
-
-                FaithView()
-                    .tabItem { Label("Faith", systemImage: "cross") }
-                    .onAppear { chatContextStore.context = .faith(section: "Liturgical Calendar") }
-
-                HealthView()
-                    .tabItem { Label("Health", systemImage: "heart") }
-                    .onAppear { chatContextStore.context = .health(section: "Overview") }
+            NavigationStack {
+                ChatView(floatingChatPresented: $showingChat)
             }
-            .environment(chatContextStore)
+            .tabItem { Label("Agents", systemImage: "bubble.left.and.text.bubble.right") }
+            .tag(3)
+            .onAppear { chatContextStore.context = .agents }
 
-            FloatingChatButton(isPresented: $showingChat)
+            FaithView()
+                .floatingChatButton(isPresented: $showingChat)
+                .tabItem { Label("Faith", systemImage: "cross") }
+                .tag(4)
+                .onAppear { chatContextStore.context = .faith(section: "Liturgical Calendar") }
+
+            HealthView()
+                .floatingChatButton(isPresented: $showingChat)
+                .tabItem { Label("Health", systemImage: "heart") }
+                .tag(5)
+                .onAppear { chatContextStore.context = .health(section: "Overview") }
         }
+        .environment(chatContextStore)
         .sheet(isPresented: $showingChat) {
             ChatView()
                 .environment(chatContextStore)

@@ -21,7 +21,6 @@ struct HomeView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
-                    .padding(.bottom, 90)
                 }
             }
             .navigationTitle(Date().formatted(.dateTime.weekday(.wide).month().day()))

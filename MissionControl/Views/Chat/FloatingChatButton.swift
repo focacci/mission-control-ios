@@ -19,7 +19,23 @@ struct FloatingChatButton: View {
             }
         }
         .buttonStyle(.plain)
-        .padding(.trailing, 20)
-        .padding(.bottom, 68)
+    }
+}
+
+extension View {
+    @ViewBuilder
+    func floatingChatButton(isPresented: Binding<Bool>?) -> some View {
+        if let isPresented {
+            safeAreaInset(edge: .bottom, spacing: 0) {
+                HStack {
+                    Spacer()
+                    FloatingChatButton(isPresented: isPresented)
+                }
+                .padding(.trailing, 20)
+                .padding(.vertical, 12)
+            }
+        } else {
+            self
+        }
     }
 }

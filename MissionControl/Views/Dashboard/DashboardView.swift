@@ -77,7 +77,6 @@ struct DashboardView: View {
                                     }
                                 }
                             }
-                            .padding(.bottom, 90)
                         }
                         .refreshable { await viewModel.load() }
                         .errorAlert(message: $viewModel.error)

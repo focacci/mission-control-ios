@@ -91,6 +91,8 @@ struct ChatView: View {
     @State private var sessionId: String?
     @FocusState private var isInputFocused: Bool
 
+    var floatingChatPresented: Binding<Bool>? = nil
+
     var body: some View {
         VStack(spacing: 0) {
             contextChip
@@ -195,6 +197,8 @@ struct ChatView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
             }
+            .scrollDismissesKeyboard(.interactively)
+            .floatingChatButton(isPresented: floatingChatPresented)
             .onChange(of: messages.count) {
                 if let last = messages.last {
                     withAnimation(.easeOut(duration: 0.2)) {
@@ -230,6 +234,14 @@ struct ChatView: View {
         .padding(.horizontal, 16)
         .padding(.top, 12)
         .padding(.bottom, 8)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                .onChanged { value in
+                    if value.translation.height > 0 {
+                        isInputFocused = false
+                    }
+                }
+        )
     }
 
     private func sendMessage() {
