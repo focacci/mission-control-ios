@@ -17,11 +17,11 @@ struct MCTask: Codable, Identifiable, Hashable {
 
     var statusColor: Color {
         switch status {
-        case "in-progress": return .blue
         case "pending":     return .gray
         case "assigned":    return .yellow
-        case "done":        return .green
-        case "blocked":     return .red
+        case "in-progress": return .green
+        case "done":        return .blue
+        case "blocked":     return .orange
         case "cancelled":   return .red
         default:            return .gray
         }
@@ -29,13 +29,13 @@ struct MCTask: Codable, Identifiable, Hashable {
 
     var statusIcon: String {
         switch status {
-        case "in-progress": return "play.circle.fill"
-        case "pending":     return "circle"
-        case "assigned":    return "circle.dotted"
+        case "pending":     return "circle.dotted"
+        case "assigned":    return "calendar.circle"
+        case "in-progress": return "circle.circle.fill"
         case "done":        return "checkmark.circle.fill"
-        case "blocked":     return "exclamationmark.circle.fill"
+        case "blocked":     return "pause.circle.fill"
         case "cancelled":   return "xmark.circle.fill"
-        default:            return "circle"
+        default:            return "circle.dotted"
         }
     }
 
