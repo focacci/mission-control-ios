@@ -10,13 +10,84 @@ struct ChatMessage: Identifiable {
     enum Role { case user, agent }
 }
 
+// MARK: - Chat Service
+
+@MainActor
+final class ChatService: ObservableObject {
+    @Published var isLoading = false
+
+    func send(
+        message: String,
+        context: ChatContextKind,
+        sessionId: String?
+    ) async throws -> (reply: String, sessionId: String) {
+        isLoading = true
+        defer { isLoading = false }
+
+        let url = URL(string: APIClient.shared.baseURL + "/api/chat")!
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.timeoutInterval = 120
+
+        var body: [String: Any] = ["message": message]
+        if let sid = sessionId { body["sessionId"] = sid }
+
+        var ctx: [String: String] = ["type": contextTypeString(context)]
+        switch context {
+        case .goal(let id, let emoji, let name):
+            ctx["id"] = id; ctx["emoji"] = emoji; ctx["name"] = name
+        case .initiative(let id, let emoji, let name):
+            ctx["id"] = id; ctx["emoji"] = emoji; ctx["name"] = name
+        case .task(let id, let emoji, let name):
+            ctx["id"] = id; ctx["emoji"] = emoji; ctx["name"] = name
+        case .schedule(let d):
+            let f = ISO8601DateFormatter(); ctx["date"] = f.string(from: d)
+        case .dashboard(let s): ctx["section"] = s
+        case .health(let s): ctx["section"] = s
+        case .faith(let s): ctx["section"] = s
+        default: break
+        }
+        body["context"] = ctx
+
+        req.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: req)
+        guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode) else {
+            let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+            throw APIError.httpError(code)
+        }
+
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] ?? [:]
+        let reply = json["reply"] as? String ?? "No response."
+        let sid = json["sessionId"] as? String ?? ""
+        return (reply, sid)
+    }
+
+    private func contextTypeString(_ kind: ChatContextKind) -> String {
+        switch kind {
+        case .app: return "app"
+        case .home: return "home"
+        case .dashboard: return "dashboard"
+        case .goal: return "goal"
+        case .initiative: return "initiative"
+        case .task: return "task"
+        case .schedule: return "schedule"
+        case .health: return "health"
+        case .faith: return "faith"
+        }
+    }
+}
+
 // MARK: - Chat Sheet
 
 struct ChatView: View {
     @Environment(ChatContextStore.self) private var chatContext
+    @StateObject private var chatService = ChatService()
 
     @State private var messages: [ChatMessage] = []
     @State private var inputText = ""
+    @State private var sessionId: String?
     @FocusState private var isInputFocused: Bool
 
     var body: some View {
@@ -40,6 +111,7 @@ struct ChatView: View {
         .onChange(of: chatContext.context) {
             messages = [ChatMessage(role: .agent, content: chatContext.welcomeMessage)]
             inputText = ""
+            sessionId = nil
         }
     }
 
@@ -75,12 +147,18 @@ struct ChatView: View {
 
             Spacer()
 
-            Label("context", systemImage: "scope")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .labelStyle(.iconOnly)
-                .padding(6)
-                .background(.quaternary, in: Circle())
+            if chatService.isLoading {
+                ProgressView()
+                    .scaleEffect(0.8)
+                    .padding(6)
+            } else {
+                Label("context", systemImage: "scope")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .labelStyle(.iconOnly)
+                    .padding(6)
+                    .background(.quaternary, in: Circle())
+            }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
@@ -129,9 +207,12 @@ struct ChatView: View {
             Button(action: sendMessage) {
                 Image(systemName: "arrow.up.circle.fill")
                     .font(.system(size: 32))
-                    .foregroundStyle(inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.secondary : .blue)
+                    .foregroundStyle(
+                        inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || chatService.isLoading
+                            ? Color.secondary : .blue
+                    )
             }
-            .disabled(inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            .disabled(inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || chatService.isLoading)
             .animation(.easeInOut(duration: 0.15), value: inputText.isEmpty)
         }
         .padding(.horizontal, 16)
@@ -145,11 +226,21 @@ struct ChatView: View {
         inputText = ""
         messages.append(ChatMessage(role: .user, content: text))
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
-            messages.append(ChatMessage(
-                role: .agent,
-                content: "Got it. (Agent responses will be live once the backend is wired up.)"
-            ))
+        Task {
+            do {
+                let result = try await chatService.send(
+                    message: text,
+                    context: chatContext.context,
+                    sessionId: sessionId
+                )
+                sessionId = result.sessionId
+                messages.append(ChatMessage(role: .agent, content: result.reply))
+            } catch {
+                messages.append(ChatMessage(
+                    role: .agent,
+                    content: "⚠️ Error: \(error.localizedDescription)"
+                ))
+            }
         }
     }
 }
@@ -195,9 +286,8 @@ struct MessageBubble: View {
             Circle()
                 .fill(.blue.gradient)
                 .frame(width: 28, height: 28)
-            Image(systemName: "cpu")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.white)
+            Text("🐸")
+                .font(.system(size: 14))
         }
     }
 }
