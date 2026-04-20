@@ -107,13 +107,17 @@ struct ChatView: View {
             Divider()
 
             messageList
-
-            Divider()
-
-            inputBar
         }
         .navigationTitle(navTitle)
         .navigationBarTitleDisplayMode(.inline)
+        .floatingChatButton(isPresented: floatingChatPresented)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: 0) {
+                Divider()
+                inputBar
+            }
+            .background(.bar)
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button(action: resetChat) {
@@ -209,7 +213,6 @@ struct ChatView: View {
                 .padding(.vertical, 12)
             }
             .scrollDismissesKeyboard(.interactively)
-            .floatingChatButton(isPresented: floatingChatPresented)
             .onChange(of: messages.count) {
                 if let last = messages.last {
                     withAnimation(.easeOut(duration: 0.2)) {

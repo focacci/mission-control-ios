@@ -17,6 +17,8 @@ struct AgentDetailView: View {
     }
 
     var body: some View {
+        @Bindable var chatContext = chatContext
+
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 header
@@ -27,6 +29,7 @@ struct AgentDetailView: View {
         }
         .navigationTitle(current.displayName)
         .navigationBarTitleDisplayMode(.inline)
+        .floatingChatButton(isPresented: $chatContext.showingChat)
         .safeAreaInset(edge: .bottom) {
             chatButton
                 .padding(.horizontal, 16)
@@ -129,8 +132,10 @@ struct AgentDetailView: View {
     }
 
     private var chatButton: some View {
-        NavigationLink {
-            ChatView()
+        @Bindable var chatContext = chatContext
+
+        return NavigationLink {
+            ChatView(floatingChatPresented: $chatContext.showingChat)
                 .environment(chatContext)
                 .onAppear {
                     chatContext.context = .agent(

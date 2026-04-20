@@ -3,8 +3,11 @@ import SwiftUI
 struct AgentsListView: View {
     @State private var viewModel = AgentsViewModel()
     @State private var showingCreate = false
+    @Environment(ChatContextStore.self) private var chatContext
 
     var body: some View {
+        @Bindable var chatContext = chatContext
+
         NavigationStack {
             Group {
                 if viewModel.isLoading && viewModel.agents.isEmpty {
@@ -70,6 +73,7 @@ struct AgentsListView: View {
                     .errorAlert(message: $viewModel.error)
                 }
             }
+            .floatingChatButton(isPresented: $chatContext.showingChat)
             .navigationTitle("Agents")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

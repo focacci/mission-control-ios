@@ -24,6 +24,7 @@ enum ChatContextKind: Equatable {
 @Observable
 final class ChatContextStore {
     var context: ChatContextKind = .app
+    var showingChat: Bool = false
 
     var displayLabel: String {
         switch context {
