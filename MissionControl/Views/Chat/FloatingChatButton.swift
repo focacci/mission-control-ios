@@ -13,7 +13,7 @@ struct FloatingChatButton: View {
                     .frame(width: 56, height: 56)
                     .shadow(color: .blue.opacity(0.2), radius: 4, y: 2)
 
-                Image(systemName: "bubble.left.and.bubble.right.fill")
+                Image(systemName: "bubble.right")
                     .font(.system(size: 22, weight: .medium))
                     .foregroundStyle(.white)
             }
