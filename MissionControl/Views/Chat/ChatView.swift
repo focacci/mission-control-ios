@@ -68,6 +68,7 @@ final class ChatService: ObservableObject {
         switch kind {
         case .app: return "app"
         case .home: return "home"
+        case .agents: return "agents"
         case .dashboard: return "dashboard"
         case .goal: return "goal"
         case .initiative: return "initiative"
@@ -105,15 +106,29 @@ struct ChatView: View {
 
             inputBar
         }
+        .navigationTitle("Agents")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(action: resetChat) {
+                    Image(systemName: "square.and.pencil")
+                }
+            }
+        }
         .onAppear {
             messages = [ChatMessage(role: .agent, content: chatContext.welcomeMessage)]
         }
         .onChange(of: chatContext.context) {
-            
             messages = [ChatMessage(role: .agent, content: chatContext.welcomeMessage)]
             inputText = ""
             sessionId = nil
         }
+    }
+
+    private func resetChat() {
+        messages = [ChatMessage(role: .agent, content: chatContext.welcomeMessage)]
+        inputText = ""
+        sessionId = nil
     }
 
     // MARK: - Context Chip

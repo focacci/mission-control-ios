@@ -19,9 +19,11 @@ struct ContentView: View {
                     .tabItem { Label("Schedule", systemImage: "calendar") }
                     .onAppear { chatContextStore.context = .schedule(date: .now) }
 
-                ChatView()
-                    .tabItem { Label("Chat", systemImage: "bubble.left.and.text.bubble.right") }
-                    .onAppear { chatContextStore.context = .app }
+                NavigationStack {
+                    ChatView()
+                }
+                .tabItem { Label("Agents", systemImage: "bubble.left.and.text.bubble.right") }
+                .onAppear { chatContextStore.context = .agents }
 
                 FaithView()
                     .tabItem { Label("Faith", systemImage: "cross") }

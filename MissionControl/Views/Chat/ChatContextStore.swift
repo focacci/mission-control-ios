@@ -3,6 +3,7 @@ import SwiftUI
 enum ChatContextKind: Equatable {
     case app
     case home
+    case agents
     case dashboard(section: String)
     case goal(id: String, emoji: String, name: String)
     case initiative(id: String, emoji: String, name: String)
@@ -20,6 +21,7 @@ final class ChatContextStore {
         switch context {
         case .app:                       return "Mission Control"
         case .home:                      return "Home"
+        case .agents:                    return "Agents"
         case .dashboard(let s):          return s
         case .goal(_, _, let n):         return n
         case .initiative(_, _, let n):   return n
@@ -36,6 +38,7 @@ final class ChatContextStore {
         switch context {
         case .app:          return "cpu"
         case .home:         return "house"
+        case .agents:         return "bubble.left.and.text.bubble.right"
         case .dashboard:    return "list.bullet"
         case .goal:         return "trophy"
         case .initiative:   return "flag.pattern.checkered"
@@ -59,6 +62,7 @@ final class ChatContextStore {
     var contextTypeName: String {
         switch context {
         case .app, .home:   return "App"
+        case .agents:         return "Agents"
         case .dashboard:    return "Plan"
         case .goal:         return "Goal"
         case .initiative:   return "Initiative"
@@ -88,6 +92,8 @@ final class ChatContextStore {
             return "You're in Faith. I can help you reflect on scripture, find prayers, or explore the liturgical calendar."
         case .home:
             return "Good to see you. What's on your mind today?"
+        case .agents:
+            return "Hey! What do you want to work through? Goals, tasks, schedule — I'm ready."
         case .app:
             return "Hey! I'm your Mission Control agent. I can help with goals, tasks, scheduling, and more. What do you need?"
         }
