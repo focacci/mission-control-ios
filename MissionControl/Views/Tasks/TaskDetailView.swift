@@ -164,7 +164,7 @@ struct TaskDetailView: View {
         .task { await viewModel.load(id: taskId) }
         .onChange(of: viewModel.task) { _, task in
             guard let task else { return }
-            chatContext.context = .task(id: task.id, emoji: task.resolvedEmoji, name: task.name)
+            chatContext.context = .task(id: task.id, name: task.name)
         }
         .sheet(isPresented: $showingComplete) {
             CompleteTaskSheet { summary in

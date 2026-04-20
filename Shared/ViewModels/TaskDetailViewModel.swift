@@ -185,7 +185,7 @@ final class TaskDetailViewModel {
         outputs: [TaskOutput]? = nil
     ) -> MCTask {
         MCTask(
-            id: t.id, emoji: t.emoji, name: t.name,
+            id: t.id, name: t.name,
             initiativeId: t.initiativeId, status: t.status, objective: t.objective,
             summary: t.summary,
             requirements: requirements ?? t.requirements,

@@ -3,7 +3,6 @@ import SwiftUI
 // Named MCTask to avoid conflict with Swift concurrency's Task
 struct MCTask: Codable, Identifiable, Hashable {
     let id: String
-    let emoji: String?
     let name: String
     let initiativeId: String?
     let status: String         // pending | assigned | in-progress | done | blocked | cancelled
@@ -15,8 +14,6 @@ struct MCTask: Codable, Identifiable, Hashable {
     let initiative: InitiativeRef?
     let goal: GoalRef?
     let slot: SlotRef?
-
-    var resolvedEmoji: String { emoji ?? "📋" }
 
     var statusColor: Color {
         switch status {

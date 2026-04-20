@@ -121,7 +121,7 @@ struct WatchTaskDetail: View {
                let idx = reqs.firstIndex(where: { $0.id == updated.id }) {
                 reqs[idx] = updated
                 task = MCTask(
-                    id: t.id, emoji: t.emoji, name: t.name,
+                    id: t.id, name: t.name,
                     initiativeId: t.initiativeId, status: t.status, objective: t.objective,
                     summary: t.summary, requirements: reqs, tests: t.tests,
                     outputs: t.outputs, initiative: t.initiative, goal: t.goal, slot: t.slot
