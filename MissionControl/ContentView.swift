@@ -25,12 +25,11 @@ struct ContentView: View {
                 .tag(2)
                 .onAppear { chatContextStore.context = .schedule(date: .now) }
 
-            NavigationStack {
-                ChatView(floatingChatPresented: $showingChat)
-            }
-            .tabItem { Label("Agents", systemImage: "bubble.left.and.text.bubble.right") }
-            .tag(3)
-            .onAppear { chatContextStore.context = .agents }
+            AgentsListView()
+                .floatingChatButton(isPresented: $showingChat)
+                .tabItem { Label("Agents", systemImage: "bubble.left.and.text.bubble.right") }
+                .tag(3)
+                .onAppear { chatContextStore.context = .agents }
 
             FaithView()
                 .floatingChatButton(isPresented: $showingChat)

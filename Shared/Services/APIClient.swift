@@ -286,6 +286,32 @@ final class APIClient {
     func board() async throws -> BoardResponse {
         try await fetch("/api/board")
     }
+
+    // MARK: - Agents
+
+    func agents() async throws -> [Agent] {
+        try await fetch("/api/agents")
+    }
+
+    func agent(id: String) async throws -> Agent {
+        try await fetch("/api/agents/\(id)")
+    }
+
+    func createAgent(_ body: CreateAgentBody) async throws -> Agent {
+        try await send("/api/agents", method: "POST", body: body)
+    }
+
+    func updateAgent(id: String, body: UpdateAgentBody) async throws -> Agent {
+        try await send("/api/agents/\(id)", method: "PATCH", body: body)
+    }
+
+    func deleteAgent(id: String) async throws {
+        try await sendNoBody("/api/agents/\(id)", method: "DELETE")
+    }
+
+    func syncAgents() async throws -> [Agent] {
+        try await send("/api/agents/sync", method: "POST")
+    }
 }
 
 // MARK: - Request Bodies
@@ -350,4 +376,14 @@ struct OutputBody: Encodable {
 struct AssignTaskBody: Encodable {
     let taskId: String
     let slotId: String
+}
+
+struct CreateAgentBody: Encodable {
+    let name: String
+    let model: String
+    let systemPrompt: String?
+}
+
+struct UpdateAgentBody: Encodable {
+    let systemPrompt: String?
 }

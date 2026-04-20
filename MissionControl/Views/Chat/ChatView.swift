@@ -32,6 +32,7 @@ final class ChatService: ObservableObject {
 
         var body: [String: Any] = ["message": message]
         if let sid = sessionId { body["sessionId"] = sid }
+        if let aid = context.agentId { body["agentId"] = aid }
 
         var ctx: [String: String] = ["type": contextTypeString(context)]
         switch context {
@@ -41,6 +42,8 @@ final class ChatService: ObservableObject {
             ctx["id"] = id; ctx["emoji"] = emoji; ctx["name"] = name
         case .task(let id, let name):
             ctx["id"] = id; ctx["name"] = name
+        case .agent(let id, let name, let emoji):
+            ctx["id"] = id; ctx["name"] = name; ctx["emoji"] = emoji
         case .schedule(let d):
             let f = ISO8601DateFormatter(); ctx["date"] = f.string(from: d)
         case .dashboard(let s): ctx["section"] = s
@@ -69,6 +72,7 @@ final class ChatService: ObservableObject {
         case .app: return "app"
         case .home: return "home"
         case .agents: return "agents"
+        case .agent: return "agent"
         case .dashboard: return "dashboard"
         case .goal: return "goal"
         case .initiative: return "initiative"
@@ -108,7 +112,7 @@ struct ChatView: View {
 
             inputBar
         }
-        .navigationTitle("Agents")
+        .navigationTitle(navTitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -125,6 +129,13 @@ struct ChatView: View {
             inputText = ""
             sessionId = nil
         }
+    }
+
+    private var navTitle: String {
+        if case .agent = chatContext.context {
+            return chatContext.displayLabel
+        }
+        return "Agents"
     }
 
     private func resetChat() {
