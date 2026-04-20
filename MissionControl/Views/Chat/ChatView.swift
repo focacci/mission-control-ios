@@ -109,6 +109,7 @@ struct ChatView: View {
             messages = [ChatMessage(role: .agent, content: chatContext.welcomeMessage)]
         }
         .onChange(of: chatContext.context) {
+            
             messages = [ChatMessage(role: .agent, content: chatContext.welcomeMessage)]
             inputText = ""
             sessionId = nil
@@ -250,9 +251,7 @@ struct MessageBubble: View {
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
-            if !isUser {
-                agentAvatar
-            } else {
+            if isUser {
                 Spacer(minLength: 52)
             }
 
@@ -274,16 +273,6 @@ struct MessageBubble: View {
                 Spacer(minLength: 0)
                     .frame(width: 0)
             }
-        }
-    }
-
-    private var agentAvatar: some View {
-        ZStack {
-            Circle()
-                .fill(.blue.gradient)
-                .frame(width: 28, height: 28)
-            Text("🐸")
-                .font(.system(size: 14))
         }
     }
 }
