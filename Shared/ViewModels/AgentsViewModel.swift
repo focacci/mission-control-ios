@@ -63,11 +63,11 @@ final class AgentsViewModel {
         }
     }
 
-    func sync() async {
+    func repair() async {
         isLoading = true
         error = nil
         do {
-            agents = try await APIClient.shared.syncAgents()
+            agents = try await APIClient.shared.repairAgents()
         } catch {
             self.error = error.localizedDescription
         }

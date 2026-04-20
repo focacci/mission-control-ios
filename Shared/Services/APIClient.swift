@@ -309,8 +309,8 @@ final class APIClient {
         try await sendNoBody("/api/agents/\(id)", method: "DELETE")
     }
 
-    func syncAgents() async throws -> [Agent] {
-        try await send("/api/agents/sync", method: "POST")
+    func repairAgents() async throws -> [Agent] {
+        try await send("/api/agents/repair", method: "POST")
     }
 }
 

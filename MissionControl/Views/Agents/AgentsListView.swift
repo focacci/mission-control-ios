@@ -84,9 +84,9 @@ struct AgentsListView: View {
                 }
                 ToolbarItem(placement: .secondaryAction) {
                     Button {
-                        Task { await viewModel.sync() }
+                        Task { await viewModel.repair() }
                     } label: {
-                        Label("Sync from openclaw", systemImage: "arrow.clockwise")
+                        Label("Repair agents", systemImage: "wrench.and.screwdriver")
                     }
                 }
             }
