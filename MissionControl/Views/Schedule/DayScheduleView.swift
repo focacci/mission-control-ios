@@ -96,6 +96,7 @@ struct DayScheduleView: View {
                     }
                 }
                 .listStyle(.plain)
+                .contentMargins(.bottom, 90, for: .scrollContent)
             }
         }
     }

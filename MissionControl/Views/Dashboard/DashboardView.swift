@@ -54,6 +54,7 @@ struct DashboardView: View {
                             }
                         }
                         .listStyle(.plain)
+                        .contentMargins(.bottom, 90, for: .scrollContent)
                         .refreshable { await viewModel.load() }
                         .errorAlert(message: $viewModel.error)
 
@@ -76,6 +77,7 @@ struct DashboardView: View {
                                     }
                                 }
                             }
+                            .padding(.bottom, 90)
                         }
                         .refreshable { await viewModel.load() }
                         .errorAlert(message: $viewModel.error)
@@ -97,6 +99,7 @@ struct DashboardView: View {
                             }
                         }
                         .listStyle(.plain)
+                        .contentMargins(.bottom, 90, for: .scrollContent)
                         .refreshable { await viewModel.load() }
                         .errorAlert(message: $viewModel.error)
                     }
