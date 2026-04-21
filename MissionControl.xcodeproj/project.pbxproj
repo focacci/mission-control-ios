@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		02537008C8EA7A88A205E633 /* AgentsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B130C1D36811FA485A56165 /* AgentsListView.swift */; };
 		059FDDFE26DE9300AEA833AE /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54316483A1E4EB562B208C9D /* ChatView.swift */; };
+		CC2F4E5D6A7B8C9D1E2F3A02 /* ChatConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1F4E5D6A7B8C9D1E2F3A01 /* ChatConversationView.swift */; };
+		AC4F4E5D6A7B8C9D1E2F3A04 /* AgentChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3F4E5D6A7B8C9D1E2F3A03 /* AgentChatView.swift */; };
 		076B7C4A2A94046C91EEC97D /* TaskSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6682FA0C31CE54CB492EF4A4 /* TaskSection.swift */; };
 		0AA68E122AC36DA27B23AB73 /* FaithView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5399609CF0E6AAD7853503E /* FaithView.swift */; };
 		0C91D71D994F6ED5DEBFEC1F /* ChatContextStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA3C1147D5146ECBBE76AE9F /* ChatContextStore.swift */; };
@@ -102,6 +104,8 @@
 		513EBEA9872A4F80D2B6EF4B /* CompleteTaskSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompleteTaskSheet.swift; sourceTree = "<group>"; };
 		517A1C942EC1FAB24F183895 /* ServerHealth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerHealth.swift; sourceTree = "<group>"; };
 		54316483A1E4EB562B208C9D /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		CC1F4E5D6A7B8C9D1E2F3A01 /* ChatConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatConversationView.swift; sourceTree = "<group>"; };
+		AC3F4E5D6A7B8C9D1E2F3A03 /* AgentChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentChatView.swift; sourceTree = "<group>"; };
 		55F0FED9F75854392E6B4E5E /* CreateAgentSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateAgentSheet.swift; sourceTree = "<group>"; };
 		5953FAB188D758730E7869FC /* GoalDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDetailHeader.swift; sourceTree = "<group>"; };
 		5DB0C4B089A88464E97507DF /* WatchTaskDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchTaskDetail.swift; sourceTree = "<group>"; };
@@ -277,7 +281,9 @@
 		7172593006C64A631CFB3939 /* Chat */ = {
 			isa = PBXGroup;
 			children = (
+				AC3F4E5D6A7B8C9D1E2F3A03 /* AgentChatView.swift */,
 				BA3C1147D5146ECBBE76AE9F /* ChatContextStore.swift */,
+				CC1F4E5D6A7B8C9D1E2F3A01 /* ChatConversationView.swift */,
 				54316483A1E4EB562B208C9D /* ChatView.swift */,
 				FCADEAE27A4EEDAAEFE49399 /* FloatingChatButton.swift */,
 			);
@@ -469,7 +475,9 @@
 				02537008C8EA7A88A205E633 /* AgentsListView.swift in Sources */,
 				F8DAA4D3B3988DDBC7C8C1AE /* AgentsViewModel.swift in Sources */,
 				3BA3B71A5AFAE6DE02B5BFC6 /* BoardData.swift in Sources */,
+				AC4F4E5D6A7B8C9D1E2F3A04 /* AgentChatView.swift in Sources */,
 				0C91D71D994F6ED5DEBFEC1F /* ChatContextStore.swift in Sources */,
+				CC2F4E5D6A7B8C9D1E2F3A02 /* ChatConversationView.swift in Sources */,
 				059FDDFE26DE9300AEA833AE /* ChatView.swift in Sources */,
 				21C50205BD2087D003F8B635 /* CompleteTaskSheet.swift in Sources */,
 				309202C4D767933F88AEE889 /* ContentView.swift in Sources */,

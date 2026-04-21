@@ -137,14 +137,8 @@ struct AgentDetailView: View {
     }
 
     private var chatButton: some View {
-        @Bindable var chatContext = chatContext
-
-        return NavigationLink {
-            ChatView(
-                useDefaultAgent: false,
-                floatingChatPresented: $chatContext.showingChat
-            )
-            .environment(chatContext)
+        NavigationLink {
+            AgentChatView(agent: current)
         } label: {
             Label("Chat with \(current.displayName)", systemImage: "bubble.left.and.text.bubble.right.fill")
                 .font(.headline)
