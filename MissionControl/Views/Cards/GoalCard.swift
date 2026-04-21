@@ -5,7 +5,6 @@ struct GoalCard: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            // Left column: icon pinned to top, focus badge pinned to bottom
             VStack(spacing: 0) {
                 Text(goal.emoji)
                     .font(.system(size: 28))
@@ -21,10 +20,10 @@ struct GoalCard: View {
             }
             .fixedSize(horizontal: true, vertical: false)
 
-            // Right column: name top-left, timeline bottom-right
             VStack(alignment: .leading, spacing: 4) {
                 Text(goal.name)
                     .font(.headline)
+                    .foregroundStyle(.primary)
                     .lineLimit(2)
                     .minimumScaleFactor(0.85)
 
@@ -39,9 +38,6 @@ struct GoalCard: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 3)
+        .cardStyle()
     }
 }

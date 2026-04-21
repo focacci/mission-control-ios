@@ -98,11 +98,11 @@ struct MonthScheduleView: View {
 
                         ForEach(selectedSlots) { slot in
                             NavigationLink(value: slot) {
-                                SlotRow(slot: slot)
+                                SlotCard(slot: slot)
                                     .padding(.horizontal, 16)
-                                    .padding(.vertical, 6)
+                                    .padding(.vertical, 4)
                             }
-                            Divider().padding(.leading, 16)
+                            .buttonStyle(.plain)
                         }
                     }
                 }

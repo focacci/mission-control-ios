@@ -14,10 +14,10 @@ struct TaskSection: View {
                 .frame(maxWidth: .infinity)
                 .multilineTextAlignment(.center)
 
-            VStack(spacing: 2) {
+            VStack(spacing: 8) {
                 ForEach(tasks) { task in
                     NavigationLink(value: task) {
-                        TaskRow(task: task)
+                        TaskCard(task: task)
                     }
                     .buttonStyle(.plain)
                     .swipeActions(edge: .leading, allowsFullSwipe: false) {
@@ -48,7 +48,6 @@ struct TaskSection: View {
                     }
                 }
             }
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
         }
     }
 }

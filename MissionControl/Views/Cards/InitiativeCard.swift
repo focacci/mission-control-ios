@@ -38,9 +38,6 @@ struct InitiativeCard: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.12), radius: 6, x: 0, y: 3)
+        .cardStyle()
     }
 }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct TaskRow: View {
+struct TaskCard: View {
     let task: MCTask
 
     var body: some View {
@@ -21,7 +21,7 @@ struct TaskRow: View {
                     Text(obj)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(2)
                 }
             }
 
@@ -41,7 +41,6 @@ struct TaskRow: View {
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .cardStyle(.compact)
     }
 }

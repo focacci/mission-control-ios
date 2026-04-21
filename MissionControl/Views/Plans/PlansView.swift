@@ -51,6 +51,7 @@ struct PlansView: View {
                                 NavigationLink(value: goal) {
                                     GoalCard(goal: goal)
                                 }
+                                .buttonStyle(.plain)
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
@@ -93,11 +94,12 @@ struct PlansView: View {
                         case .tasks:
                             List(viewModel.tasks) { task in
                                 NavigationLink(value: task) {
-                                    TaskRow(task: task)
+                                    TaskCard(task: task)
                                 }
+                                .buttonStyle(.plain)
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                                 .contextMenu {
                                     Button(role: .destructive) {
                                         Task { await viewModel.deleteTask(id: task.id) }

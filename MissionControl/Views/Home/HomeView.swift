@@ -436,72 +436,22 @@ private struct TodayTasksCard: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 12)
             } else {
-                ForEach(slots) { slot in
-                    NavigationLink(value: slot) {
-                        HomeSlotRow(slot: slot)
+                VStack(spacing: 8) {
+                    ForEach(slots) { slot in
+                        NavigationLink(value: slot) {
+                            SlotCard(slot: slot, showBreadcrumb: true)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
-        .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 4)
         .navigationDestination(for: ScheduleSlot.self) { slot in
             if let taskId = slot.taskId {
                 TaskDetailView(taskId: taskId)
             }
         }
-    }
-}
-
-// MARK: - Home Slot Row
-
-struct HomeSlotRow: View {
-    let slot: ScheduleSlot
-
-    private var statusIcon: String {
-        slot.task?.statusIcon ?? slot.statusIcon
-    }
-
-    private var statusColor: Color {
-        slot.task?.statusColor ?? slot.statusColor
-    }
-
-    private var breadcrumb: String? {
-        guard let task = slot.task else { return nil }
-        guard let goalName = task.goal?.name, let initiativeName = task.initiative?.name else { return nil }
-        return "\(goalName) > \(initiativeName)"
-    }
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Text(slot.time)
-                .font(.system(.caption, design: .monospaced))
-                .foregroundStyle(.secondary)
-                .frame(width: 42, alignment: .leading)
-
-            Image(systemName: statusIcon)
-                .foregroundStyle(statusColor)
-                .frame(width: 18)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(slot.typeLabel)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(slot.isDimmed ? .secondary : .primary)
-
-                if let crumb = breadcrumb {
-                    Text(crumb)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-            }
-
-            Spacer()
-        }
-        .padding(.vertical, 4)
-        .opacity(slot.status == "skipped" ? 0.4 : 1)
     }
 }
 

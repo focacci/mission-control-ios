@@ -18,9 +18,12 @@ struct WeekScheduleView: View {
                     } else {
                         ForEach(daySlots) { slot in
                             NavigationLink(value: slot) {
-                                SlotRow(slot: slot)
+                                SlotCard(slot: slot)
                             }
+                            .buttonStyle(.plain)
                             .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                             .swipeActions(edge: .trailing) {
                                 if slot.status != "done" {
                                     Button {

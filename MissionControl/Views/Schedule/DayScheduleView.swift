@@ -72,25 +72,32 @@ struct DayScheduleView: View {
                             let isAssignable = slot.taskId == nil && (slot.type == "flex" || slot.type == "task")
                             if slot.taskId != nil {
                                 NavigationLink(value: slot) {
-                                    SlotRow(slot: slot)
+                                    SlotCard(slot: slot)
                                 }
+                                .buttonStyle(.plain)
                                 .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                                 .swipeActions(edge: .trailing) {
                                     slotActions(slot: slot)
                                 }
                             } else if isAssignable {
                                 Button { onAssignToSlot(slot) } label: {
-                                    SlotRow(slot: slot)
-                                        .frame(maxWidth: .infinity)
+                                    SlotCard(slot: slot)
                                         .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
                                 .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                             } else {
                                 NavigationLink(value: slot) {
-                                    SlotRow(slot: slot)
+                                    SlotCard(slot: slot)
                                 }
+                                .buttonStyle(.plain)
                                 .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                             }
                         }
                     }
