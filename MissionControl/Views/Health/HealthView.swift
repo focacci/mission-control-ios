@@ -52,6 +52,7 @@ struct HealthView: View {
             }
             .navigationTitle("Health")
             .navigationBarTitleDisplayMode(.large)
+            .chatContext(.health(section: section.label))
         }
     }
 }

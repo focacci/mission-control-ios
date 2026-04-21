@@ -5,7 +5,10 @@ struct GoalDetailView: View {
     @State private var viewModel = GoalDetailViewModel()
     @State private var showingEdit = false
     @State private var showingAddInitiative = false
-    @Environment(ChatContextStore.self) private var chatContext
+
+    private var context: ChatContextKind? {
+        viewModel.goal.map { .goal(id: $0.id, emoji: $0.emoji, name: $0.name) }
+    }
 
     var body: some View {
         Group {
@@ -91,10 +94,7 @@ struct GoalDetailView: View {
             }
         }
         .task { await viewModel.load(id: goalId) }
-        .onChange(of: viewModel.goal) { _, goal in
-            guard let goal else { return }
-            chatContext.context = .goal(id: goal.id, emoji: goal.emoji, name: goal.name)
-        }
+        .chatContext(context)
     }
 }
 

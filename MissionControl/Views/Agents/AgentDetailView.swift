@@ -29,6 +29,11 @@ struct AgentDetailView: View {
         }
         .navigationTitle(current.displayName)
         .navigationBarTitleDisplayMode(.inline)
+        .chatContext(.agent(
+            id: current.id,
+            name: current.displayName,
+            emoji: current.displayEmoji
+        ))
         .floatingChatButton(isPresented: $chatContext.showingChat)
         .safeAreaInset(edge: .bottom) {
             chatButton
@@ -135,18 +140,11 @@ struct AgentDetailView: View {
         @Bindable var chatContext = chatContext
 
         return NavigationLink {
-            ChatView(floatingChatPresented: $chatContext.showingChat)
-                .environment(chatContext)
-                .onAppear {
-                    chatContext.context = .agent(
-                        id: current.id,
-                        name: current.displayName,
-                        emoji: current.displayEmoji
-                    )
-                }
-                .onDisappear {
-                    chatContext.context = .agents
-                }
+            ChatView(
+                useDefaultAgent: false,
+                floatingChatPresented: $chatContext.showingChat
+            )
+            .environment(chatContext)
         } label: {
             Label("Chat with \(current.displayName)", systemImage: "bubble.left.and.text.bubble.right.fill")
                 .font(.headline)

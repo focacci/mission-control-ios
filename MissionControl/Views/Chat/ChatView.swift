@@ -19,7 +19,8 @@ final class ChatService: ObservableObject {
     func send(
         message: String,
         context: ChatContextKind,
-        sessionId: String?
+        sessionId: String?,
+        useDefaultAgent: Bool
     ) async throws -> (reply: String, sessionId: String) {
         isLoading = true
         defer { isLoading = false }
@@ -32,7 +33,7 @@ final class ChatService: ObservableObject {
 
         var body: [String: Any] = ["message": message]
         if let sid = sessionId { body["sessionId"] = sid }
-        if let aid = context.agentId { body["agentId"] = aid }
+        if !useDefaultAgent, let aid = context.agentId { body["agentId"] = aid }
 
         var ctx: [String: String] = ["type": contextTypeString(context)]
         switch context {
@@ -95,6 +96,11 @@ struct ChatView: View {
     @State private var sessionId: String?
     @FocusState private var isInputFocused: Bool
 
+    /// When `true` (floating-chat default), requests always route to the
+    /// workspace's default agent regardless of the current context. The
+    /// dedicated Agent Chat screen passes `false` so it routes to the agent
+    /// whose id is carried in the context.
+    var useDefaultAgent: Bool = true
     var floatingChatPresented: Binding<Bool>? = nil
 
     var body: some View {
@@ -126,24 +132,28 @@ struct ChatView: View {
             }
         }
         .onAppear {
-            messages = [ChatMessage(role: .agent, content: chatContext.welcomeMessage)]
+            messages = [ChatMessage(role: .agent, content: welcomeMessage)]
         }
         .onChange(of: chatContext.context) {
-            messages = [ChatMessage(role: .agent, content: chatContext.welcomeMessage)]
+            messages = [ChatMessage(role: .agent, content: welcomeMessage)]
             inputText = ""
             sessionId = nil
         }
     }
 
     private var navTitle: String {
-        if case .agent = chatContext.context {
-            return chatContext.displayLabel
+        useDefaultAgent ? "Chat" : chatContext.displayLabel
+    }
+
+    private var welcomeMessage: String {
+        if !useDefaultAgent, case .agent(_, let name, _) = chatContext.context {
+            return "You're chatting directly with **\(name)**. Ask anything."
         }
-        return "Agents"
+        return chatContext.welcomeMessage
     }
 
     private func resetChat() {
-        messages = [ChatMessage(role: .agent, content: chatContext.welcomeMessage)]
+        messages = [ChatMessage(role: .agent, content: welcomeMessage)]
         inputText = ""
         sessionId = nil
     }
@@ -269,7 +279,8 @@ struct ChatView: View {
                 let result = try await chatService.send(
                     message: text,
                     context: chatContext.context,
-                    sessionId: sessionId
+                    sessionId: sessionId,
+                    useDefaultAgent: useDefaultAgent
                 )
                 sessionId = result.sessionId
                 messages.append(ChatMessage(role: .agent, content: result.reply))

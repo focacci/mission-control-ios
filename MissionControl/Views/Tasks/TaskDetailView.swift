@@ -13,7 +13,10 @@ struct TaskDetailView: View {
     @State private var newRequirement = ""
     @State private var showingAddTest = false
     @State private var newTest = ""
-    @Environment(ChatContextStore.self) private var chatContext
+
+    private var context: ChatContextKind? {
+        viewModel.task.map { .task(id: $0.id, name: $0.name) }
+    }
 
     var body: some View {
         Group {
@@ -162,10 +165,7 @@ struct TaskDetailView: View {
             }
         }
         .task { await viewModel.load(id: taskId) }
-        .onChange(of: viewModel.task) { _, task in
-            guard let task else { return }
-            chatContext.context = .task(id: task.id, name: task.name)
-        }
+        .chatContext(context)
         .sheet(isPresented: $showingComplete) {
             CompleteTaskSheet { summary in
                 Task { await viewModel.completeTask(summary: summary) }

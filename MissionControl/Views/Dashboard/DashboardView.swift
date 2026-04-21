@@ -12,7 +12,6 @@ struct DashboardView: View {
     @State private var showingAddGoal = false
     @State private var showingAddInitiative = false
     @State private var showingAddTask = false
-    @Environment(ChatContextStore.self) private var chatContext
 
     var body: some View {
         NavigationStack {
@@ -186,9 +185,7 @@ struct DashboardView: View {
                 }
             }
             .task { await viewModel.load() }
-            .onChange(of: selectedSection) { _, section in
-                chatContext.context = .dashboard(section: section.rawValue)
-            }
+            .chatContext(.dashboard(section: selectedSection.rawValue))
         }
     }
 }

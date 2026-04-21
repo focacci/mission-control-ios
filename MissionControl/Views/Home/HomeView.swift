@@ -25,6 +25,7 @@ struct HomeView: View {
             }
             .navigationTitle(Date().formatted(.dateTime.weekday(.wide).month().day()))
             .navigationBarTitleDisplayMode(.large)
+            .chatContext(.home)
             .refreshable { await viewModel.load() }
             .errorAlert(message: $viewModel.error)
             .task { await viewModel.load() }

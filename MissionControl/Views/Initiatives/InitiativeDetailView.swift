@@ -8,7 +8,10 @@ struct InitiativeDetailView: View {
     @State private var blockingTaskId: String?
     @State private var blockReason = ""
     @State private var showingBlockSheet = false
-    @Environment(ChatContextStore.self) private var chatContext
+
+    private var context: ChatContextKind? {
+        viewModel.initiative.map { .initiative(id: $0.id, emoji: $0.emoji, name: $0.name) }
+    }
 
     var body: some View {
         Group {
@@ -128,10 +131,7 @@ struct InitiativeDetailView: View {
             }
         }
         .task { await viewModel.load(id: initiativeId) }
-        .onChange(of: viewModel.initiative) { _, initiative in
-            guard let initiative else { return }
-            chatContext.context = .initiative(id: initiative.id, emoji: initiative.emoji, name: initiative.name)
-        }
+        .chatContext(context)
     }
 }
 

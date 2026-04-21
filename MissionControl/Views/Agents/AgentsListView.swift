@@ -96,6 +96,7 @@ struct AgentsListView: View {
                 }
             }
             .task { await viewModel.load() }
+            .chatContext(.agents)
         }
     }
 }

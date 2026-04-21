@@ -4,6 +4,10 @@ struct SlotDetailView: View {
     let slot: ScheduleSlot
     let viewModel: ScheduleViewModel
 
+    private var slotDate: Date {
+        ISO8601DateFormatter.shared.date(from: slot.date) ?? viewModel.focusDate
+    }
+
     var body: some View {
         List {
             Section {
@@ -58,6 +62,7 @@ struct SlotDetailView: View {
         }
         .navigationTitle(slot.time)
         .navigationBarTitleDisplayMode(.inline)
+        .chatContext(.schedule(date: slotDate))
         .navigationDestination(for: MCTask.self) { task in
             TaskDetailView(taskId: task.id)
         }

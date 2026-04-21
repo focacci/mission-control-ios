@@ -48,8 +48,8 @@ final class ChatContextStore {
         switch context {
         case .app:          return "cpu"
         case .home:         return "house"
-        case .agents:         return "bubble.left.and.text.bubble.right"
-        case .agent:        return "person.crop.circle"
+        case .agents:       return "bubble.left.and.text.bubble.right"
+        case .agent:        return "person.wave.2"
         case .dashboard:    return "list.bullet"
         case .goal:         return "trophy"
         case .initiative:   return "flag.pattern.checkered"
@@ -74,8 +74,9 @@ final class ChatContextStore {
 
     var contextTypeName: String {
         switch context {
-        case .app, .home:   return "App"
-        case .agents:         return "Agents"
+        case .app:          return "App"
+        case .home:         return "Home"
+        case .agents:       return "Agents"
         case .agent:        return "Agent"
         case .dashboard:    return "Plan"
         case .goal:         return "Goal"
@@ -102,16 +103,41 @@ final class ChatContextStore {
             return "You're in **\(s)**. I can help you log entries, spot patterns, or set targets."
         case .dashboard(let s):
             return "You're in the **\(s)** view. I can help you create, organize, or prioritize items."
-        case .faith:
-            return "You're in Faith. I can help you reflect on scripture, find prayers, or explore the liturgical calendar."
+        case .faith(let s):
+            return "You're in **\(s)**. I can help you reflect on scripture, find a prayer, or explore the liturgical calendar."
         case .home:
             return "Good to see you. What's on your mind today?"
         case .agents:
             return "Hey! What do you want to work through? Goals, tasks, schedule — I'm ready."
         case .agent(_, let name, _):
-            return "You're chatting directly with **\(name)**. Ask anything."
+            return "You're looking at **\(name)**'s details. I can explain how this agent is configured or help you tune it."
         case .app:
             return "Hey! I'm your Mission Control agent. I can help with goals, tasks, scheduling, and more. What do you need?"
         }
+    }
+}
+
+// MARK: - View Modifier
+
+extension View {
+    /// Binds the current view to a chat context. Safe to pass `nil` while data
+    /// is loading — the context is applied on appear and whenever `kind` changes.
+    func chatContext(_ kind: ChatContextKind?) -> some View {
+        modifier(ChatContextModifier(kind: kind))
+    }
+}
+
+private struct ChatContextModifier: ViewModifier {
+    @Environment(ChatContextStore.self) private var store
+    let kind: ChatContextKind?
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear {
+                if let kind { store.context = kind }
+            }
+            .onChange(of: kind) { _, newKind in
+                if let newKind { store.context = newKind }
+            }
     }
 }

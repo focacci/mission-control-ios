@@ -30,6 +30,7 @@ struct FaithView: View {
             }
             .navigationTitle("Faith")
             .navigationBarTitleDisplayMode(.large)
+            .chatContext(.faith(section: section.label))
         }
     }
 }

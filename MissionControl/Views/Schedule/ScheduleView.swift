@@ -4,7 +4,6 @@ struct ScheduleView: View {
     @State private var viewModel = ScheduleViewModel()
     @State private var showingScheduleTask = false
     @State private var slotToAssign: ScheduleSlot?
-    @Environment(ChatContextStore.self) private var chatContext
 
     var body: some View {
         NavigationStack {
@@ -69,9 +68,7 @@ struct ScheduleView: View {
             .onChange(of: viewModel.weekStart) { _, _ in
                 Task { await viewModel.load() }
             }
-            .onChange(of: viewModel.focusDate) { _, date in
-                chatContext.context = .schedule(date: date)
-            }
+            .chatContext(.schedule(date: viewModel.focusDate))
         }
     }
 }
