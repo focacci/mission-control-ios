@@ -7,12 +7,17 @@ import SwiftUI
 struct AgentChatView: View {
     let agent: Agent
 
+    @Environment(ChatContextStore.self) private var chatContext
+
     var body: some View {
+        @Bindable var chatContext = chatContext
+
         ChatConversationView(
             useDefaultAgent: false,
             welcomeMessage: {
                 "You're chatting directly with **\(agent.displayName)**. Ask anything."
-            }
+            },
+            floatingChatPresented: $chatContext.showingChat
         )
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

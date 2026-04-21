@@ -107,16 +107,24 @@ struct ChatConversationView: View {
     /// can read live state (context, agent name, etc.).
     let welcomeMessage: () -> String
 
+    /// Optional binding for the ephemeral chat bubble. When non-nil the
+    /// floating button is layered above the input bar so it stays reachable
+    /// from dedicated chat screens (e.g. AgentChatView).
+    let floatingChatPresented: Binding<Bool>?
+
     init(
         useDefaultAgent: Bool,
-        welcomeMessage: @escaping () -> String
+        welcomeMessage: @escaping () -> String,
+        floatingChatPresented: Binding<Bool>? = nil
     ) {
         self.useDefaultAgent = useDefaultAgent
         self.welcomeMessage = welcomeMessage
+        self.floatingChatPresented = floatingChatPresented
     }
 
     var body: some View {
         messageList
+            .floatingChatButton(isPresented: floatingChatPresented)
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 inputBarContainer
             }
