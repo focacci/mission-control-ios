@@ -3,11 +3,12 @@ import SwiftUI
 struct MonthScheduleView: View {
     @Bindable var viewModel: ScheduleViewModel
 
-    private var calendarDates: [Date?] {
+    /// Calendar grid for the focused month, padded to whole weeks (Sun..Sat).
+    private var weeks: [[Date?]] {
         let cal = Calendar.current
         let components = cal.dateComponents([.year, .month], from: viewModel.focusDate)
         guard let firstOfMonth = cal.date(from: components) else { return [] }
-        let firstWeekday = cal.component(.weekday, from: firstOfMonth) - 1 // 0 = Sun
+        let firstWeekday = cal.component(.weekday, from: firstOfMonth) - 1
         let daysInMonth = cal.range(of: .day, in: .month, for: firstOfMonth)!.count
         var dates: [Date?] = Array(repeating: nil, count: firstWeekday)
         for day in 1...daysInMonth {
@@ -15,44 +16,17 @@ struct MonthScheduleView: View {
                 dates.append(date)
             }
         }
-        // Pad to complete last row
         while dates.count % 7 != 0 { dates.append(nil) }
-        return dates
+        return stride(from: 0, to: dates.count, by: 7).map { Array(dates[$0..<$0 + 7]) }
     }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                // Month header
-                HStack {
-                    Button {
-                        viewModel.focusDate = Calendar.current.date(
-                            byAdding: .month, value: -1, to: viewModel.focusDate) ?? viewModel.focusDate
-                    } label: {
-                        Image(systemName: "chevron.left")
-                    }
-                    .foregroundStyle(.secondary)
-
-                    Spacer()
-
-                    Text(viewModel.focusDate.formatted(.dateTime.month(.wide).year()))
-                        .font(.headline)
-
-                    Spacer()
-
-                    Button {
-                        viewModel.focusDate = Calendar.current.date(
-                            byAdding: .month, value: 1, to: viewModel.focusDate) ?? viewModel.focusDate
-                    } label: {
-                        Image(systemName: "chevron.right")
-                    }
-                    .foregroundStyle(.secondary)
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
-
-                // Day-of-week header
+                // Day-of-week header — aligned with the grid below.
                 HStack(spacing: 0) {
+                    // Spacer for the week-button gutter on the left.
+                    Color.clear.frame(width: 22)
                     ForEach(["S","M","T","W","T","F","S"], id: \.self) { letter in
                         Text(letter)
                             .font(.caption)
@@ -62,13 +36,15 @@ struct MonthScheduleView: View {
                     }
                 }
                 .padding(.horizontal, 8)
+                .padding(.top, 8)
 
                 Divider().padding(.top, 4)
 
                 // Calendar grid
-                let rows = calendarDates.chunked(into: 7)
-                ForEach(Array(rows.enumerated()), id: \.offset) { _, week in
+                ForEach(Array(weeks.enumerated()), id: \.offset) { _, week in
                     HStack(spacing: 0) {
+                        weekButton(for: week)
+
                         ForEach(Array(week.enumerated()), id: \.offset) { _, date in
                             MonthDayCell(
                                 date: date,
@@ -77,37 +53,37 @@ struct MonthScheduleView: View {
                                 hasTasks: date.map { viewModel.datesWithSlots.contains($0.isoDate) } ?? false
                             )
                             .onTapGesture {
-                                if let date { viewModel.focusDate = date }
+                                if let date {
+                                    viewModel.zoomIn(to: .day, date: date)
+                                }
                             }
                         }
                     }
                     Divider()
                 }
-
-                // Day detail for selected date
-                let selectedSlots = viewModel.slotsForFocusDate.filter { $0.type != "maintenance" }
-                if !selectedSlots.isEmpty {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text(viewModel.focusDate.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()))
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 16)
-                            .padding(.top, 16)
-                            .padding(.bottom, 8)
-
-                        ForEach(selectedSlots) { slot in
-                            NavigationLink(value: slot) {
-                                SlotCard(slot: slot)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 4)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
             }
         }
+    }
+
+    /// Chevron button on the left gutter of each week row; tapping opens that
+    /// week in Week view (using the row's first non-nil date, which is the
+    /// Sunday of that week).
+    @ViewBuilder
+    private func weekButton(for week: [Date?]) -> some View {
+        let anchor = week.compactMap { $0 }.first
+        Button {
+            if let anchor {
+                viewModel.zoomIn(to: .week, date: anchor)
+            }
+        } label: {
+            Image(systemName: "chevron.right")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .frame(width: 22, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(anchor == nil)
     }
 }
 
@@ -145,15 +121,5 @@ private struct MonthDayCell: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)
         .contentShape(Rectangle())
-    }
-}
-
-// MARK: - Array chunked helper
-
-private extension Array {
-    func chunked(into size: Int) -> [[Element]] {
-        stride(from: 0, to: count, by: size).map {
-            Array(self[$0..<Swift.min($0 + size, count)])
-        }
     }
 }

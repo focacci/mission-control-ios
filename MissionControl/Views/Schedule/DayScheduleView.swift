@@ -13,7 +13,7 @@ private enum ListItem: Identifiable {
 }
 
 struct DayScheduleView: View {
-    let viewModel: ScheduleViewModel
+    @Bindable var viewModel: ScheduleViewModel
     let onAssignToSlot: (ScheduleSlot) -> Void
 
     private var isToday: Bool {
@@ -48,18 +48,50 @@ struct DayScheduleView: View {
     }
 
     var body: some View {
-        let slots = viewModel.slotsForFocusDate
-        if slots.isEmpty {
-            VStack(spacing: 8) {
-                Image(systemName: "calendar")
-                    .font(.largeTitle)
-                    .foregroundStyle(.secondary)
-                Text("Nothing scheduled")
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else {
-            TimelineView(.everyMinute) { context in
+        VStack(spacing: 0) {
+            WeekBar(
+                weekDates: viewModel.weekDates,
+                focusDate: $viewModel.focusDate,
+                onPrev: { viewModel.stepWeek(by: -1) },
+                onNext: { viewModel.stepWeek(by: 1) }
+            )
+            .padding(.bottom, 6)
+
+            timeline
+        }
+    }
+
+    /// Shown when the focused day has no slots — a static hourly skeleton so
+    /// the UI still looks like a day view (not an error screen). Tapping any
+    /// placeholder opens the scheduler sheet, which will generate the real
+    /// week plan on demand.
+    private func placeholderSlots(for date: Date) -> [ScheduleSlot] {
+        let isoDate = date.isoDate
+        let dayOfWeek = date.formatted(.dateTime.weekday(.wide))
+        return (7...22).map { hour in
+            let time = String(format: "%02d:00", hour)
+            return ScheduleSlot(
+                id: "placeholder-\(isoDate)-\(time)",
+                weekPlanId: "",
+                date: isoDate,
+                time: time,
+                datetime: "\(isoDate)T\(time):00",
+                type: .flex,
+                status: .pending,
+                taskId: nil,
+                goalId: nil,
+                note: nil,
+                dayOfWeek: dayOfWeek,
+                task: nil
+            )
+        }
+    }
+
+    @ViewBuilder
+    private var timeline: some View {
+        let real = viewModel.slotsForFocusDate
+        let slots = real.isEmpty ? placeholderSlots(for: viewModel.focusDate) : real
+        TimelineView(.everyMinute) { context in
                 List {
                     ForEach(listItems(slots: slots, now: context.date)) { item in
                         switch item {
@@ -69,7 +101,7 @@ struct DayScheduleView: View {
                                 .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                                 .listRowSeparator(.hidden)
                         case .slot(let slot):
-                            let isAssignable = slot.taskId == nil && (slot.type == "flex" || slot.type == "task")
+                            let isAssignable = slot.isOpenSlot
                             if slot.taskId != nil {
                                 NavigationLink(value: slot) {
                                     SlotCard(slot: slot)
@@ -105,21 +137,20 @@ struct DayScheduleView: View {
                 .listStyle(.plain)
                 .contentMargins(.bottom, 90, for: .scrollContent)
             }
-        }
     }
 
     @ViewBuilder
     private func slotActions(slot: ScheduleSlot) -> some View {
         if slot.taskId != nil {
             Button {
-                Task { await viewModel.unassignTask(slotId: slot.id) }
+                Task { await viewModel.unassignTask(slot: slot) }
             } label: {
                 Label("Unassign", systemImage: "minus.circle")
             }
             .tint(.red)
         }
 
-        if slot.status != "done" {
+        if slot.status != .done {
             Button {
                 Task { await viewModel.markDone(slot: slot) }
             } label: {
@@ -128,7 +159,7 @@ struct DayScheduleView: View {
             .tint(.green)
         }
 
-        if slot.status != "skipped" {
+        if slot.status != .skipped {
             Button {
                 Task { await viewModel.markSkip(slot: slot) }
             } label: {
@@ -136,6 +167,66 @@ struct DayScheduleView: View {
             }
             .tint(.orange)
         }
+    }
+}
+
+// MARK: - Fine-navigation week bar (Sun–Sat with chevrons)
+
+private struct WeekBar: View {
+    let weekDates: [Date]
+    @Binding var focusDate: Date
+    let onPrev: () -> Void
+    let onNext: () -> Void
+
+    private let dayLetters = ["S", "M", "T", "W", "T", "F", "S"]
+    private let todayISO = Date().isoDate
+
+    var body: some View {
+        HStack(spacing: 0) {
+            chevron("chevron.left", action: onPrev)
+
+            ForEach(Array(weekDates.enumerated()), id: \.offset) { index, date in
+                let iso = date.isoDate
+                let isToday = iso == todayISO
+                let isSelected = iso == focusDate.isoDate
+
+                VStack(spacing: 3) {
+                    Text(dayLetters[index])
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(isToday ? Color.accentColor : .secondary)
+
+                    Text("\(Calendar.current.component(.day, from: date))")
+                        .font(.system(size: 13, weight: isSelected ? .bold : .regular))
+                        .foregroundStyle(isSelected ? .white : (isToday ? Color.accentColor : .primary))
+                        .frame(width: 28, height: 28)
+                        .background {
+                            if isSelected {
+                                Circle().fill(Color.accentColor)
+                            } else if isToday {
+                                Circle().strokeBorder(Color.accentColor, lineWidth: 1.5)
+                            }
+                        }
+                }
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
+                .onTapGesture { focusDate = date }
+            }
+
+            chevron("chevron.right", action: onNext)
+        }
+        .padding(.horizontal, 4)
+    }
+
+    @ViewBuilder
+    private func chevron(_ systemName: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 12, weight: .semibold))
+                .frame(width: 32, height: 40)
+                .contentShape(Rectangle())
+        }
+        .foregroundStyle(.secondary)
+        .buttonStyle(.plain)
     }
 }
 

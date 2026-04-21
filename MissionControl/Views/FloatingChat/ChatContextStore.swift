@@ -10,7 +10,7 @@ enum ChatContextKind: Equatable {
     case goal(id: String, emoji: String, name: String)
     case initiative(id: String, emoji: String, name: String)
     case task(id: String, name: String)
-    case schedule(date: Date)
+    case schedule(date: Date, mode: ScheduleViewMode)
     case health(section: String)
     case faith(section: String)
 
@@ -40,8 +40,19 @@ final class ChatContextStore {
         case .goal(_, _, let n):         return n
         case .initiative(_, _, let n):   return n
         case .task(_, let n):         return n
-        case .schedule(let d):
-            let f = DateFormatter(); f.dateFormat = "EEE, MMM d"
+        case .schedule(let d, let m):
+            let f = DateFormatter()
+            switch m {
+            case .day:   f.dateFormat = "EEE, MMM d"
+            case .week:
+                let cal = Calendar.current
+                let weekday = cal.component(.weekday, from: d) - 1
+                let sunday = cal.date(byAdding: .day, value: -weekday, to: d) ?? d
+                f.dateFormat = "MMM d"
+                return "Week of \(f.string(from: sunday))"
+            case .month: f.dateFormat = "MMMM yyyy"
+            case .year:  f.dateFormat = "yyyy"
+            }
             return f.string(from: d)
         case .health(let s):             return s
         case .faith(let s):              return s
@@ -89,7 +100,13 @@ final class ChatContextStore {
         case .goal:         return "Goal"
         case .initiative:   return "Initiative"
         case .task:         return "Task"
-        case .schedule:     return "Schedule"
+        case .schedule(_, let m):
+            switch m {
+            case .day:   return "Schedule - Day"
+            case .week:  return "Schedule - Week"
+            case .month: return "Schedule - Month"
+            case .year:  return "Schedule - Year"
+            }
         case .health:       return "Health"
         case .faith:        return "Faith"
         }
@@ -103,9 +120,25 @@ final class ChatContextStore {
             return "You've got **\(name)** open. I can suggest tasks you might have missed, check for blockers, or help you move things forward."
         case .task(_, let name):
             return "Looking at **\(name)**. I can help you break it down, draft requirements, or mark it done. What's up?"
-        case .schedule(let d):
-            let f = DateFormatter(); f.dateFormat = "EEEE"
-            return "You're looking at **\(f.string(from: d))**'s schedule. I can fill open slots with high-priority tasks or help you rearrange things."
+        case .schedule(let d, let m):
+            let f = DateFormatter()
+            switch m {
+            case .day:
+                f.dateFormat = "EEEE"
+                return "You're looking at **\(f.string(from: d))**'s schedule. I can fill open slots with high-priority tasks or help you rearrange things."
+            case .week:
+                let cal = Calendar.current
+                let weekday = cal.component(.weekday, from: d) - 1
+                let sunday = cal.date(byAdding: .day, value: -weekday, to: d) ?? d
+                f.dateFormat = "MMM d"
+                return "You're looking at the **week of \(f.string(from: sunday))**. I can help rebalance tasks across days or spot under-booked slots."
+            case .month:
+                f.dateFormat = "MMMM yyyy"
+                return "You're looking at **\(f.string(from: d))**. I can help you plan themes for the month, or zoom in on a week or day."
+            case .year:
+                f.dateFormat = "yyyy"
+                return "You're looking at **\(f.string(from: d))** at a glance. I can help you plan quarterly initiatives or review how the year is shaping up."
+            }
         case .health(let s):
             return "You're in **\(s)**. I can help you log entries, spot patterns, or set targets."
         case .plans(let s):

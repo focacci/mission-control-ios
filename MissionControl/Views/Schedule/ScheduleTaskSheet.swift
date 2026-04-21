@@ -65,8 +65,8 @@ struct ScheduleTaskSheet: View {
             .filter {
                 $0.date == dateISO
                     && ($0.taskId == nil || $0.id == pinnedId)
-                    && $0.status != "done"
-                    && $0.status != "skipped"
+                    && $0.status != .done
+                    && $0.status != .skipped
             }
             .sorted { $0.datetime < $1.datetime }
     }
@@ -564,7 +564,7 @@ private struct SlotPickerRow: View {
                     .foregroundStyle(isSelected ? Color.accentColor : .secondary)
                     .frame(width: 48, alignment: .leading)
 
-                Text(slot.type == "task" ? "Task Slot" : "Open Slot")
+                Text(slot.type == .task ? "Task Slot" : "Open Slot")
                     .font(.subheadline)
                     .foregroundStyle(isSelected ? Color.accentColor : .primary)
                     .fontWeight(isSelected ? .medium : .regular)

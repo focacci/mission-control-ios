@@ -17,7 +17,7 @@ struct SlotDetailView: View {
                     HStack(spacing: 6) {
                         Image(systemName: slot.statusIcon)
                             .foregroundStyle(slot.statusColor)
-                        Text(slot.status.capitalized)
+                        Text(slot.status.displayName)
                             .foregroundStyle(slot.statusColor)
                     }
                 }
@@ -38,7 +38,7 @@ struct SlotDetailView: View {
                 }
             }
 
-            if slot.status == "pending" || slot.status == "in-progress" {
+            if slot.status == .pending || slot.status == .inProgress {
                 Section("Actions") {
                     Button {
                         Task {
@@ -60,7 +60,7 @@ struct SlotDetailView: View {
                 }
             }
         }
-        .chatContext(.schedule(date: slotDate))
+        .chatContext(.schedule(date: slotDate, mode: .day))
         .chatContextToolbar()
         .navigationDestination(for: MCTask.self) { task in
             TaskDetailView(taskId: task.id)

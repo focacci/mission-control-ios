@@ -87,10 +87,14 @@
 		FA82A64C69166148A9E8FB52 /* TaskCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 141A038C317E0F538F22C78C /* TaskCard.swift */; };
 		FD05B9FCAA035F9061FB412F /* WeekScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 640E9524A42EBBB89A66EB4F /* WeekScheduleView.swift */; };
 		FE5A1F4D940B78D99D81D209 /* PlansView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39FD78816B57E54EE47B5070 /* PlansView.swift */; };
+		DACA9D1CB001000000000101 /* DayCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DACA9D1CF001000000000102 /* DayCard.swift */; };
+		A5CDCE1CB002000000000201 /* YearScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5CDCE1CF002000000000202 /* YearScheduleView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0814209C981AD7A323B8FBA7 /* MonthScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthScheduleView.swift; sourceTree = "<group>"; };
+		DACA9D1CF001000000000102 /* DayCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCard.swift; sourceTree = "<group>"; };
+		A5CDCE1CF002000000000202 /* YearScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YearScheduleView.swift; sourceTree = "<group>"; };
 		141A038C317E0F538F22C78C /* TaskCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCard.swift; sourceTree = "<group>"; };
 		1B130C1D36811FA485A56165 /* AgentsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentsListView.swift; sourceTree = "<group>"; };
 		1CB3A5C0F80C7582E47F13AD /* TestsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestsCard.swift; sourceTree = "<group>"; };
@@ -184,6 +188,7 @@
 				B907B9C061ED212157D3FFF7 /* ScheduleView.swift */,
 				777B9574054F2D6131853773 /* SlotDetailView.swift */,
 				640E9524A42EBBB89A66EB4F /* WeekScheduleView.swift */,
+				A5CDCE1CF002000000000202 /* YearScheduleView.swift */,
 			);
 			path = Schedule;
 			sourceTree = "<group>";
@@ -374,6 +379,7 @@
 			isa = PBXGroup;
 			children = (
 				21C304AD361F5DB4F65DADFC /* AgentCard.swift */,
+				DACA9D1CF001000000000102 /* DayCard.swift */,
 				5BF63048ED44AD2B05213289 /* GoalCard.swift */,
 				D11B8F6C5E38EA533C94E7E3 /* InitiativeCard.swift */,
 				23E0B4D9DFC52FE0AAB9E722 /* SlotCard.swift */,
@@ -554,6 +560,8 @@
 				4F11ECB9CABC4B86FBCD482C /* TestsCard.swift in Sources */,
 				B29CE6C04A6868099D65BD1F /* View+ErrorAlert.swift in Sources */,
 				FD05B9FCAA035F9061FB412F /* WeekScheduleView.swift in Sources */,
+				A5CDCE1CB002000000000201 /* YearScheduleView.swift in Sources */,
+				DACA9D1CB001000000000101 /* DayCard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

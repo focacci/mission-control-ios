@@ -257,6 +257,10 @@ final class APIClient {
         return try await fetch(path)
     }
 
+    func scheduleRange(from: String, to: String) async throws -> RangeResponse {
+        try await fetch("/api/schedule/range?from=\(from)&to=\(to)")
+    }
+
     func generateWeekPlan(weekStart: String? = nil) async throws -> GenerateWeekResponse {
         let body = weekStart.map { ["weekStart": $0] } ?? [:]
         return try await send("/api/schedule/generate", method: "POST", body: body)

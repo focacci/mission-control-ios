@@ -45,8 +45,10 @@ final class ChatService: ObservableObject {
             ctx["id"] = id; ctx["name"] = name
         case .agent(let id, let name, let emoji):
             ctx["id"] = id; ctx["name"] = name; ctx["emoji"] = emoji
-        case .schedule(let d):
-            let f = ISO8601DateFormatter(); ctx["date"] = f.string(from: d)
+        case .schedule(let d, let m):
+            let f = ISO8601DateFormatter()
+            ctx["date"] = f.string(from: d)
+            ctx["mode"] = m.rawValue.lowercased()
         case .plans(let s): ctx["section"] = s
         case .health(let s): ctx["section"] = s
         case .faith(let s): ctx["section"] = s

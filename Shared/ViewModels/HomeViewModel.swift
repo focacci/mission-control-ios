@@ -29,7 +29,7 @@ final class HomeViewModel {
 
     var todayTaskSlots: [ScheduleSlot] {
         let today = Date().isoDate
-        return todaySlots.filter { $0.type == "task" && $0.date == today && $0.taskId != nil }
+        return todaySlots.filter { $0.type == .task && $0.date == today && $0.taskId != nil }
     }
 
     func load() async {

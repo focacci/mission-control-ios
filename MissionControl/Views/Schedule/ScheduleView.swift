@@ -8,20 +8,15 @@ struct ScheduleView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Week navigation bar
-                WeekNavBar(
-                    weekDates: viewModel.weekDates,
-                    focusDate: $viewModel.focusDate,
-                    onPrev: { viewModel.stepWeek(by: -1) },
-                    onNext: { viewModel.stepWeek(by: 1) }
-                )
-                .padding(.bottom, 8)
-                .background(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
+                ScheduleNavBar(viewModel: viewModel)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 4)
+                    .padding(.bottom, 8)
+                    .background(Color(.systemBackground))
+                    .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
 
-                // Content
                 Group {
-                    if viewModel.isLoading && viewModel.weekResponse == nil {
+                    if viewModel.isLoading && viewModel.slotsByDate.isEmpty {
                         ProgressView("Loading…")
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else if let error = viewModel.error {
@@ -29,14 +24,19 @@ struct ScheduleView: View {
                             Task { await viewModel.load() }
                         }
                     } else {
-                        DayScheduleView(viewModel: viewModel, onAssignToSlot: { slot in
-                            slotToAssign = slot
-                            showingScheduleTask = true
-                        })
+                        content
                     }
                 }
             }
             .chatContextToolbar()
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Today") {
+                        viewModel.mode = .day
+                        viewModel.focusDate = Date()
+                    }
+                }
+            }
             .navigationDestination(for: ScheduleSlot.self) { slot in
                 if let taskId = slot.taskId {
                     TaskDetailView(taskId: taskId)
@@ -53,72 +53,137 @@ struct ScheduleView: View {
                     Task { await viewModel.load() }
                 }
             }
-            .task { await viewModel.load() }
-            .onChange(of: viewModel.weekStart) { _, _ in
-                Task { await viewModel.load() }
-            }
-            .chatContext(.schedule(date: viewModel.focusDate))
+            .task(id: viewModel.loadKey) { await viewModel.load() }
+            .chatContext(.schedule(date: viewModel.focusDate, mode: viewModel.mode))
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch viewModel.mode {
+        case .day:
+            DayScheduleView(viewModel: viewModel, onAssignToSlot: { slot in
+                slotToAssign = slot
+                showingScheduleTask = true
+            })
+        case .week:
+            WeekScheduleView(viewModel: viewModel)
+        case .month:
+            MonthScheduleView(viewModel: viewModel)
+        case .year:
+            YearScheduleView(viewModel: viewModel)
         }
     }
 }
 
-// MARK: - Week Nav Bar (fixed Sun–Sat with arrows)
+// MARK: - Nav bar
 
-private struct WeekNavBar: View {
-    let weekDates: [Date]
-    @Binding var focusDate: Date
-    let onPrev: () -> Void
-    let onNext: () -> Void
-
-    private let dayLetters = ["S", "M", "T", "W", "T", "F", "S"]
-    private let todayISO = Date().isoDate
+/// Hierarchical navigation header. The center label names the *parent* period
+/// (e.g. in Day mode it says "Week of Mar 2") and tapping it zooms out one
+/// level. Chevrons step the current mode's period forward/backward; a "Today"
+/// button appears when the focus date is outside the current period.
+private struct ScheduleNavBar: View {
+    @Bindable var viewModel: ScheduleViewModel
 
     var body: some View {
-        HStack(spacing: 0) {
-            Button(action: onPrev) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(width: 36, height: 44)
-                    .contentShape(Rectangle())
+        HStack(spacing: 8) {
+            if viewModel.mode != .day {
+                chevron(systemName: "chevron.left") { viewModel.stepPeriod(by: -1) }
+            } else {
+                Color.clear.frame(width: 32, height: 32)
             }
-            .foregroundStyle(.secondary)
 
-            ForEach(Array(weekDates.enumerated()), id: \.offset) { index, date in
-                let iso = date.isoDate
-                let isToday = iso == todayISO
-                let isSelected = iso == focusDate.isoDate
-
-                VStack(spacing: 3) {
-                    Text(dayLetters[index])
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(isToday ? Color.accentColor : .secondary)
-
-                    Text("\(Calendar.current.component(.day, from: date))")
-                        .font(.system(size: 13, weight: isSelected ? .bold : .regular))
-                        .foregroundStyle(isSelected ? .white : (isToday ? Color.accentColor : .primary))
-                        .frame(width: 28, height: 28)
-                        .background {
-                            if isSelected {
-                                Circle().fill(Color.accentColor)
-                            } else if isToday {
-                                Circle().strokeBorder(Color.accentColor, lineWidth: 1.5)
-                            }
-                        }
+            Button {
+                if viewModel.mode.zoomedOut != nil {
+                    withAnimation(.easeInOut(duration: 0.2)) { viewModel.zoomOut() }
                 }
-                .frame(maxWidth: .infinity)
+            } label: {
+                HStack(spacing: 4) {
+                    Text(labelText)
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    if viewModel.mode.zoomedOut != nil {
+                        Image(systemName: "chevron.up")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.secondary)
+                    }
+                }
                 .contentShape(Rectangle())
-                .onTapGesture { focusDate = date }
+                .frame(maxWidth: .infinity)
             }
+            .buttonStyle(.plain)
+            .disabled(viewModel.mode.zoomedOut == nil)
 
-            Button(action: onNext) {
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .frame(width: 36, height: 44)
-                    .contentShape(Rectangle())
+            if viewModel.mode != .day {
+                chevron(systemName: "chevron.right") { viewModel.stepPeriod(by: 1) }
+            } else if !viewModel.isFocusInCurrentPeriod {
+                Button {
+                    viewModel.focusDate = Date()
+                } label: {
+                    Text("Today")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(Color.accentColor)
+                        .frame(height: 32)
+                        .padding(.horizontal, 8)
+                }
+                .buttonStyle(.plain)
+            } else {
+                Color.clear.frame(width: 32, height: 32)
             }
-            .foregroundStyle(.secondary)
         }
-        .padding(.horizontal, 4)
+    }
+
+    private var labelText: String {
+        let f = DateFormatter()
+        let d = viewModel.focusDate
+        switch viewModel.mode {
+        case .day:
+            let cal = Calendar.current
+            let weekday = cal.component(.weekday, from: d) - 1
+            let sunday = cal.date(byAdding: .day, value: -weekday, to: d) ?? d
+            f.dateFormat = "MMM d"
+            return "Week of \(f.string(from: sunday))"
+        case .week:
+            f.dateFormat = "MMMM yyyy"
+            return f.string(from: d)
+        case .month:
+            f.dateFormat = "yyyy"
+            return f.string(from: d)
+        case .year:
+            f.dateFormat = "yyyy"
+            return f.string(from: d)
+        }
+    }
+
+    @ViewBuilder
+    private func chevron(systemName: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .frame(width: 32, height: 32)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+extension ScheduleViewModel {
+    /// True when the focus date is in the *current* period for the active mode.
+    var isFocusInCurrentPeriod: Bool {
+        let cal = Calendar.current
+        let now = Date()
+        switch mode {
+        case .day:
+            // Week-level: are both in the same week?
+            return cal.isDate(focusDate, equalTo: now, toGranularity: .weekOfYear)
+        case .week:
+            return cal.isDate(focusDate, equalTo: now, toGranularity: .weekOfYear)
+        case .month:
+            return cal.isDate(focusDate, equalTo: now, toGranularity: .month)
+        case .year:
+            return cal.isDate(focusDate, equalTo: now, toGranularity: .year)
+        }
     }
 }
 

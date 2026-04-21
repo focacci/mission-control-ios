@@ -4,8 +4,8 @@ struct SlotCard: View {
     let slot: ScheduleSlot
     var showBreadcrumb: Bool = false
 
-    private var isBrief: Bool { slot.type == "brief" }
-    private var isEmpty: Bool { slot.taskId == nil && (slot.type == "flex" || slot.type == "task") }
+    private var isBrief: Bool { slot.type == .brief }
+    private var isEmpty: Bool { slot.isOpenSlot }
 
     private var statusIcon: String {
         slot.task?.statusIcon ?? slot.statusIcon
@@ -62,7 +62,7 @@ struct SlotCard: View {
                 Spacer()
             }
         }
-        .opacity(slot.status == "skipped" ? 0.45 : 1)
+        .opacity(slot.status == .skipped ? 0.45 : 1)
         .cardStyle(.compact)
         .overlay(alignment: .leading) {
             if isBrief {
