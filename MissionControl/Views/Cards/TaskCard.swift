@@ -36,10 +36,6 @@ struct TaskCard: View {
                     .padding(.vertical, 3)
                     .background(.secondary.opacity(0.12), in: Capsule())
             }
-
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
         }
         .cardStyle(.compact)
     }

@@ -3,12 +3,13 @@ import SwiftUI
 struct AgentsListView: View {
     @State private var viewModel = AgentsViewModel()
     @State private var showingCreate = false
+    @State private var path = NavigationPath()
     @Environment(ChatContextStore.self) private var chatContext
 
     var body: some View {
         @Bindable var chatContext = chatContext
 
-        NavigationStack {
+        NavigationStack(path: $path) {
             Group {
                 if viewModel.isLoading && viewModel.agents.isEmpty {
                     ProgressView("Loading agents…")
@@ -44,12 +45,8 @@ struct AgentsListView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     List(viewModel.agents) { agent in
-                        NavigationLink {
-                            AgentDetailView(agent: agent) { updated in
-                                if let idx = viewModel.agents.firstIndex(where: { $0.id == updated.id }) {
-                                    viewModel.agents[idx] = updated
-                                }
-                            }
+                        Button {
+                            path.append(agent)
                         } label: {
                             AgentCard(agent: agent)
                         }
@@ -71,6 +68,13 @@ struct AgentsListView: View {
                     .contentMargins(.bottom, 90, for: .scrollContent)
                     .refreshable { await viewModel.load() }
                     .errorAlert(message: $viewModel.error)
+                    .navigationDestination(for: Agent.self) { agent in
+                        AgentDetailView(agent: agent) { updated in
+                            if let idx = viewModel.agents.firstIndex(where: { $0.id == updated.id }) {
+                                viewModel.agents[idx] = updated
+                            }
+                        }
+                    }
                 }
             }
             .floatingChatButton(isPresented: $chatContext.showingChat)

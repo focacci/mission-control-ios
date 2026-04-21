@@ -631,9 +631,6 @@ private struct SleepView: View {
                                 .fontWeight(.medium)
                                 .foregroundStyle(entry.quality.color)
                         }
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
                     }
                     .padding(14)
                     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
@@ -890,9 +887,6 @@ private struct SymptomsView: View {
                         }
                         Spacer()
                         SeverityDots(severity: entry.severity)
-                        Image(systemName: "chevron.right")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
                     }
                     .padding(14)
                     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))

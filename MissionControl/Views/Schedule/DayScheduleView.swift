@@ -15,6 +15,7 @@ private enum ListItem: Identifiable {
 struct DayScheduleView: View {
     @Bindable var viewModel: ScheduleViewModel
     let onAssignToSlot: (ScheduleSlot) -> Void
+    let onSelectSlot: (ScheduleSlot) -> Void
 
     private var isToday: Bool {
         Calendar.current.isDateInToday(viewModel.focusDate)
@@ -103,8 +104,9 @@ struct DayScheduleView: View {
                         case .slot(let slot):
                             let isAssignable = slot.isOpenSlot
                             if slot.taskId != nil {
-                                NavigationLink(value: slot) {
+                                Button { onSelectSlot(slot) } label: {
                                     SlotCard(slot: slot)
+                                        .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
                                 .listRowBackground(Color.clear)
@@ -123,8 +125,9 @@ struct DayScheduleView: View {
                                 .listRowSeparator(.hidden)
                                 .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                             } else {
-                                NavigationLink(value: slot) {
+                                Button { onSelectSlot(slot) } label: {
                                     SlotCard(slot: slot)
+                                        .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
                                 .listRowBackground(Color.clear)

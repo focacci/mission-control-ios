@@ -12,9 +12,10 @@ struct PlansView: View {
     @State private var showingAddGoal = false
     @State private var showingAddInitiative = false
     @State private var showingAddTask = false
+    @State private var path = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack(spacing: 0) {
                 Picker("Section", selection: $selectedSection) {
                     ForEach(PlanSection.allCases, id: \.self) { section in
@@ -48,7 +49,9 @@ struct PlansView: View {
                         switch selectedSection {
                         case .goals:
                             List(viewModel.goals) { goal in
-                                NavigationLink(value: goal) {
+                                Button {
+                                    path.append(goal)
+                                } label: {
                                     GoalCard(goal: goal)
                                 }
                                 .buttonStyle(.plain)
@@ -93,7 +96,9 @@ struct PlansView: View {
 
                         case .tasks:
                             List(viewModel.tasks) { task in
-                                NavigationLink(value: task) {
+                                Button {
+                                    path.append(task)
+                                } label: {
                                     TaskCard(task: task)
                                 }
                                 .buttonStyle(.plain)

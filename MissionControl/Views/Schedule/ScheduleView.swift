@@ -4,9 +4,10 @@ struct ScheduleView: View {
     @State private var viewModel = ScheduleViewModel()
     @State private var showingScheduleTask = false
     @State private var slotToAssign: ScheduleSlot?
+    @State private var path = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             VStack(spacing: 0) {
                 VStack(spacing: 4) {
                     ScheduleBreadcrumb(viewModel: viewModel)
@@ -66,10 +67,16 @@ struct ScheduleView: View {
     private var content: some View {
         switch viewModel.mode {
         case .day:
-            DayScheduleView(viewModel: viewModel, onAssignToSlot: { slot in
-                slotToAssign = slot
-                showingScheduleTask = true
-            })
+            DayScheduleView(
+                viewModel: viewModel,
+                onAssignToSlot: { slot in
+                    slotToAssign = slot
+                    showingScheduleTask = true
+                },
+                onSelectSlot: { slot in
+                    path.append(slot)
+                }
+            )
         case .week:
             WeekScheduleView(viewModel: viewModel)
         case .month:
