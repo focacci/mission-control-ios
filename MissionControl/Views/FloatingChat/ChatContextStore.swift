@@ -72,7 +72,7 @@ final class ChatContextStore {
         case .app:                       return "Mission Control"
         case .home:
             return Date().formatted(.dateTime.weekday(.wide).month().day())
-        case .agents:                    return "Agents"
+        case .agents:                    return "List"
         case .agent(_, let n, _):        return n
         case .agentChat(_, let n, _):    return n
         case .plans(let s):              return s
@@ -115,25 +115,12 @@ final class ChatContextStore {
         }
     }
 
-    var displayEmoji: String? {
-        switch context {
-        case .goal(_, let e, _),
-             .initiative(_, let e, _):
-            return e.isEmpty ? nil : e
-        case .agent(_, _, let e),
-             .agentChat(_, _, let e):
-            return e.isEmpty ? nil : e
-        default:
-            return nil
-        }
-    }
-
     var contextTypeName: String {
         switch context {
         case .app:          return "App"
         case .home:         return "Home"
         case .agents:       return "Agents"
-        case .agent:        return "Agent"
+        case .agent:        return "Agent Details"
         case .agentChat:    return "Agent Chat"
         case .plans:        return "Plans"
         case .goal:         return "Goal"
