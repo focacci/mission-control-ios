@@ -64,8 +64,7 @@ struct GoalDetailView: View {
                     .containerRelativeFrame(.horizontal)
                 }
                 .refreshable { await viewModel.load(id: goalId) }
-                .navigationTitle("Goal")
-                .navigationBarTitleDisplayMode(.large)
+                .chatContextToolbar()
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         Button("Edit") { showingEdit = true }

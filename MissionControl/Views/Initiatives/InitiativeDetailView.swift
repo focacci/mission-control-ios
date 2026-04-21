@@ -92,8 +92,7 @@ struct InitiativeDetailView: View {
                     .containerRelativeFrame(.horizontal)
                 }
                 .refreshable { await viewModel.load(id: initiativeId) }
-                .navigationTitle("Initiative")
-                .navigationBarTitleDisplayMode(.large)
+                .chatContextToolbar()
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         Button("Edit") { showingEdit = true }

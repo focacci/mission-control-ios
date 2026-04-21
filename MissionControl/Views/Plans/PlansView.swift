@@ -116,8 +116,7 @@ struct PlansView: View {
                     }
                 }
             }
-            .navigationTitle("Plans")
-            .navigationBarTitleDisplayMode(.inline)
+            .chatContextToolbar()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {

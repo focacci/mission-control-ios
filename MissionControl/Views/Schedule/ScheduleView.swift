@@ -36,8 +36,7 @@ struct ScheduleView: View {
                     }
                 }
             }
-            .navigationTitle("Schedule")
-            .navigationBarTitleDisplayMode(.inline)
+            .chatContextToolbar()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {

@@ -74,8 +74,7 @@ struct AgentsListView: View {
                 }
             }
             .floatingChatButton(isPresented: $chatContext.showingChat)
-            .navigationTitle("Agents")
-            .navigationBarTitleDisplayMode(.inline)
+            .chatContextToolbar()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button { showingCreate = true } label: {

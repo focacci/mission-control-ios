@@ -116,8 +116,7 @@ struct TaskDetailView: View {
                     .containerRelativeFrame(.horizontal)
                 }
                 .refreshable { await viewModel.load(id: taskId) }
-                .navigationTitle("Task")
-                .navigationBarTitleDisplayMode(.large)
+                .chatContextToolbar()
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
                         HStack(spacing: 4) {

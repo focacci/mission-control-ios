@@ -28,9 +28,8 @@ struct FaithView: View {
                     .padding(.horizontal, 16)
                 }
             }
-            .navigationTitle("Faith")
-            .navigationBarTitleDisplayMode(.large)
             .chatContext(.faith(section: section.label))
+            .chatContextToolbar()
         }
     }
 }

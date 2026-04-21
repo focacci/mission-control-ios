@@ -57,6 +57,7 @@
 		A90E690AC7A5884639F6832F /* TaskDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C00013EDEAE09D6A94EB486 /* TaskDetailViewModel.swift */; };
 		AAF18F78BE5F14CF2E70848E /* HealthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E251E2D32513D439F785BD /* HealthView.swift */; };
 		AC4AAD7D0F6CFE1F74FA99CD /* MissionControlWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C188665B80A8B294010B439D /* MissionControlWatchApp.swift */; };
+		AE8534C4D468649DD2B40BB6 /* ChatContextToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A8603F68EF347D2D6073BA /* ChatContextToolbarButton.swift */; };
 		B29CE6C04A6868099D65BD1F /* View+ErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E703CF245AF6F5A4A9BD47 /* View+ErrorAlert.swift */; };
 		B3CE9B7086490729EA73722C /* RequirementsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C42111B2F12FADC127BCAD07 /* RequirementsCard.swift */; };
 		B3F6A6217C4F4520FDD35B24 /* TaskActionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B98F82ED9603E3F4C492FC /* TaskActionBar.swift */; };
@@ -133,6 +134,7 @@
 		8BBA4E20A95DBE5434A0C0CC /* Initiative.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Initiative.swift; sourceTree = "<group>"; };
 		8F3A0C88E4BC3F8B5E50F748 /* MissionControlApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MissionControlApp.swift; sourceTree = "<group>"; };
 		903FE8B2D3A1755B3C6A74D7 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		94A8603F68EF347D2D6073BA /* ChatContextToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatContextToolbarButton.swift; sourceTree = "<group>"; };
 		96E703CF245AF6F5A4A9BD47 /* View+ErrorAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ErrorAlert.swift"; sourceTree = "<group>"; };
 		98C30F27A4B6AA739AD7AB58 /* DayScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayScheduleView.swift; sourceTree = "<group>"; };
 		B5B1D1DDFD73BEEC8D7CA352 /* MissionControlWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MissionControlWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -351,6 +353,7 @@
 			isa = PBXGroup;
 			children = (
 				3CF3871F567A017C488A8B42 /* ChatContextStore.swift */,
+				94A8603F68EF347D2D6073BA /* ChatContextToolbarButton.swift */,
 				5653D06464E98241C8607906 /* ChatConversationView.swift */,
 				C556F6188837FF7EFE0FA4E8 /* ChatView.swift */,
 				2E75296C46CA0C8996DC4BAF /* FloatingChatButton.swift */,
@@ -501,6 +504,7 @@
 				3BA3B71A5AFAE6DE02B5BFC6 /* BoardData.swift in Sources */,
 				6DD5FA04755E22B82DBFBF67 /* CardStyle.swift in Sources */,
 				5477A5D6C9A5D15B07FD72BE /* ChatContextStore.swift in Sources */,
+				AE8534C4D468649DD2B40BB6 /* ChatContextToolbarButton.swift in Sources */,
 				0DD16C50BF54E2B289FE78FF /* ChatConversationView.swift in Sources */,
 				D1BC36B3103F19E023CBA91E /* ChatView.swift in Sources */,
 				21C50205BD2087D003F8B635 /* CompleteTaskSheet.swift in Sources */,

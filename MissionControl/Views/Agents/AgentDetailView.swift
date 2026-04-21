@@ -27,13 +27,12 @@ struct AgentDetailView: View {
             }
             .padding()
         }
-        .navigationTitle(current.displayName)
-        .navigationBarTitleDisplayMode(.inline)
         .chatContext(.agent(
             id: current.id,
             name: current.displayName,
             emoji: current.displayEmoji
         ))
+        .chatContextToolbar()
         .floatingChatButton(isPresented: $chatContext.showingChat)
         .safeAreaInset(edge: .bottom) {
             chatButton

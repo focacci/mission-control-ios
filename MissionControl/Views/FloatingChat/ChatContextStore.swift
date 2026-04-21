@@ -31,7 +31,8 @@ final class ChatContextStore {
     var displayLabel: String {
         switch context {
         case .app:                       return "Mission Control"
-        case .home:                      return "Home"
+        case .home:
+            return Date().formatted(.dateTime.weekday(.wide).month().day())
         case .agents:                    return "Agents"
         case .agent(_, let n, _):        return n
         case .agentChat(_, let n, _):    return n

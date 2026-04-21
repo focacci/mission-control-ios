@@ -60,9 +60,8 @@ struct SlotDetailView: View {
                 }
             }
         }
-        .navigationTitle(slot.time)
-        .navigationBarTitleDisplayMode(.inline)
         .chatContext(.schedule(date: slotDate))
+        .chatContextToolbar()
         .navigationDestination(for: MCTask.self) { task in
             TaskDetailView(taskId: task.id)
         }
