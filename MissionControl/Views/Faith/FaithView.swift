@@ -30,6 +30,15 @@ struct FaithView: View {
             }
             .chatContext(.faith(section: section.label))
             .chatContextToolbar()
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        // TODO: surface faith actions (e.g. change translation, subscribe to readings).
+                    } label: {
+                        Image(systemName: "ellipsis")
+                    }
+                }
+            }
         }
     }
 }

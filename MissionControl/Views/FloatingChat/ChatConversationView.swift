@@ -132,11 +132,16 @@ struct ChatConversationView: View {
                 inputBarContainer
             }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: resetChat) {
-                        Image(systemName: "square.and.pencil")
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Menu {
+                        Button {
+                            resetChat()
+                        } label: {
+                            Label("New chat", systemImage: "square.and.pencil")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
                     }
-                    .accessibilityLabel("New chat")
                 }
             }
             .onAppear {

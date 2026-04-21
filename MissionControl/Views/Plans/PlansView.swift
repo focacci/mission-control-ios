@@ -123,7 +123,7 @@ struct PlansView: View {
             }
             .chatContextToolbar()
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
+                ToolbarItemGroup(placement: .primaryAction) {
                     Button {
                         switch selectedSection {
                         case .goals: showingAddGoal = true
@@ -132,6 +132,19 @@ struct PlansView: View {
                         }
                     } label: {
                         Image(systemName: "plus")
+                    }
+                    Menu {
+                        Button {
+                            switch selectedSection {
+                            case .goals: showingAddGoal = true
+                            case .initiatives: showingAddInitiative = true
+                            case .tasks: showingAddTask = true
+                            }
+                        } label: {
+                            Label("Create new", systemImage: "plus")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
                     }
                 }
             }

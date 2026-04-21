@@ -33,6 +33,19 @@ struct AgentDetailView: View {
             emoji: current.displayEmoji
         ))
         .chatContextToolbar()
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Menu {
+                    Button {
+                        isEditingPrompt = true
+                    } label: {
+                        Label("Edit System Prompt", systemImage: "pencil")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                }
+            }
+        }
         .floatingChatButton(isPresented: $chatContext.showingChat)
         .safeAreaInset(edge: .bottom) {
             chatButton

@@ -41,6 +41,21 @@ struct ScheduleView: View {
                         viewModel.focusDate = Date()
                     }
                 }
+                if #available(iOS 26.0, *) {
+                    ToolbarSpacer(.fixed, placement: .topBarTrailing)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button {
+                            viewModel.mode = .day
+                            viewModel.focusDate = Date()
+                        } label: {
+                            Label("Jump to Today", systemImage: "calendar")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                    }
+                }
             }
             .navigationDestination(for: ScheduleSlot.self) { slot in
                 if let taskId = slot.taskId {

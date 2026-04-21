@@ -34,9 +34,15 @@ struct HomeView: View {
             .errorAlert(message: $viewModel.error)
             .task { await viewModel.load() }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { showingSettings = true } label: {
-                        Image(systemName: "gearshape")
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Menu {
+                        Button {
+                            showingSettings = true
+                        } label: {
+                            Label("Settings", systemImage: "gearshape")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
                     }
                 }
             }

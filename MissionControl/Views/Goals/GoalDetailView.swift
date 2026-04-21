@@ -66,11 +66,15 @@ struct GoalDetailView: View {
                 .refreshable { await viewModel.load(id: goalId) }
                 .chatContextToolbar()
                 .toolbar {
-                    ToolbarItem(placement: .primaryAction) {
-                        Button {
-                            showingEdit = true
+                    ToolbarItemGroup(placement: .primaryAction) {
+                        Menu {
+                            Button {
+                                showingEdit = true
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
                         } label: {
-                            Image(systemName: "pencil")
+                            Image(systemName: "ellipsis")
                         }
                     }
                 }

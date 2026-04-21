@@ -52,6 +52,15 @@ struct HealthView: View {
             }
             .chatContext(.health(section: section.label))
             .chatContextToolbar()
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        // TODO: surface health actions (e.g. log symptom, add water, start workout).
+                    } label: {
+                        Image(systemName: "ellipsis")
+                    }
+                }
+            }
         }
     }
 }
