@@ -14,5 +14,10 @@ struct ChatView: View {
             welcomeMessage: { chatContext.welcomeMessage }
         )
         .chatContextToolbar(placement: .principal)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                ChatLockToolbarButton()
+            }
+        }
     }
 }

@@ -27,6 +27,7 @@ enum ChatContextKind: Equatable {
 final class ChatContextStore {
     var context: ChatContextKind = .app
     var showingChat: Bool = false
+    var isLocked: Bool = false
 
     var displayLabel: String {
         switch context {
