@@ -1,73 +1,76 @@
 import SwiftUI
 
-/// Ephemeral floating chat sheet. Opens from the global bubble button and
-/// shows a context chip so the user always knows what surface the assistant
-/// is grounded in. For the dedicated agent chat page, see `AgentChatView`.
+/// Ephemeral floating chat sheet. Opens from the global bubble button. The
+/// center-toolbar context button surfaces the current grounding surface and
+/// (eventually) becomes the entry point for pinning and cross-page
+/// navigation within context groups. For the dedicated agent chat page,
+/// see `AgentChatView`.
 struct ChatView: View {
     @Environment(ChatContextStore.self) private var chatContext
 
     var body: some View {
-        VStack(spacing: 0) {
-            ChatContextChip()
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-                .padding(.bottom, 12)
-
-            Divider()
-
-            ChatConversationView(
-                useDefaultAgent: true,
-                welcomeMessage: { chatContext.welcomeMessage }
-            )
-        }
-        .navigationTitle("Chat")
+        ChatConversationView(
+            useDefaultAgent: true,
+            welcomeMessage: { chatContext.welcomeMessage }
+        )
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                ChatContextToolbarButton()
+            }
+        }
     }
 }
 
-// MARK: - Context Chip
+// MARK: - Context Toolbar Button
 
-private struct ChatContextChip: View {
+private struct ChatContextToolbarButton: View {
     @Environment(ChatContextStore.self) private var chatContext
 
     var body: some View {
-        HStack(spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(.blue.opacity(0.12))
-                    .frame(width: 36, height: 36)
-
+        Menu {
+            Button {
+                // TODO: wire up pinning once the context group model lands.
+            } label: {
+                Label("Pin Context", systemImage: "pin")
+            }
+        } label: {
+            HStack(spacing: 8) {
                 Image(systemName: chatContext.displayIcon)
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.blue)
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(chatContext.contextTypeName.uppercased())
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(.blue.opacity(0.75))
+                        .tracking(0.8)
+
+                    Text(chatContext.displayLabel)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                }
+
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.secondary)
             }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(chatContext.contextTypeName.uppercased())
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(.blue.opacity(0.7))
-                    .tracking(0.8)
-
-                Text(chatContext.displayLabel)
-                    .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
-            }
-
-            Spacer()
-
-            Label("context", systemImage: "scope")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .labelStyle(.iconOnly)
-                .padding(6)
-                .background(.quaternary, in: Circle())
+            .padding(.horizontal, 14)
+            .padding(.vertical, 6)
+            .modifier(LiquidGlassContextButtonBackground())
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(.blue.opacity(0.06), in: RoundedRectangle(cornerRadius: 14))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .strokeBorder(.blue.opacity(0.18), lineWidth: 1)
-        )
+        .accessibilityLabel("\(chatContext.contextTypeName) context: \(chatContext.displayLabel)")
+        .accessibilityHint("Opens context actions")
+    }
+}
+
+private struct LiquidGlassContextButtonBackground: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular.interactive(), in: .capsule)
+        } else {
+            content.background(.regularMaterial, in: Capsule())
+        }
     }
 }
