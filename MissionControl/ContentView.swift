@@ -24,7 +24,7 @@ struct ContentView: View {
                 .tag(2)
 
             AgentsListView()
-                .tabItem { Label("Agents", systemImage: "bubble.left.and.text.bubble.right") }
+                .tabItem { Label("Agents", systemImage: "person.2.wave.2") }
                 .tag(3)
 
             FaithView()
