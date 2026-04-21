@@ -38,7 +38,13 @@ struct ContentView: View {
                 .tag(5)
         }
         .environment(chatContextStore)
-        .sheet(isPresented: $chatContextStore.showingChat) {
+        .sheet(isPresented: $chatContextStore.showingChat, onDismiss: {
+            // Locking preserves chat history across sheet dismissals. When
+            // unlocked, wipe the conversation so the next open starts fresh.
+            if !chatContextStore.isLocked {
+                chatContextStore.floatingChat.reset()
+            }
+        }) {
             NavigationStack {
                 ChatView()
                     .environment(chatContextStore)

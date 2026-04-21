@@ -11,7 +11,8 @@ struct ChatView: View {
     var body: some View {
         ChatConversationView(
             useDefaultAgent: true,
-            welcomeMessage: { chatContext.welcomeMessage }
+            welcomeMessage: { chatContext.welcomeMessage },
+            externalState: chatContext.floatingChat
         )
         .chatContextToolbar(placement: .principal)
         .toolbar {

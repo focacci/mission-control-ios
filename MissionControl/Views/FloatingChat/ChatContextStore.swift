@@ -29,6 +29,11 @@ final class ChatContextStore {
     var showingChat: Bool = false
     var isLocked: Bool = false
 
+    /// Persistent conversation state for the floating chat sheet. Survives
+    /// sheet dismissals so that locking preserves history; cleared by
+    /// `ContentView` when the sheet closes unlocked.
+    let floatingChat = ChatConversationState()
+
     var displayLabel: String {
         switch context {
         case .app:                       return "Mission Control"

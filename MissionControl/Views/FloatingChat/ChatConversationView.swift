@@ -10,6 +10,23 @@ struct ChatMessage: Identifiable {
     enum Role { case user, agent }
 }
 
+/// Persistent conversation state. Hoisted out of `ChatConversationView` so the
+/// floating chat can preserve history across sheet dismissals when locked.
+/// AgentChatView and other dedicated chat screens create their own instance
+/// scoped to the view's lifetime.
+@Observable
+final class ChatConversationState {
+    var messages: [ChatMessage] = []
+    var sessionId: String? = nil
+    var inputText: String = ""
+
+    func reset() {
+        messages = []
+        sessionId = nil
+        inputText = ""
+    }
+}
+
 // MARK: - Chat Service
 
 @MainActor
@@ -97,9 +114,7 @@ struct ChatConversationView: View {
     @Environment(ChatContextStore.self) private var chatContext
     @StateObject private var chatService = ChatService()
 
-    @State private var messages: [ChatMessage] = []
-    @State private var inputText = ""
-    @State private var sessionId: String?
+    @State private var localState = ChatConversationState()
     @FocusState private var isInputFocused: Bool
 
     /// When `true`, requests route to the workspace's default agent regardless
@@ -115,14 +130,23 @@ struct ChatConversationView: View {
     /// from dedicated chat screens (e.g. AgentChatView).
     let floatingChatPresented: Binding<Bool>?
 
+    /// External conversation state. When provided (e.g. the floating chat
+    /// sheet passing the store-owned instance), history survives view
+    /// teardown. Otherwise falls back to the view-local state.
+    private let externalState: ChatConversationState?
+
+    private var state: ChatConversationState { externalState ?? localState }
+
     init(
         useDefaultAgent: Bool,
         welcomeMessage: @escaping () -> String,
-        floatingChatPresented: Binding<Bool>? = nil
+        floatingChatPresented: Binding<Bool>? = nil,
+        externalState: ChatConversationState? = nil
     ) {
         self.useDefaultAgent = useDefaultAgent
         self.welcomeMessage = welcomeMessage
         self.floatingChatPresented = floatingChatPresented
+        self.externalState = externalState
     }
 
     var body: some View {
@@ -145,19 +169,23 @@ struct ChatConversationView: View {
                 }
             }
             .onAppear {
-                if messages.isEmpty {
-                    messages = [ChatMessage(role: .agent, content: welcomeMessage())]
+                if state.messages.isEmpty {
+                    state.messages = [ChatMessage(role: .agent, content: welcomeMessage())]
                 }
             }
             .onChange(of: chatContext.context) {
-                resetChat()
+                // Skip when locked so the pinned conversation survives context
+                // changes (e.g. user locks chat, closes sheet, navigates tabs).
+                if !chatContext.isLocked {
+                    resetChat()
+                }
             }
     }
 
     private func resetChat() {
-        messages = [ChatMessage(role: .agent, content: welcomeMessage())]
-        inputText = ""
-        sessionId = nil
+        state.messages = [ChatMessage(role: .agent, content: welcomeMessage())]
+        state.inputText = ""
+        state.sessionId = nil
     }
 
     // MARK: - Message List
@@ -166,7 +194,7 @@ struct ChatConversationView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 16) {
-                    ForEach(messages) { message in
+                    ForEach(state.messages) { message in
                         MessageBubble(message: message)
                             .id(message.id)
                     }
@@ -175,8 +203,8 @@ struct ChatConversationView: View {
                 .padding(.vertical, 12)
             }
             .scrollDismissesKeyboard(.interactively)
-            .onChange(of: messages.count) {
-                if let last = messages.last {
+            .onChange(of: state.messages.count) {
+                if let last = state.messages.last {
                     withAnimation(.easeOut(duration: 0.2)) {
                         proxy.scrollTo(last.id, anchor: .bottom)
                     }
@@ -203,8 +231,10 @@ struct ChatConversationView: View {
     }
 
     private var inputBar: some View {
-        HStack(alignment: .bottom, spacing: 10) {
-            TextField("Ask anything…", text: $inputText, axis: .vertical)
+        @Bindable var boundState = state
+
+        return HStack(alignment: .bottom, spacing: 10) {
+            TextField("Ask anything…", text: $boundState.inputText, axis: .vertical)
                 .lineLimit(1...5)
                 .padding(.horizontal, 18)
                 .padding(.vertical, 12)
@@ -220,7 +250,7 @@ struct ChatConversationView: View {
                     .modifier(LiquidGlassSendButtonBackground(isEnabled: canSend))
             }
             .disabled(!canSend)
-            .animation(.easeInOut(duration: 0.15), value: inputText.isEmpty)
+            .animation(.easeInOut(duration: 0.15), value: state.inputText.isEmpty)
         }
         .padding(.horizontal, 16)
         .padding(.top, 12)
@@ -236,28 +266,28 @@ struct ChatConversationView: View {
     }
 
     private var canSend: Bool {
-        !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        !state.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && !chatService.isLoading
     }
 
     private func sendMessage() {
-        let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let text = state.inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
-        inputText = ""
-        messages.append(ChatMessage(role: .user, content: text))
+        state.inputText = ""
+        state.messages.append(ChatMessage(role: .user, content: text))
 
         Task {
             do {
                 let result = try await chatService.send(
                     message: text,
                     context: chatContext.context,
-                    sessionId: sessionId,
+                    sessionId: state.sessionId,
                     useDefaultAgent: useDefaultAgent
                 )
-                sessionId = result.sessionId
-                messages.append(ChatMessage(role: .agent, content: result.reply))
+                state.sessionId = result.sessionId
+                state.messages.append(ChatMessage(role: .agent, content: result.reply))
             } catch {
-                messages.append(ChatMessage(
+                state.messages.append(ChatMessage(
                     role: .agent,
                     content: "⚠️ Error: \(error.localizedDescription)"
                 ))
