@@ -5,6 +5,7 @@ enum ChatContextKind: Equatable {
     case home
     case agents
     case agent(id: String, name: String, emoji: String)
+    case agentChat(id: String, name: String, emoji: String)
     case dashboard(section: String)
     case goal(id: String, emoji: String, name: String)
     case initiative(id: String, emoji: String, name: String)
@@ -17,6 +18,7 @@ enum ChatContextKind: Equatable {
     /// API's default agent (currently `intella`).
     var agentId: String? {
         if case .agent(let id, _, _) = self { return id }
+        if case .agentChat(let id, _, _) = self { return id }
         return nil
     }
 }
@@ -32,6 +34,7 @@ final class ChatContextStore {
         case .home:                      return "Home"
         case .agents:                    return "Agents"
         case .agent(_, let n, _):        return n
+        case .agentChat(_, let n, _):    return n
         case .dashboard(let s):          return s
         case .goal(_, _, let n):         return n
         case .initiative(_, _, let n):   return n
@@ -48,8 +51,9 @@ final class ChatContextStore {
         switch context {
         case .app:          return "cpu"
         case .home:         return "house"
-        case .agents:       return "bubble.left.and.text.bubble.right"
+        case .agents:       return "person.2.wave.2"
         case .agent:        return "person.wave.2"
+        case .agentChat:    return "bubble.left.and.text.bubble.right"
         case .dashboard:    return "list.bullet"
         case .goal:         return "trophy"
         case .initiative:   return "flag.pattern.checkered"
@@ -65,7 +69,8 @@ final class ChatContextStore {
         case .goal(_, let e, _),
              .initiative(_, let e, _):
             return e.isEmpty ? nil : e
-        case .agent(_, _, let e):
+        case .agent(_, _, let e),
+             .agentChat(_, _, let e):
             return e.isEmpty ? nil : e
         default:
             return nil
@@ -78,6 +83,7 @@ final class ChatContextStore {
         case .home:         return "Home"
         case .agents:       return "Agents"
         case .agent:        return "Agent"
+        case .agentChat:    return "Agent Chat"
         case .dashboard:    return "Plan"
         case .goal:         return "Goal"
         case .initiative:   return "Initiative"
@@ -111,6 +117,8 @@ final class ChatContextStore {
             return "Hey! What do you want to work through? Goals, tasks, schedule — I'm ready."
         case .agent(_, let name, _):
             return "You're looking at **\(name)**'s details. I can explain how this agent is configured or help you tune it."
+        case .agentChat(_, let name, _):
+            return "You're chatting with **\(name)**. What can I help you with?"
         case .app:
             return "Hey! I'm your Mission Control agent. I can help with goals, tasks, scheduling, and more. What do you need?"
         }

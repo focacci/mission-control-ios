@@ -25,6 +25,11 @@ struct AgentChatView: View {
                 AgentChatTitle(agent: agent)
             }
         }
+        .chatContext(.agentChat(
+            id: agent.id,
+            name: agent.displayName,
+            emoji: agent.displayEmoji
+        ))
     }
 }
 

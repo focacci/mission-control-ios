@@ -74,6 +74,7 @@ final class ChatService: ObservableObject {
         case .home: return "home"
         case .agents: return "agents"
         case .agent: return "agent"
+        case .agentChat: return "agent_chat"
         case .dashboard: return "dashboard"
         case .goal: return "goal"
         case .initiative: return "initiative"
