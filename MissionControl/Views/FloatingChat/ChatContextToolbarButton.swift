@@ -29,11 +29,13 @@ struct ChatContextToolbarButton: View {
                         .font(.system(size: 9, weight: .semibold))
                         .foregroundStyle(.blue.opacity(0.75))
                         .tracking(0.8)
+                        .lineLimit(1)
 
                     Text(chatContext.displayLabel)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
+                        .truncationMode(.tail)
                 }
 
                 Image(systemName: "chevron.down")
@@ -42,6 +44,8 @@ struct ChatContextToolbarButton: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 6)
+            .frame(maxWidth: 220)
+            .fixedSize(horizontal: false, vertical: true)
             .modifier(LiquidGlassContextButtonBackground())
         }
         .accessibilityLabel("\(chatContext.contextTypeName) context: \(chatContext.displayLabel)")
