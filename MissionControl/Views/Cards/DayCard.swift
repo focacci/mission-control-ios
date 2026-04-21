@@ -10,7 +10,7 @@ struct DayCard: View {
     /// navigate to that day's detail view.
     var onTapDate: (() -> Void)? = nil
 
-    @State private var isExpanded: Bool = true
+    @State private var isExpanded: Bool = false
 
     private var isToday: Bool { date.isoDate == Date().isoDate }
 

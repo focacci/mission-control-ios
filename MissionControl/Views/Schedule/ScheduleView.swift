@@ -8,12 +8,16 @@ struct ScheduleView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                ScheduleNavBar(viewModel: viewModel)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 4)
-                    .padding(.bottom, 8)
-                    .background(Color(.systemBackground))
-                    .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
+                VStack(spacing: 4) {
+                    ScheduleBreadcrumb(viewModel: viewModel)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                    ScheduleNavBar(viewModel: viewModel)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 8)
+                }
+                .background(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
 
                 Group {
                     if viewModel.isLoading && viewModel.slotsByDate.isEmpty {
@@ -76,12 +80,46 @@ struct ScheduleView: View {
     }
 }
 
+// MARK: - Breadcrumb
+
+/// Scale-switcher breadcrumb: Year › Month › Week › Day. The active scale is
+/// emphasized; tapping any crumb jumps directly to that scale without stepping
+/// through the intermediate levels.
+private struct ScheduleBreadcrumb: View {
+    @Bindable var viewModel: ScheduleViewModel
+
+    private let scales: [ScheduleViewMode] = [.year, .month, .week, .day]
+
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(Array(scales.enumerated()), id: \.element) { index, scale in
+                Button {
+                    guard viewModel.mode != scale else { return }
+                    withAnimation(.easeInOut(duration: 0.2)) { viewModel.mode = scale }
+                } label: {
+                    Text(scale.rawValue)
+                        .font(.subheadline.weight(viewModel.mode == scale ? .semibold : .regular))
+                        .foregroundStyle(viewModel.mode == scale ? Color.accentColor : Color.secondary)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                if index < scales.count - 1 {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
 // MARK: - Nav bar
 
-/// Hierarchical navigation header. The center label names the *parent* period
-/// (e.g. in Day mode it says "Week of Mar 2") and tapping it zooms out one
-/// level. Chevrons step the current mode's period forward/backward; a "Today"
-/// button appears when the focus date is outside the current period.
+/// Period stepper for the current scale. Chevrons step forward/backward; the
+/// center label names the *current* period. A "Today" button appears in Day
+/// mode when the focus date is outside the current week.
 private struct ScheduleNavBar: View {
     @Bindable var viewModel: ScheduleViewModel
 
@@ -93,26 +131,10 @@ private struct ScheduleNavBar: View {
                 Color.clear.frame(width: 32, height: 32)
             }
 
-            Button {
-                if viewModel.mode.zoomedOut != nil {
-                    withAnimation(.easeInOut(duration: 0.2)) { viewModel.zoomOut() }
-                }
-            } label: {
-                HStack(spacing: 4) {
-                    Text(labelText)
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                    if viewModel.mode.zoomedOut != nil {
-                        Image(systemName: "chevron.up")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .contentShape(Rectangle())
+            Text(labelText)
+                .font(.headline)
+                .foregroundStyle(.primary)
                 .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.plain)
-            .disabled(viewModel.mode.zoomedOut == nil)
 
             if viewModel.mode != .day {
                 chevron(systemName: "chevron.right") { viewModel.stepPeriod(by: 1) }
@@ -138,16 +160,16 @@ private struct ScheduleNavBar: View {
         let d = viewModel.focusDate
         switch viewModel.mode {
         case .day:
+            f.dateFormat = "EEEE, MMM d"
+            return f.string(from: d)
+        case .week:
             let cal = Calendar.current
             let weekday = cal.component(.weekday, from: d) - 1
             let sunday = cal.date(byAdding: .day, value: -weekday, to: d) ?? d
             f.dateFormat = "MMM d"
             return "Week of \(f.string(from: sunday))"
-        case .week:
-            f.dateFormat = "MMMM yyyy"
-            return f.string(from: d)
         case .month:
-            f.dateFormat = "yyyy"
+            f.dateFormat = "MMMM yyyy"
             return f.string(from: d)
         case .year:
             f.dateFormat = "yyyy"

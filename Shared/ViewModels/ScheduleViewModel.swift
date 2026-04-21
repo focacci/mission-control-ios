@@ -6,16 +6,6 @@ enum ScheduleViewMode: String, CaseIterable {
     case week  = "Week"
     case month = "Month"
     case year  = "Year"
-
-    /// The next-coarser mode, or `nil` if already at year.
-    var zoomedOut: ScheduleViewMode? {
-        switch self {
-        case .day:   return .week
-        case .week:  return .month
-        case .month: return .year
-        case .year:  return nil
-        }
-    }
 }
 
 @Observable
@@ -256,10 +246,6 @@ final class ScheduleViewModel {
         case .month: stepMonth(by: delta)
         case .year:  stepYear(by: delta)
         }
-    }
-
-    func zoomOut() {
-        if let next = mode.zoomedOut { mode = next }
     }
 
     func zoomIn(to mode: ScheduleViewMode, date: Date? = nil) {
