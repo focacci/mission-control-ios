@@ -2,7 +2,7 @@ import Foundation
 import Observation
 
 @Observable
-final class DashboardViewModel {
+final class PlansViewModel {
     var goals: [Goal] = []
     var initiatives: [Initiative] = []
     var tasks: [MCTask] = []

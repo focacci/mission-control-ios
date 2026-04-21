@@ -47,7 +47,7 @@ final class ChatService: ObservableObject {
             ctx["id"] = id; ctx["name"] = name; ctx["emoji"] = emoji
         case .schedule(let d):
             let f = ISO8601DateFormatter(); ctx["date"] = f.string(from: d)
-        case .dashboard(let s): ctx["section"] = s
+        case .plans(let s): ctx["section"] = s
         case .health(let s): ctx["section"] = s
         case .faith(let s): ctx["section"] = s
         default: break
@@ -75,7 +75,7 @@ final class ChatService: ObservableObject {
         case .agents: return "agents"
         case .agent: return "agent"
         case .agentChat: return "agent_chat"
-        case .dashboard: return "dashboard"
+        case .plans: return "plans"
         case .goal: return "goal"
         case .initiative: return "initiative"
         case .task: return "task"

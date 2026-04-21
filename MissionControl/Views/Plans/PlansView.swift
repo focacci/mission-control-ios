@@ -1,135 +1,122 @@
 import SwiftUI
 
-enum DashboardSection: String, CaseIterable {
+enum PlanSection: String, CaseIterable {
     case goals = "Goals"
     case initiatives = "Initiatives"
     case tasks = "Tasks"
 }
 
-struct DashboardView: View {
-    @State private var viewModel = DashboardViewModel()
-    @State private var selectedSection: DashboardSection = .goals
+struct PlansView: View {
+    @State private var viewModel = PlansViewModel()
+    @State private var selectedSection: PlanSection = .goals
     @State private var showingAddGoal = false
     @State private var showingAddInitiative = false
     @State private var showingAddTask = false
 
     var body: some View {
         NavigationStack {
-            Group {
-                if viewModel.isLoading && viewModel.goals.isEmpty && viewModel.initiatives.isEmpty && viewModel.tasks.isEmpty {
-                    ProgressView("Loading…")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let error = viewModel.error {
-                    VStack(spacing: 12) {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.largeTitle)
-                            .foregroundStyle(.orange)
-                        Text(error)
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(.secondary)
-                        Button("Retry") {
-                            Task { await viewModel.load() }
-                        }
-                        .buttonStyle(.borderedProminent)
+            VStack(spacing: 0) {
+                Picker("Section", selection: $selectedSection) {
+                    ForEach(PlanSection.allCases, id: \.self) { section in
+                        Text(section.rawValue).tag(section)
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    switch selectedSection {
-                    case .goals:
-                        List(viewModel.goals) { goal in
-                            NavigationLink(value: goal) {
-                                GoalCard(goal: goal)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+
+                Group {
+                    if viewModel.isLoading && viewModel.goals.isEmpty && viewModel.initiatives.isEmpty && viewModel.tasks.isEmpty {
+                        ProgressView("Loading…")
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else if let error = viewModel.error {
+                        VStack(spacing: 12) {
+                            Image(systemName: "exclamationmark.triangle")
+                                .font(.largeTitle)
+                                .foregroundStyle(.orange)
+                            Text(error)
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(.secondary)
+                            Button("Retry") {
+                                Task { await viewModel.load() }
                             }
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                            .contextMenu {
-                                Button(role: .destructive) {
-                                    Task { await viewModel.deleteGoal(id: goal.id) }
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                            .buttonStyle(.borderedProminent)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        switch selectedSection {
+                        case .goals:
+                            List(viewModel.goals) { goal in
+                                NavigationLink(value: goal) {
+                                    GoalCard(goal: goal)
+                                }
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        Task { await viewModel.deleteGoal(id: goal.id) }
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
                                 }
                             }
-                        }
-                        .listStyle(.plain)
-                        .contentMargins(.bottom, 90, for: .scrollContent)
-                        .refreshable { await viewModel.load() }
-                        .errorAlert(message: $viewModel.error)
+                            .listStyle(.plain)
+                            .contentMargins(.bottom, 90, for: .scrollContent)
+                            .refreshable { await viewModel.load() }
+                            .errorAlert(message: $viewModel.error)
 
-                    case .initiatives:
-                        ScrollView {
-                            LazyVStack(spacing: 0) {
-                                ForEach(viewModel.initiatives) { initiative in
-                                    NavigationLink(value: initiative) {
-                                        InitiativeCard(initiative: initiative)
-                                    }
-                                    .buttonStyle(.plain)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 8)
-                                    .contextMenu {
-                                        Button(role: .destructive) {
-                                            Task { await viewModel.deleteInitiative(id: initiative.id) }
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
+                        case .initiatives:
+                            ScrollView {
+                                LazyVStack(spacing: 0) {
+                                    ForEach(viewModel.initiatives) { initiative in
+                                        NavigationLink(value: initiative) {
+                                            InitiativeCard(initiative: initiative)
+                                        }
+                                        .buttonStyle(.plain)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 8)
+                                        .contextMenu {
+                                            Button(role: .destructive) {
+                                                Task { await viewModel.deleteInitiative(id: initiative.id) }
+                                            } label: {
+                                                Label("Delete", systemImage: "trash")
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                        .refreshable { await viewModel.load() }
-                        .errorAlert(message: $viewModel.error)
+                            .refreshable { await viewModel.load() }
+                            .errorAlert(message: $viewModel.error)
 
-                    case .tasks:
-                        List(viewModel.tasks) { task in
-                            NavigationLink(value: task) {
-                                TaskRow(task: task)
-                            }
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                            .contextMenu {
-                                Button(role: .destructive) {
-                                    Task { await viewModel.deleteTask(id: task.id) }
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                        case .tasks:
+                            List(viewModel.tasks) { task in
+                                NavigationLink(value: task) {
+                                    TaskRow(task: task)
+                                }
+                                .listRowBackground(Color.clear)
+                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        Task { await viewModel.deleteTask(id: task.id) }
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
                                 }
                             }
+                            .listStyle(.plain)
+                            .contentMargins(.bottom, 90, for: .scrollContent)
+                            .refreshable { await viewModel.load() }
+                            .errorAlert(message: $viewModel.error)
                         }
-                        .listStyle(.plain)
-                        .contentMargins(.bottom, 90, for: .scrollContent)
-                        .refreshable { await viewModel.load() }
-                        .errorAlert(message: $viewModel.error)
                     }
                 }
             }
+            .navigationTitle("Plans")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Menu {
-                        ForEach(DashboardSection.allCases, id: \.self) { section in
-                            Button {
-                                selectedSection = section
-                            } label: {
-                                if selectedSection == section {
-                                    Label(section.rawValue, systemImage: "checkmark")
-                                } else {
-                                    Text(section.rawValue)
-                                }
-                            }
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(selectedSection.rawValue)
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                            Image(systemName: "chevron.down")
-                                .font(.caption.bold())
-                        }
-                        .foregroundStyle(.primary)
-                    }
-                }
-
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         switch selectedSection {
@@ -185,7 +172,7 @@ struct DashboardView: View {
                 }
             }
             .task { await viewModel.load() }
-            .chatContext(.dashboard(section: selectedSection.rawValue))
+            .chatContext(.plans(section: selectedSection.rawValue))
         }
     }
 }

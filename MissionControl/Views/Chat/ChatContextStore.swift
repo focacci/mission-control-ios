@@ -6,7 +6,7 @@ enum ChatContextKind: Equatable {
     case agents
     case agent(id: String, name: String, emoji: String)
     case agentChat(id: String, name: String, emoji: String)
-    case dashboard(section: String)
+    case plans(section: String)
     case goal(id: String, emoji: String, name: String)
     case initiative(id: String, emoji: String, name: String)
     case task(id: String, name: String)
@@ -35,7 +35,7 @@ final class ChatContextStore {
         case .agents:                    return "Agents"
         case .agent(_, let n, _):        return n
         case .agentChat(_, let n, _):    return n
-        case .dashboard(let s):          return s
+        case .plans(let s):              return s
         case .goal(_, _, let n):         return n
         case .initiative(_, _, let n):   return n
         case .task(_, let n):         return n
@@ -54,7 +54,7 @@ final class ChatContextStore {
         case .agents:       return "person.2.wave.2"
         case .agent:        return "person.wave.2"
         case .agentChat:    return "bubble.left.and.text.bubble.right"
-        case .dashboard:    return "list.bullet"
+        case .plans:        return "list.bullet"
         case .goal:         return "trophy"
         case .initiative:   return "flag.pattern.checkered"
         case .task:         return "list.bullet.clipboard"
@@ -84,7 +84,7 @@ final class ChatContextStore {
         case .agents:       return "Agents"
         case .agent:        return "Agent"
         case .agentChat:    return "Agent Chat"
-        case .dashboard:    return "Plan"
+        case .plans:        return "Plans"
         case .goal:         return "Goal"
         case .initiative:   return "Initiative"
         case .task:         return "Task"
@@ -107,7 +107,7 @@ final class ChatContextStore {
             return "You're looking at **\(f.string(from: d))**'s schedule. I can fill open slots with high-priority tasks or help you rearrange things."
         case .health(let s):
             return "You're in **\(s)**. I can help you log entries, spot patterns, or set targets."
-        case .dashboard(let s):
+        case .plans(let s):
             return "You're in the **\(s)** view. I can help you create, organize, or prioritize items."
         case .faith(let s):
             return "You're in **\(s)**. I can help you reflect on scripture, find a prayer, or explore the liturgical calendar."
