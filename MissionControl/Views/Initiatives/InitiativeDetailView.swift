@@ -87,6 +87,12 @@ struct InitiativeDetailView: View {
                                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
                             }
                         }
+
+                        // Past chats scoped to this initiative
+                        ContextChatHistorySection(
+                            contextType: "initiative",
+                            contextId: initiative.id
+                        )
                     }
                     .padding()
                     .containerRelativeFrame(.horizontal)

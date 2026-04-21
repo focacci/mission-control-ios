@@ -52,7 +52,7 @@ final class ChatService: ObservableObject {
         if let sid = sessionId { body["sessionId"] = sid }
         if !useDefaultAgent, let aid = context.agentId { body["agentId"] = aid }
 
-        var ctx: [String: String] = ["type": contextTypeString(context)]
+        var ctx: [String: String] = ["type": context.contextType]
         switch context {
         case .goal(let id, let emoji, let name):
             ctx["id"] = id; ctx["emoji"] = emoji; ctx["name"] = name
@@ -87,22 +87,6 @@ final class ChatService: ObservableObject {
         return (reply, sid)
     }
 
-    private func contextTypeString(_ kind: ChatContextKind) -> String {
-        switch kind {
-        case .app: return "app"
-        case .home: return "home"
-        case .agents: return "agents"
-        case .agent: return "agent"
-        case .agentChat: return "agent_chat"
-        case .plans: return "plans"
-        case .goal: return "goal"
-        case .initiative: return "initiative"
-        case .task: return "task"
-        case .schedule: return "schedule"
-        case .health: return "health"
-        case .faith: return "faith"
-        }
-    }
 }
 
 // MARK: - Shared Chat Conversation
@@ -115,6 +99,9 @@ struct ChatConversationView: View {
     @StateObject private var chatService = ChatService()
 
     @State private var localState = ChatConversationState()
+    @State private var showingHistory = false
+    @State private var isStartingNewChat = false
+    @State private var historyError: String?
     @FocusState private var isInputFocused: Bool
 
     /// When `true`, requests route to the workspace's default agent regardless
@@ -159,13 +146,31 @@ struct ChatConversationView: View {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Menu {
                         Button {
-                            resetChat()
+                            Task { await startNewChat() }
                         } label: {
                             Label("New chat", systemImage: "square.and.pencil")
                         }
+                        Button {
+                            showingHistory = true
+                        } label: {
+                            Label("History", systemImage: "clock.arrow.circlepath")
+                        }
                     } label: {
-                        Image(systemName: "ellipsis")
+                        if isStartingNewChat {
+                            ProgressView()
+                        } else {
+                            Image(systemName: "ellipsis")
+                        }
                     }
+                }
+            }
+            .sheet(isPresented: $showingHistory) {
+                ChatHistoryView(
+                    agentId: historyAgentId,
+                    contextType: historyContextType,
+                    contextId: historyContextId
+                ) { session, messages in
+                    loadSession(session, messages: messages)
                 }
             }
             .onAppear {
@@ -177,15 +182,75 @@ struct ChatConversationView: View {
                 // Skip when locked so the pinned conversation survives context
                 // changes (e.g. user locks chat, closes sheet, navigates tabs).
                 if !chatContext.isLocked {
-                    resetChat()
+                    resetLocalState()
                 }
             }
+            .errorAlert(message: $historyError)
     }
 
-    private func resetChat() {
+    /// Clears the in-memory thread without touching the server. Used when the
+    /// underlying chat context changes — the previous session is already
+    /// persisted on the API side.
+    private func resetLocalState() {
         state.messages = [ChatMessage(role: .agent, content: welcomeMessage())]
         state.inputText = ""
         state.sessionId = nil
+    }
+
+    /// "New chat" entry point. Calls `POST /api/chat/sessions` so the next
+    /// send attaches to a fresh thread instead of being resumed by
+    /// `findOrCreateSession` on the server.
+    private func startNewChat() async {
+        isStartingNewChat = true
+        defer { isStartingNewChat = false }
+        do {
+            let session = try await APIClient.shared.createChatSession(
+                agentId: resolvedAgentId,
+                contextType: chatContext.context.contextType,
+                contextId: chatContext.context.contextId
+            )
+            state.messages = [ChatMessage(role: .agent, content: welcomeMessage())]
+            state.inputText = ""
+            state.sessionId = session.id
+        } catch {
+            historyError = error.localizedDescription
+        }
+    }
+
+    /// Replace the in-memory thread with a previously persisted session.
+    private func loadSession(_ session: ChatSession, messages: [ChatTranscriptMessage]) {
+        state.messages = messages.compactMap { msg in
+            switch msg.role {
+            case .user:      return ChatMessage(role: .user, content: msg.content)
+            case .assistant: return ChatMessage(role: .agent, content: msg.content)
+            case .system:    return nil
+            }
+        }
+        if state.messages.isEmpty {
+            state.messages = [ChatMessage(role: .agent, content: welcomeMessage())]
+        }
+        state.inputText = ""
+        state.sessionId = session.id
+    }
+
+    // MARK: - History filter scope
+
+    /// When using the default agent the floating chat roams across contexts;
+    /// pinning history to just the current `agentId` would hide most threads.
+    /// When bound to a specific agent (e.g. AgentChatView), scope to that
+    /// agent's conversations.
+    private var historyAgentId: String? {
+        useDefaultAgent ? nil : chatContext.context.agentId
+    }
+
+    private var historyContextType: String? { nil }
+    private var historyContextId: String? { nil }
+
+    private var resolvedAgentId: String {
+        if !useDefaultAgent, let id = chatContext.context.agentId {
+            return id
+        }
+        return "intella"
     }
 
     // MARK: - Message List

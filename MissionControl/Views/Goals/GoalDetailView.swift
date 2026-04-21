@@ -59,6 +59,12 @@ struct GoalDetailView: View {
                                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
                             }
                         }
+
+                        // Past chats scoped to this goal
+                        ContextChatHistorySection(
+                            contextType: "goal",
+                            contextId: goal.id
+                        )
                     }
                     .padding()
                     .containerRelativeFrame(.horizontal)

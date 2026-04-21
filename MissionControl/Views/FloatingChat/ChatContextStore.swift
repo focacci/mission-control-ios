@@ -21,6 +21,39 @@ enum ChatContextKind: Equatable {
         if case .agentChat(let id, _, _) = self { return id }
         return nil
     }
+
+    /// `contextType` value persisted alongside chat sessions on the API side.
+    /// Kept in sync with `ChatService.contextTypeString` — change them together.
+    var contextType: String {
+        switch self {
+        case .app:          return "app"
+        case .home:         return "home"
+        case .agents:       return "agents"
+        case .agent:        return "agent"
+        case .agentChat:    return "agent_chat"
+        case .plans:        return "plans"
+        case .goal:         return "goal"
+        case .initiative:   return "initiative"
+        case .task:         return "task"
+        case .schedule:     return "schedule"
+        case .health:       return "health"
+        case .faith:        return "faith"
+        }
+    }
+
+    /// The concrete entity id this context points at, when applicable.
+    var contextId: String? {
+        switch self {
+        case .goal(let id, _, _),
+             .initiative(let id, _, _),
+             .task(let id, _),
+             .agent(let id, _, _),
+             .agentChat(let id, _, _):
+            return id
+        default:
+            return nil
+        }
+    }
 }
 
 @Observable

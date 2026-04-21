@@ -48,7 +48,7 @@ struct AgentsListView: View {
                         Button {
                             path.append(agent)
                         } label: {
-                            AgentCard(agent: agent)
+                            AgentCard(agent: agent, activity: viewModel.activity[agent.id])
                         }
                         .buttonStyle(.plain)
                         .listRowBackground(Color.clear)

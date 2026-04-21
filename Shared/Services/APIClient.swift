@@ -316,6 +316,79 @@ final class APIClient {
     func repairAgents() async throws -> [Agent] {
         try await send("/api/agents/repair", method: "POST")
     }
+
+    // MARK: - Chat Sessions
+
+    func chatSessions(
+        agentId: String? = nil,
+        contextType: String? = nil,
+        contextId: String? = nil,
+        limit: Int? = nil
+    ) async throws -> [ChatSession] {
+        var parts: [String] = []
+        if let a = agentId { parts.append("agentId=\(a)") }
+        if let t = contextType { parts.append("contextType=\(t)") }
+        if let c = contextId { parts.append("contextId=\(c)") }
+        if let l = limit { parts.append("limit=\(l)") }
+        let path = "/api/chat/sessions" + (parts.isEmpty ? "" : "?" + parts.joined(separator: "&"))
+        return try await fetch(path)
+    }
+
+    func chatSession(id: String) async throws -> ChatSession {
+        try await fetch("/api/chat/sessions/\(id)")
+    }
+
+    func createChatSession(
+        agentId: String,
+        contextType: String? = nil,
+        contextId: String? = nil,
+        title: String? = nil
+    ) async throws -> ChatSession {
+        let body = CreateSessionBody(
+            agentId: agentId,
+            contextType: contextType,
+            contextId: contextId,
+            title: title
+        )
+        return try await send("/api/chat/sessions", method: "POST", body: body)
+    }
+
+    func chatMessages(
+        sessionId: String,
+        limit: Int? = nil,
+        before: String? = nil
+    ) async throws -> [ChatTranscriptMessage] {
+        var parts: [String] = []
+        if let l = limit { parts.append("limit=\(l)") }
+        if let b = before { parts.append("before=\(b)") }
+        let qs = parts.isEmpty ? "" : "?" + parts.joined(separator: "&")
+        return try await fetch("/api/chat/sessions/\(sessionId)/messages\(qs)")
+    }
+
+    func deleteChatSession(id: String) async throws {
+        try await sendNoBody("/api/chat/sessions/\(id)", method: "DELETE")
+    }
+
+    // MARK: - Invocations
+
+    func invocations(
+        trigger: String? = nil,
+        status: String? = nil,
+        limit: Int? = nil,
+        since: String? = nil
+    ) async throws -> [AgentInvocation] {
+        var parts: [String] = []
+        if let t = trigger { parts.append("trigger=\(t)") }
+        if let s = status { parts.append("status=\(s)") }
+        if let l = limit { parts.append("limit=\(l)") }
+        if let si = since { parts.append("since=\(si)") }
+        let path = "/api/invocations" + (parts.isEmpty ? "" : "?" + parts.joined(separator: "&"))
+        return try await fetch(path)
+    }
+
+    func invocation(id: String) async throws -> InvocationDetail {
+        try await fetch("/api/invocations/\(id)")
+    }
 }
 
 // MARK: - Request Bodies
@@ -390,4 +463,11 @@ struct CreateAgentBody: Encodable {
 
 struct UpdateAgentBody: Encodable {
     let systemPrompt: String?
+}
+
+struct CreateSessionBody: Encodable {
+    let agentId: String
+    let contextType: String?
+    let contextId: String?
+    let title: String?
 }

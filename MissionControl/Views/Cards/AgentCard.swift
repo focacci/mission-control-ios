@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AgentCard: View {
     let agent: Agent
+    var activity: AgentActivity? = nil
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -38,6 +39,21 @@ struct AgentCard: View {
                         .lineLimit(1)
                 }
 
+                if let activity, activity.chatCount > 0 {
+                    HStack(spacing: 10) {
+                        Label("\(activity.chatCount) chat\(activity.chatCount == 1 ? "" : "s")",
+                              systemImage: "bubble.left.and.text.bubble.right")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        if let last = activity.lastMessageAt {
+                            Text("· last \(relativeTime(last))")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
                 if let prompt = agent.systemPrompt, !prompt.isEmpty {
                     Text(prompt)
                         .font(.caption)
@@ -50,5 +66,14 @@ struct AgentCard: View {
             Spacer(minLength: 0)
         }
         .cardStyle()
+    }
+
+    private func relativeTime(_ iso: String) -> String {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let date = f.date(from: iso) ?? ISO8601DateFormatter().date(from: iso) ?? Date()
+        let rel = RelativeDateTimeFormatter()
+        rel.unitsStyle = .short
+        return rel.localizedString(for: date, relativeTo: Date())
     }
 }

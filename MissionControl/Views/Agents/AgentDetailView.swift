@@ -24,6 +24,7 @@ struct AgentDetailView: View {
                 header
                 metadataCard
                 systemPromptCard
+                ContextChatHistorySection(agentId: current.id)
             }
             .padding()
         }

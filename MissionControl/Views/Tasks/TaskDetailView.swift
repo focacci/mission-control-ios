@@ -110,6 +110,12 @@ struct TaskDetailView: View {
                         if let outputs = task.outputs, !outputs.isEmpty {
                             OutputsCard(outputs: outputs)
                         }
+
+                        // Past chats scoped to this task
+                        ContextChatHistorySection(
+                            contextType: "task",
+                            contextId: task.id
+                        )
                     }
                     .padding()
                     .containerRelativeFrame(.horizontal)

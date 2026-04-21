@@ -63,6 +63,14 @@ struct SettingsView: View {
                     }
                 }
 
+                Section("Debug") {
+                    NavigationLink {
+                        InvocationsListView()
+                    } label: {
+                        Label("Agent Invocations", systemImage: "waveform")
+                    }
+                }
+
                 Section("About") {
                     LabeledContent("Version", value: "\(appVersion) (\(buildNumber))")
                     LabeledContent("Model", value: "iOS/iPadOS + watchOS")
