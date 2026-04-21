@@ -118,11 +118,7 @@ struct ChatConversationView: View {
     var body: some View {
         messageList
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                VStack(spacing: 0) {
-                    Divider()
-                    inputBar
-                }
-                .background(.bar)
+                inputBarContainer
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -175,20 +171,37 @@ struct ChatConversationView: View {
 
     // MARK: - Input Bar
 
+    @ViewBuilder
+    private var inputBarContainer: some View {
+        if #available(iOS 26.0, *) {
+            GlassEffectContainer(spacing: 10) {
+                inputBar
+            }
+        } else {
+            VStack(spacing: 0) {
+                Divider()
+                inputBar
+            }
+            .background(.bar)
+        }
+    }
+
     private var inputBar: some View {
         HStack(alignment: .bottom, spacing: 10) {
             TextField("Ask anything…", text: $inputText, axis: .vertical)
                 .lineLimit(1...5)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22))
+                .padding(.horizontal, 18)
+                .padding(.vertical, 12)
+                .modifier(LiquidGlassInputBackground())
                 .focused($isInputFocused)
                 .submitLabel(.send)
 
             Button(action: sendMessage) {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(canSend ? Color.blue : Color.secondary)
+                Image(systemName: "arrow.up")
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(canSend ? Color.white : Color.secondary)
+                    .frame(width: 44, height: 44)
+                    .modifier(LiquidGlassSendButtonBackground(isEnabled: canSend))
             }
             .disabled(!canSend)
             .animation(.easeInOut(duration: 0.15), value: inputText.isEmpty)
@@ -233,6 +246,36 @@ struct ChatConversationView: View {
                     content: "⚠️ Error: \(error.localizedDescription)"
                 ))
             }
+        }
+    }
+}
+
+// MARK: - Liquid Glass Modifiers
+
+private struct LiquidGlassInputBackground: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(.regular.interactive(), in: .capsule)
+        } else {
+            content.background(.regularMaterial, in: Capsule())
+        }
+    }
+}
+
+private struct LiquidGlassSendButtonBackground: ViewModifier {
+    let isEnabled: Bool
+
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content.glassEffect(
+                isEnabled ? .regular.tint(.blue).interactive() : .regular.interactive(),
+                in: .circle
+            )
+        } else {
+            content.background(
+                isEnabled ? AnyShapeStyle(Color.blue) : AnyShapeStyle(Material.regularMaterial),
+                in: Circle()
+            )
         }
     }
 }
