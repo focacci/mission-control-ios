@@ -15,14 +15,9 @@ struct ChatContextToolbarButton: View {
             }
         } label: {
             HStack(spacing: 8) {
-                if let emoji = chatContext.displayEmoji {
-                    Text(emoji)
-                        .font(.system(size: 16))
-                } else {
-                    Image(systemName: chatContext.displayIcon)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.blue)
-                }
+                Image(systemName: chatContext.displayIcon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.blue)
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(chatContext.contextTypeName.uppercased())
