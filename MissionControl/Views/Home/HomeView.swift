@@ -6,6 +6,7 @@ struct HomeView: View {
     @State private var dailyNote = DailyNote()
     @State private var showingNoteEditor = false
     @State private var showingSettings = false
+    @State private var selectedBrief: DailyBrief?
 
     var body: some View {
         NavigationStack {
@@ -14,6 +15,10 @@ struct HomeView: View {
                     VStack(spacing: 16) {
                         PrayerScriptureCard(mystery: RosaryMystery.forDate(Date()),
                                            state: rosaryState)
+
+                        HealthCard()
+
+                        BriefsRow(selectedBrief: $selectedBrief)
 
                         DailyNoteCard(note: dailyNote, showEditor: $showingNoteEditor)
 
@@ -39,8 +44,11 @@ struct HomeView: View {
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
             }
-            .fullScreenCover(isPresented: $showingNoteEditor) {
+            .sheet(isPresented: $showingNoteEditor) {
                 DailyNoteEditorView(note: dailyNote)
+            }
+            .sheet(item: $selectedBrief) { brief in
+                BriefDetailView(brief: brief)
             }
         }
     }
@@ -131,7 +139,7 @@ private func mockDetail(for mystery: RosaryMystery, index: Int, name: String) ->
 private struct PrayerScriptureCard: View {
     let mystery: RosaryMystery
     @Bindable var state: RosaryState
-    @State private var isExpanded = true
+    @State private var isExpanded = false
     @State private var selectedMystery: MysteryDetail?
     @State private var selectedScripture: ScriptureReading?
 
@@ -422,31 +430,52 @@ private struct DailyNoteCard: View {
 
 private struct TodayTasksCard: View {
     let slots: [ScheduleSlot]
+    @State private var isExpanded = true
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Label("Today's Tasks", systemImage: "checklist")
-                .font(.headline)
-                .padding(.horizontal, 4)
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
+            } label: {
+                HStack {
+                    Label("Today's Tasks", systemImage: "checklist")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .contentShape(Rectangle())
+                .padding(14)
+            }
+            .buttonStyle(.plain)
 
-            if slots.isEmpty {
-                Text("No tasks scheduled today")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 12)
-            } else {
-                VStack(spacing: 8) {
-                    ForEach(slots) { slot in
-                        NavigationLink(value: slot) {
-                            SlotCard(slot: slot, showBreadcrumb: true)
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 0) {
+                    Divider()
+
+                    if slots.isEmpty {
+                        Text("No tasks scheduled today")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.vertical, 16)
+                    } else {
+                        VStack(spacing: 8) {
+                            ForEach(slots) { slot in
+                                NavigationLink(value: slot) {
+                                    SlotCard(slot: slot, showBreadcrumb: true)
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
-                        .buttonStyle(.plain)
+                        .padding(14)
                     }
                 }
             }
         }
-        .padding(.horizontal, 4)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
         .navigationDestination(for: ScheduleSlot.self) { slot in
             if let taskId = slot.taskId {
                 TaskDetailView(taskId: taskId)
@@ -477,5 +506,321 @@ struct DailyNoteEditorView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Health Card
+
+private struct HealthCardMeal {
+    let type: String
+    let name: String
+    let calories: Int
+    let icon: String
+}
+
+private struct HealthCardWorkout {
+    let name: String
+    let duration: String
+    let icon: String
+}
+
+private struct HealthCardGame {
+    let title: String
+    let time: String
+    let icon: String
+}
+
+private let mockHealthMeals: [HealthCardMeal] = [
+    HealthCardMeal(type: "Breakfast", name: "Overnight Oats & Eggs", calories: 520, icon: "sunrise"),
+    HealthCardMeal(type: "Lunch", name: "Grilled Chicken Bowl", calories: 680, icon: "sun.max"),
+    HealthCardMeal(type: "Snack", name: "Greek Yogurt & Almonds", calories: 210, icon: "leaf"),
+    HealthCardMeal(type: "Dinner", name: "Salmon & Vegetables", calories: 590, icon: "moon"),
+]
+
+private let mockHealthWorkouts: [HealthCardWorkout] = [
+    HealthCardWorkout(name: "Upper Body Strength", duration: "50 min", icon: "dumbbell"),
+    HealthCardWorkout(name: "Zone 2 Walk", duration: "30 min", icon: "figure.walk"),
+]
+
+private let mockHealthGames: [HealthCardGame] = [
+    HealthCardGame(title: "Celtics vs. Knicks", time: "7:30 PM", icon: "basketball"),
+    HealthCardGame(title: "Red Sox vs. Yankees", time: "9:05 PM", icon: "baseball"),
+]
+
+private struct HealthCard: View {
+    @State private var isExpanded = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
+            } label: {
+                HStack {
+                    Label("Health", systemImage: "heart")
+                        .font(.headline)
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .contentShape(Rectangle())
+                .padding(14)
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 14) {
+                    Divider()
+
+                    // Meals
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Meals Planned", systemImage: "fork.knife")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+
+                        ForEach(mockHealthMeals, id: \.type) { meal in
+                            HStack(spacing: 10) {
+                                Image(systemName: meal.icon)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 20)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(meal.type)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Text(meal.name)
+                                        .font(.subheadline)
+                                }
+                                Spacer()
+                                Text("\(meal.calories) kcal")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+
+                    Divider()
+
+                    // Workouts
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Workouts Planned", systemImage: "figure.run")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+
+                        ForEach(mockHealthWorkouts, id: \.name) { workout in
+                            HStack(spacing: 10) {
+                                Image(systemName: workout.icon)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 20)
+                                Text(workout.name)
+                                    .font(.subheadline)
+                                Spacer()
+                                Label(workout.duration, systemImage: "clock")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+
+                    Divider()
+
+                    // Games today
+                    VStack(alignment: .leading, spacing: 8) {
+                        Label("Games Today", systemImage: "sportscourt")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+
+                        ForEach(mockHealthGames, id: \.title) { game in
+                            HStack(spacing: 10) {
+                                Image(systemName: game.icon)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 20)
+                                Text(game.title)
+                                    .font(.subheadline)
+                                Spacer()
+                                Text(game.time)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .padding(.bottom, 14)
+                }
+                .padding(.horizontal, 14)
+            }
+        }
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+// MARK: - Briefs
+
+enum DailyBrief: String, Identifiable, CaseIterable {
+    case morning, afternoon, evening
+
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .morning:   return "Morning Brief"
+        case .afternoon: return "Afternoon Brief"
+        case .evening:   return "Evening Brief"
+        }
+    }
+    var shortLabel: String {
+        switch self {
+        case .morning:   return "Morning"
+        case .afternoon: return "Afternoon"
+        case .evening:   return "Evening"
+        }
+    }
+    var icon: String {
+        switch self {
+        case .morning:   return "sunrise.fill"
+        case .afternoon: return "sun.max.fill"
+        case .evening:   return "moon.stars.fill"
+        }
+    }
+    var color: Color {
+        switch self {
+        case .morning:   return .orange
+        case .afternoon: return .yellow
+        case .evening:   return .indigo
+        }
+    }
+    var summary: String {
+        switch self {
+        case .morning:
+            return "Good morning. You have 4 tasks scheduled, a 50-minute upper-body workout, and two games tonight. Weather is 62° and clear — good day for the zone 2 walk after lunch."
+        case .afternoon:
+            return "Halfway through the day. You've logged 2 of 4 meals and taken 3 of 5 supplements. Two tasks remaining before the 5pm deep-work block. Hydration is on track at 48 oz."
+        case .evening:
+            return "Day wrapping up. You completed 3 of 4 tasks, hit your workout, and logged all meals. One task rolled forward to tomorrow. Wind-down suggestion: finish by 10:15 for 7.5+ hours of sleep."
+        }
+    }
+    var highlights: [String] {
+        switch self {
+        case .morning:
+            return [
+                "4 tasks scheduled, 2 deep-work blocks",
+                "Upper Body Strength — 50 min (planned)",
+                "Celtics vs. Knicks at 7:30 PM",
+                "Rosary: Glorious Mysteries",
+            ]
+        case .afternoon:
+            return [
+                "Tasks: 2 done, 2 remaining",
+                "Meals logged: Breakfast, Lunch",
+                "Hydration: 6 of 8 cups",
+                "Deep-work block begins at 5:00 PM",
+            ]
+        case .evening:
+            return [
+                "Completed 3 of 4 tasks today",
+                "Workout: done (52 min logged)",
+                "Notes captured: 1 daily note",
+                "Tomorrow: lower body strength + 3 meetings",
+            ]
+        }
+    }
+}
+
+private struct BriefsRow: View {
+    @Binding var selectedBrief: DailyBrief?
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(DailyBrief.allCases) { brief in
+                Button {
+                    selectedBrief = brief
+                } label: {
+                    VStack(spacing: 6) {
+                        Image(systemName: brief.icon)
+                            .font(.title3)
+                            .foregroundStyle(brief.color)
+                        Text(brief.shortLabel)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.primary)
+                        Text("Brief")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+}
+
+private struct BriefDetailView: View {
+    let brief: DailyBrief
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 10) {
+                            Image(systemName: brief.icon)
+                                .font(.title)
+                                .foregroundStyle(brief.color)
+                            Text(brief.label)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                        }
+                        Text(Date().formatted(.dateTime.weekday(.wide).month().day()))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Label("Summary", systemImage: "text.alignleft")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.secondary)
+                        Text(brief.summary)
+                            .font(.body)
+                    }
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        Label("Highlights", systemImage: "sparkles")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.secondary)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            ForEach(brief.highlights, id: \.self) { item in
+                                HStack(alignment: .top, spacing: 8) {
+                                    Circle()
+                                        .fill(brief.color.opacity(0.6))
+                                        .frame(width: 5, height: 5)
+                                        .padding(.top, 7)
+                                    Text(item)
+                                        .font(.body)
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(minLength: 40)
+                }
+                .padding(20)
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 }
