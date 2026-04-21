@@ -9,6 +9,7 @@ struct AgentDetailView: View {
     @State private var isEditingPrompt = false
     @State private var isSaving = false
     @State private var error: String?
+    @State private var selectedSession: ChatSession?
 
     init(agent: Agent, onAgentChanged: ((Agent) -> Void)? = nil) {
         self.agent = agent
@@ -24,7 +25,10 @@ struct AgentDetailView: View {
                 header
                 metadataCard
                 systemPromptCard
-                ContextChatHistorySection(agentId: current.id)
+                newChatButton
+                ContextChatHistorySection(agentId: current.id) { session in
+                    selectedSession = session
+                }
             }
             .padding()
         }
@@ -48,11 +52,8 @@ struct AgentDetailView: View {
             }
         }
         .floatingChatButton(isPresented: $chatContext.showingChat)
-        .safeAreaInset(edge: .bottom) {
-            chatButton
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
-                .background(.bar)
+        .navigationDestination(item: $selectedSession) { session in
+            AgentChatView(agent: current, initialSession: session)
         }
         .sheet(isPresented: $isEditingPrompt) {
             EditSystemPromptSheet(
@@ -149,11 +150,11 @@ struct AgentDetailView: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
 
-    private var chatButton: some View {
+    private var newChatButton: some View {
         NavigationLink {
             AgentChatView(agent: current)
         } label: {
-            Label("Chat with \(current.displayName)", systemImage: "bubble.left.and.text.bubble.right.fill")
+            Label("New Chat with \(current.displayName)", systemImage: "square.and.pencil")
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)

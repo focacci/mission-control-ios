@@ -12,20 +12,31 @@ struct ContextChatHistorySection: View {
     var contextType: String? = nil
     var contextId: String? = nil
     var limit: Int = 5
+    /// When set, tapping a session calls this closure instead of pushing
+    /// `ChatTranscriptView`. Lets callers (e.g. agent details) resume a
+    /// past chat in an editable view rather than a read-only transcript.
+    var onSelect: ((ChatSession) -> Void)? = nil
 
     init(
         contextType: String,
         contextId: String,
-        limit: Int = 5
+        limit: Int = 5,
+        onSelect: ((ChatSession) -> Void)? = nil
     ) {
         self.contextType = contextType
         self.contextId = contextId
         self.limit = limit
+        self.onSelect = onSelect
     }
 
-    init(agentId: String, limit: Int = 5) {
+    init(
+        agentId: String,
+        limit: Int = 5,
+        onSelect: ((ChatSession) -> Void)? = nil
+    ) {
         self.agentId = agentId
         self.limit = limit
+        self.onSelect = onSelect
     }
 
     @State private var sessions: [ChatSession] = []
@@ -58,12 +69,23 @@ struct ContextChatHistorySection: View {
                     }
 
                     ForEach(sessions) { session in
-                        NavigationLink {
-                            ChatTranscriptView(session: session)
-                        } label: {
-                            ChatSessionRow(session: session, isLoading: false)
+                        Group {
+                            if let onSelect {
+                                Button {
+                                    onSelect(session)
+                                } label: {
+                                    ChatSessionRow(session: session, isLoading: false)
+                                }
+                                .buttonStyle(.plain)
+                            } else {
+                                NavigationLink {
+                                    ChatTranscriptView(session: session)
+                                } label: {
+                                    ChatSessionRow(session: session, isLoading: false)
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
-                        .buttonStyle(.plain)
                         .contextMenu {
                             Button(role: .destructive) {
                                 Task { await delete(session) }
