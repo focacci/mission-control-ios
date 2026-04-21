@@ -77,15 +77,19 @@ struct AgentsListView: View {
             .chatContextToolbar()
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button { showingCreate = true } label: {
-                        Image(systemName: "plus")
-                    }
-                }
-                ToolbarItem(placement: .secondaryAction) {
-                    Button {
-                        Task { await viewModel.repair() }
+                    Menu {
+                        Button {
+                            showingCreate = true
+                        } label: {
+                            Label("New agent", systemImage: "person.badge.plus")
+                        }
+                        Button {
+                            Task { await viewModel.repair() }
+                        } label: {
+                            Label("Repair agents", systemImage: "wrench.and.screwdriver")
+                        }
                     } label: {
-                        Label("Repair agents", systemImage: "wrench.and.screwdriver")
+                        Image(systemName: "ellipsis")
                     }
                 }
             }

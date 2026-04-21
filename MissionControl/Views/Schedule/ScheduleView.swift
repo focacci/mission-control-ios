@@ -37,16 +37,6 @@ struct ScheduleView: View {
                 }
             }
             .chatContextToolbar()
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        slotToAssign = nil
-                        showingScheduleTask = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                }
-            }
             .navigationDestination(for: ScheduleSlot.self) { slot in
                 if let taskId = slot.taskId {
                     TaskDetailView(taskId: taskId)

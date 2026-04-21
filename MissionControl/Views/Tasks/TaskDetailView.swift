@@ -4,7 +4,6 @@ struct TaskDetailView: View {
     let taskId: String
     @State private var viewModel = TaskDetailViewModel()
     @State private var showingEdit = false
-    @State private var showingSchedule = false
     @State private var showingReschedule = false
     @State private var showingComplete = false
     @State private var showingBlock = false
@@ -119,19 +118,11 @@ struct TaskDetailView: View {
                 .chatContextToolbar()
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
-                        HStack(spacing: 4) {
-                            Button {
-                                showingSchedule = true
-                            } label: {
-                                Image(systemName: "calendar.badge.plus")
-                            }
-                            Button("Edit") { showingEdit = true }
+                        Button {
+                            showingEdit = true
+                        } label: {
+                            Image(systemName: "pencil")
                         }
-                    }
-                }
-                .sheet(isPresented: $showingSchedule) {
-                    ScheduleTaskSheet(preselectedTask: task) {
-                        Task { await viewModel.load(id: taskId) }
                     }
                 }
                 .sheet(isPresented: $showingReschedule) {

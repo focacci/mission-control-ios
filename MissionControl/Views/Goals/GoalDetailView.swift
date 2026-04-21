@@ -67,7 +67,11 @@ struct GoalDetailView: View {
                 .chatContextToolbar()
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
-                        Button("Edit") { showingEdit = true }
+                        Button {
+                            showingEdit = true
+                        } label: {
+                            Image(systemName: "pencil")
+                        }
                     }
                 }
                 .sheet(isPresented: $showingEdit) {
