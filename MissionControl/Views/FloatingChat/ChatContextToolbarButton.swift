@@ -66,20 +66,24 @@ private struct LiquidGlassContextButtonBackground: ViewModifier {
 // MARK: - View Modifier
 
 extension View {
-    /// Adds the context pill as a principal (center) toolbar item. Pair with
-    /// `.navigationBarTitleDisplayMode(.inline)` and drop any `navigationTitle`
-    /// — the pill replaces the title.
-    func chatContextToolbar() -> some View {
-        modifier(ChatContextToolbarModifier())
+    /// Adds the context pill as a toolbar item. Defaults to `.topBarLeading`
+    /// to keep the trailing edge free for page-specific actions. The floating
+    /// chat sheet overrides with `.principal` so the pill sits centered.
+    /// Pair with `.navigationBarTitleDisplayMode(.inline)` and drop any
+    /// `navigationTitle` — the pill replaces the title.
+    func chatContextToolbar(placement: ToolbarItemPlacement = .topBarLeading) -> some View {
+        modifier(ChatContextToolbarModifier(placement: placement))
     }
 }
 
 private struct ChatContextToolbarModifier: ViewModifier {
+    let placement: ToolbarItemPlacement
+
     func body(content: Content) -> some View {
         content
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .principal) {
+                ToolbarItem(placement: placement) {
                     ChatContextToolbarButton()
                 }
             }

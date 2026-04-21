@@ -13,6 +13,6 @@ struct ChatView: View {
             useDefaultAgent: true,
             welcomeMessage: { chatContext.welcomeMessage }
         )
-        .chatContextToolbar()
+        .chatContextToolbar(placement: .principal)
     }
 }
