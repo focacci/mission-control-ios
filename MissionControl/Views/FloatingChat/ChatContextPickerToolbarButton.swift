@@ -14,7 +14,7 @@ struct ChatContextPickerToolbarButton: View {
                 isExpanded.toggle()
             }
         } label: {
-            let hasContext = chatContext.isContextActive
+            let hasContext = chatContext.selectedContext != nil
             let iconName = hasContext
                 ? "point.3.filled.connected.trianglepath.dotted"
                 : "point.3.connected.trianglepath.dotted"
@@ -27,8 +27,15 @@ struct ChatContextPickerToolbarButton: View {
                 .scaleEffect(isExpanded ? 0.96 : 1.0)
                 .animation(.easeInOut(duration: 0.2), value: isExpanded)
         }
-        .accessibilityLabel("Chat context: \(chatContext.contextTypeName) \(chatContext.displayLabel)")
+        .accessibilityLabel(accessibilityLabel)
         .accessibilityHint(isExpanded ? "Hides context panel" : "Shows context panel")
+    }
+
+    private var accessibilityLabel: String {
+        guard let selected = chatContext.selectedContext else {
+            return "Chat context: none selected"
+        }
+        return "Chat context: \(chatContext.typeName(for: selected)) \(chatContext.label(for: selected))"
     }
 
     private func iconTint(hasContext: Bool) -> Color {

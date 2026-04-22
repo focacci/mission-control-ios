@@ -64,14 +64,22 @@ enum AgentConnectionState: Equatable {
 
 @Observable
 final class ChatContextStore {
-    var context: ChatContextKind = .app
+    /// The page the user is currently viewing. Maintained by the
+    /// `chatContext(_:)` view modifier. This is *not* automatically applied
+    /// as the chat's grounding — it only drives page-level toolbar pills and
+    /// the "Current" card in the floating chat's context picker. To ground
+    /// the chat on this page, the user must explicitly select it from the
+    /// picker (setting `selectedContext`).
+    var pageContext: ChatContextKind = .app
+
     var showingChat: Bool = false
     var isLocked: Bool = false
 
-    /// Whether the current `context` is treated as active for the chat. Users
-    /// can deselect the current context from the picker panel; deselected
-    /// state means the chat runs without context grounding.
-    var isContextActive: Bool = true
+    /// The context that actually grounds the floating chat. `nil` means the
+    /// chat runs without context grounding. Set by the user from the context
+    /// picker panel. Cleared by `ContentView` on sheet dismissal when the
+    /// chat is unlocked; preserved across dismissals when locked.
+    var selectedContext: ChatContextKind? = nil
 
     /// Live connection state for the selected agent. Drives the agent picker
     /// toolbar icon. Mocked on chat open until real transport lands.
@@ -89,8 +97,14 @@ final class ChatContextStore {
     /// `ContentView` when the sheet closes unlocked.
     let floatingChat = ChatConversationState()
 
-    var displayLabel: String {
-        switch context {
+    // MARK: - Page-context display (drives toolbar pill + picker "Current" card)
+
+    var displayLabel: String { label(for: pageContext) }
+    var displayIcon: String { icon(for: pageContext) }
+    var contextTypeName: String { typeName(for: pageContext) }
+
+    func label(for kind: ChatContextKind) -> String {
+        switch kind {
         case .app:                       return "Mission Control"
         case .home:
             return Date().formatted(.dateTime.weekday(.wide).month().day())
@@ -120,8 +134,8 @@ final class ChatContextStore {
         }
     }
 
-    var displayIcon: String {
-        switch context {
+    func icon(for kind: ChatContextKind) -> String {
+        switch kind {
         case .app:          return "cpu"
         case .home:         return "house"
         case .agents:       return "person.2.wave.2"
@@ -137,8 +151,8 @@ final class ChatContextStore {
         }
     }
 
-    var contextTypeName: String {
-        switch context {
+    func typeName(for kind: ChatContextKind) -> String {
+        switch kind {
         case .app:          return "App"
         case .home:         return "Home"
         case .agents:       return "Agents"
@@ -160,8 +174,17 @@ final class ChatContextStore {
         }
     }
 
+    // MARK: - Selected-context driven
+
+    /// Greeting for a fresh floating chat thread. Keys off the user's
+    /// selected grounding; falls back to a generic greeting when nothing is
+    /// selected (same copy as `.app`).
     var welcomeMessage: String {
-        switch context {
+        welcomeMessage(for: selectedContext ?? .app)
+    }
+
+    func welcomeMessage(for kind: ChatContextKind) -> String {
+        switch kind {
         case .goal(_, _, let name):
             return "I can see you're looking at the **\(name)** goal. I can suggest new initiatives, help you prioritize, or review progress. What do you need?"
         case .initiative(_, _, let name):
@@ -224,10 +247,10 @@ private struct ChatContextModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onAppear {
-                if let kind { store.context = kind }
+                if let kind { store.pageContext = kind }
             }
             .onChange(of: kind) { _, newKind in
-                if let newKind { store.context = newKind }
+                if let newKind { store.pageContext = newKind }
             }
     }
 }

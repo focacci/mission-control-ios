@@ -178,7 +178,7 @@ struct ChatConversationView: View {
                     state.messages = [ChatMessage(role: .agent, content: welcomeMessage())]
                 }
             }
-            .onChange(of: chatContext.context) {
+            .onChange(of: activeContext) {
                 // Skip when locked so the pinned conversation survives context
                 // changes (e.g. user locks chat, closes sheet, navigates tabs).
                 if !chatContext.isLocked {
@@ -186,6 +186,22 @@ struct ChatConversationView: View {
                 }
             }
             .errorAlert(message: $historyError)
+    }
+
+    /// Context used for routing, send payloads, and history scoping.
+    ///
+    /// - Floating chat (`useDefaultAgent == true`): the user's explicit
+    ///   grounding selection; falls back to `.app` when nothing is selected
+    ///   so the chat runs ungrounded against the default agent.
+    /// - Agent-bound chat (`useDefaultAgent == false`): always the current
+    ///   page context, since the enclosing screen (`AgentChatView`) sets it
+    ///   to `.agentChat(...)` and routes through that agent unconditionally.
+    private var activeContext: ChatContextKind {
+        if useDefaultAgent {
+            return chatContext.selectedContext ?? .app
+        } else {
+            return chatContext.pageContext
+        }
     }
 
     /// Clears the in-memory thread without touching the server. Used when the
@@ -206,8 +222,8 @@ struct ChatConversationView: View {
         do {
             let session = try await APIClient.shared.createChatSession(
                 agentId: resolvedAgentId,
-                contextType: chatContext.context.contextType,
-                contextId: chatContext.context.contextId
+                contextType: activeContext.contextType,
+                contextId: activeContext.contextId
             )
             state.messages = [ChatMessage(role: .agent, content: welcomeMessage())]
             state.inputText = ""
@@ -240,14 +256,14 @@ struct ChatConversationView: View {
     /// When bound to a specific agent (e.g. AgentChatView), scope to that
     /// agent's conversations.
     private var historyAgentId: String? {
-        useDefaultAgent ? nil : chatContext.context.agentId
+        useDefaultAgent ? nil : activeContext.agentId
     }
 
     private var historyContextType: String? { nil }
     private var historyContextId: String? { nil }
 
     private var resolvedAgentId: String {
-        if !useDefaultAgent, let id = chatContext.context.agentId {
+        if !useDefaultAgent, let id = activeContext.agentId {
             return id
         }
         return "intella"
@@ -345,7 +361,7 @@ struct ChatConversationView: View {
             do {
                 let result = try await chatService.send(
                     message: text,
-                    context: chatContext.context,
+                    context: activeContext,
                     sessionId: state.sessionId,
                     useDefaultAgent: useDefaultAgent
                 )

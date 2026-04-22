@@ -39,10 +39,12 @@ struct ContentView: View {
         }
         .environment(chatContextStore)
         .sheet(isPresented: $chatContextStore.showingChat, onDismiss: {
-            // Locking preserves chat history across sheet dismissals. When
-            // unlocked, wipe the conversation so the next open starts fresh.
+            // Locking preserves chat history and selected grounding across
+            // sheet dismissals. Unlocked dismissal clears both so the next
+            // open starts fresh with no context selected.
             if !chatContextStore.isLocked {
                 chatContextStore.floatingChat.reset()
+                chatContextStore.selectedContext = nil
             }
         }) {
             NavigationStack {

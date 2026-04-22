@@ -56,16 +56,17 @@ struct ChatContextPanel: View {
     // MARK: - Current
 
     private var currentSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        let isCurrentSelected = chatContext.selectedContext == chatContext.pageContext
+        return VStack(alignment: .leading, spacing: 6) {
             sectionHeader("Current")
             Button {
-                chatContext.isContextActive.toggle()
+                chatContext.selectedContext = isCurrentSelected ? nil : chatContext.pageContext
             } label: {
                 ContextCard(
                     icon: chatContext.displayIcon,
                     title: chatContext.displayLabel,
                     subtitle: chatContext.contextTypeName,
-                    isActive: chatContext.isContextActive
+                    isActive: isCurrentSelected
                 )
             }
             .buttonStyle(.plain)
@@ -88,8 +89,7 @@ struct ChatContextPanel: View {
                 VStack(spacing: 8) {
                     ForEach(Array(Self.mockPinned.enumerated()), id: \.offset) { _, kind in
                         Button {
-                            chatContext.context = kind
-                            chatContext.isContextActive = true
+                            chatContext.selectedContext = kind
                             withAnimation(.easeInOut(duration: 0.2)) {
                                 isExpanded = false
                             }
@@ -98,7 +98,7 @@ struct ChatContextPanel: View {
                                 icon: icon(for: kind),
                                 title: label(for: kind),
                                 subtitle: typeName(for: kind),
-                                isActive: false
+                                isActive: chatContext.selectedContext == kind
                             )
                         }
                         .buttonStyle(.plain)
