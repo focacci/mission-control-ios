@@ -25,8 +25,6 @@ struct MonthScheduleView: View {
             VStack(spacing: 0) {
                 // Day-of-week header — aligned with the grid below.
                 HStack(spacing: 0) {
-                    // Spacer for the week-button gutter on the left.
-                    Color.clear.frame(width: 22)
                     ForEach(["S","M","T","W","T","F","S"], id: \.self) { letter in
                         Text(letter)
                             .font(.caption)
@@ -43,8 +41,6 @@ struct MonthScheduleView: View {
                 // Calendar grid
                 ForEach(Array(weeks.enumerated()), id: \.offset) { _, week in
                     HStack(spacing: 0) {
-                        weekButton(for: week)
-
                         ForEach(Array(week.enumerated()), id: \.offset) { _, date in
                             MonthDayCell(
                                 date: date,
@@ -63,27 +59,6 @@ struct MonthScheduleView: View {
                 }
             }
         }
-    }
-
-    /// Chevron button on the left gutter of each week row; tapping opens that
-    /// week in Week view (using the row's first non-nil date, which is the
-    /// Sunday of that week).
-    @ViewBuilder
-    private func weekButton(for week: [Date?]) -> some View {
-        let anchor = week.compactMap { $0 }.first
-        Button {
-            if let anchor {
-                viewModel.zoomIn(to: .week, date: anchor)
-            }
-        } label: {
-            Image(systemName: "chevron.right")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(.secondary)
-                .frame(width: 22, height: 44)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .disabled(anchor == nil)
     }
 }
 

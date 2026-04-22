@@ -56,6 +56,7 @@ struct DayScheduleView: View {
                 onPrev: { viewModel.stepWeek(by: -1) },
                 onNext: { viewModel.stepWeek(by: 1) }
             )
+            .padding(.top, 10)
             .padding(.bottom, 6)
 
             timeline

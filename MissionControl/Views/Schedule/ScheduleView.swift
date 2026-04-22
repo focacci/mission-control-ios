@@ -92,8 +92,6 @@ struct ScheduleView: View {
                     path.append(slot)
                 }
             )
-        case .week:
-            WeekScheduleView(viewModel: viewModel)
         case .month:
             MonthScheduleView(viewModel: viewModel)
         case .year:
@@ -104,13 +102,13 @@ struct ScheduleView: View {
 
 // MARK: - Breadcrumb
 
-/// Scale-switcher breadcrumb: Year › Month › Week › Day. The active scale is
+/// Scale-switcher breadcrumb: Year › Month › Day. The active scale is
 /// emphasized; tapping any crumb jumps directly to that scale without stepping
 /// through the intermediate levels.
 private struct ScheduleBreadcrumb: View {
     @Bindable var viewModel: ScheduleViewModel
 
-    private let scales: [ScheduleViewMode] = [.year, .month, .week, .day]
+    private let scales: [ScheduleViewMode] = [.year, .month, .day]
 
     var body: some View {
         HStack(spacing: 6) {
@@ -140,8 +138,8 @@ private struct ScheduleBreadcrumb: View {
 // MARK: - Nav bar
 
 /// Period stepper for the current scale. Chevrons step forward/backward; the
-/// center label names the *current* period. A "Today" button appears in Day
-/// mode when the focus date is outside the current week.
+/// center label names the *current* period. Jumping to today is handled by the
+/// toolbar button.
 private struct ScheduleNavBar: View {
     @Bindable var viewModel: ScheduleViewModel
 
@@ -160,17 +158,6 @@ private struct ScheduleNavBar: View {
 
             if viewModel.mode != .day {
                 chevron(systemName: "chevron.right") { viewModel.stepPeriod(by: 1) }
-            } else if !viewModel.isFocusInCurrentPeriod {
-                Button {
-                    viewModel.focusDate = Date()
-                } label: {
-                    Text("Today")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(Color.accentColor)
-                        .frame(height: 32)
-                        .padding(.horizontal, 8)
-                }
-                .buttonStyle(.plain)
             } else {
                 Color.clear.frame(width: 32, height: 32)
             }
@@ -184,12 +171,6 @@ private struct ScheduleNavBar: View {
         case .day:
             f.dateFormat = "EEEE, MMM d"
             return f.string(from: d)
-        case .week:
-            let cal = Calendar.current
-            let weekday = cal.component(.weekday, from: d) - 1
-            let sunday = cal.date(byAdding: .day, value: -weekday, to: d) ?? d
-            f.dateFormat = "MMM d"
-            return "Week of \(f.string(from: sunday))"
         case .month:
             f.dateFormat = "MMMM yyyy"
             return f.string(from: d)
@@ -209,25 +190,6 @@ private struct ScheduleNavBar: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-    }
-}
-
-extension ScheduleViewModel {
-    /// True when the focus date is in the *current* period for the active mode.
-    var isFocusInCurrentPeriod: Bool {
-        let cal = Calendar.current
-        let now = Date()
-        switch mode {
-        case .day:
-            // Week-level: are both in the same week?
-            return cal.isDate(focusDate, equalTo: now, toGranularity: .weekOfYear)
-        case .week:
-            return cal.isDate(focusDate, equalTo: now, toGranularity: .weekOfYear)
-        case .month:
-            return cal.isDate(focusDate, equalTo: now, toGranularity: .month)
-        case .year:
-            return cal.isDate(focusDate, equalTo: now, toGranularity: .year)
-        }
     }
 }
 

@@ -3,7 +3,6 @@ import Observation
 
 enum ScheduleViewMode: String, CaseIterable {
     case day   = "Day"
-    case week  = "Week"
     case month = "Month"
     case year  = "Year"
 }
@@ -36,7 +35,7 @@ final class ScheduleViewModel {
         let cal = Calendar.current
         let key: String
         switch mode {
-        case .day, .week:
+        case .day:
             key = weekStart
         case .month:
             let c = cal.dateComponents([.year, .month], from: focusDate)
@@ -107,7 +106,7 @@ final class ScheduleViewModel {
         defer { isLoading = false }
         do {
             switch mode {
-            case .day, .week:
+            case .day:
                 let resp = try await APIClient.shared.scheduleWeek(weekStart: weekStart)
                 weekResponse = resp
                 mergeSlots(resp.slots)
@@ -242,7 +241,6 @@ final class ScheduleViewModel {
     func stepPeriod(by delta: Int) {
         switch mode {
         case .day:   stepDay(by: delta)
-        case .week:  stepWeek(by: delta)
         case .month: stepMonth(by: delta)
         case .year:  stepYear(by: delta)
         }
