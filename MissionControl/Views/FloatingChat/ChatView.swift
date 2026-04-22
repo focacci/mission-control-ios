@@ -50,11 +50,11 @@ struct ChatView: View {
         ToolbarItem(placement: .topBarLeading) {
             ChatLockToolbarButton()
         }
-        ToolbarItem(placement: .topBarLeading) {
-            ChatAgentPickerToolbarButton(isExpanded: $isAgentPanelExpanded)
-        }
-        ToolbarItem(placement: .topBarLeading) {
-            ChatContextPickerToolbarButton(isExpanded: $isContextPanelExpanded)
+        ToolbarItem(placement: .principal) {
+            HStack(spacing: 8) {
+                ChatContextPickerToolbarButton(isExpanded: $isContextPanelExpanded)
+                ChatAgentPickerToolbarButton(isExpanded: $isAgentPanelExpanded)
+            }
         }
     }
 }
