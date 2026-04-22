@@ -16,13 +16,15 @@ struct ChatAgentPickerToolbarButton: View {
                 isExpanded.toggle()
             }
         } label: {
-            ZStack {
-                Image(systemName: iconName)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(iconColor)
-                    .frame(width: 32, height: 32)
-                    .opacity(chatContext.agentConnectionState == .connecting && pulse ? 0.35 : 1.0)
-            }
+            Image(systemName: iconName)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(iconColor)
+                .frame(width: 32, height: 32)
+                .opacity(chatContext.agentConnectionState == .connecting && pulse ? 0.35 : 1.0)
+                .background(chipBackground)
+                .overlay(chipStroke)
+                .scaleEffect(isExpanded ? 0.96 : 1.0)
+                .animation(.easeInOut(duration: 0.2), value: isExpanded)
         }
         .onAppear { startPulseIfNeeded() }
         .onChange(of: chatContext.agentConnectionState) { _, _ in
@@ -54,6 +56,21 @@ struct ChatAgentPickerToolbarButton: View {
         case .connected:  return "connected"
         case .offline:    return "offline"
         }
+    }
+
+    private var chipBackground: some View {
+        Circle()
+            .fill(isExpanded
+                  ? Color.accentColor.opacity(0.18)
+                  : Color.secondary.opacity(0.12))
+    }
+
+    private var chipStroke: some View {
+        Circle()
+            .strokeBorder(
+                isExpanded ? Color.accentColor.opacity(0.5) : Color.clear,
+                lineWidth: 1
+            )
     }
 
     private func startPulseIfNeeded() {
