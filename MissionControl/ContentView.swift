@@ -44,7 +44,7 @@ struct ContentView: View {
             // open starts fresh with no context selected.
             if !chatContextStore.isLocked {
                 chatContextStore.floatingChat.reset()
-                chatContextStore.selectedContext = nil
+                chatContextStore.selectedContexts = []
             }
         }) {
             NavigationStack {

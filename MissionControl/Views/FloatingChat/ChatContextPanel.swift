@@ -2,7 +2,8 @@ import SwiftUI
 
 /// Drop-down panel shown beneath the floating chat's toolbar when the user
 /// taps the context picker button. Stacks the current context on top of
-/// collapsible sections for pinned contexts and saved context groups.
+/// collapsible sections for the user's selected contexts, pinned contexts,
+/// and saved context groups.
 ///
 /// Pinned and saved-group data are mocked for now — real persistence lands
 /// with the backend work tracked separately.
@@ -10,6 +11,7 @@ struct ChatContextPanel: View {
     @Environment(ChatContextStore.self) private var chatContext
     @Binding var isExpanded: Bool
 
+    @State private var showSelected: Bool = true
     @State private var showPinned: Bool = false
     @State private var showSavedGroups: Bool = false
 
@@ -37,6 +39,7 @@ struct ChatContextPanel: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 currentSection
+                selectedSection
                 pinnedSection
                 savedGroupsSection
             }
@@ -55,21 +58,79 @@ struct ChatContextPanel: View {
 
     // MARK: - Current
 
+    private var isCurrentSelected: Bool {
+        chatContext.isSelected(chatContext.pageContext)
+    }
+
+    /// Hidden once the current context is selected — it then appears at the
+    /// top of the Selected section instead.
+    @ViewBuilder
     private var currentSection: some View {
-        let isCurrentSelected = chatContext.selectedContext == chatContext.pageContext
-        return VStack(alignment: .leading, spacing: 6) {
-            sectionHeader("Current")
-            Button {
-                chatContext.selectedContext = isCurrentSelected ? nil : chatContext.pageContext
-            } label: {
-                ContextCard(
-                    icon: chatContext.displayIcon,
-                    title: chatContext.displayLabel,
-                    subtitle: chatContext.contextTypeName,
-                    isActive: isCurrentSelected
-                )
+        if !isCurrentSelected {
+            let page = chatContext.pageContext
+            VStack(alignment: .leading, spacing: 6) {
+                sectionHeader("Current")
+                Button {
+                    chatContext.toggleSelected(page)
+                } label: {
+                    ContextCard(
+                        icon: chatContext.displayIcon,
+                        title: chatContext.displayLabel,
+                        subtitle: chatContext.contextTypeName,
+                        isActive: false
+                    )
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
+        }
+    }
+
+    // MARK: - Selected
+
+    /// Selected contexts for the Selected section. When the current page
+    /// context is selected, it's pinned to the top; other selections follow
+    /// in selection order.
+    private var selectedListed: [ChatContextKind] {
+        let page = chatContext.pageContext
+        let rest = chatContext.selectedContexts.filter { $0 != page }
+        return isCurrentSelected ? [page] + rest : rest
+    }
+
+    private var selectedSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            collapsibleHeader(
+                title: "Selected",
+                count: selectedListed.count,
+                isExpanded: showSelected
+            ) {
+                withAnimation(.easeInOut(duration: 0.2)) { showSelected.toggle() }
+            }
+
+            if showSelected {
+                if selectedListed.isEmpty {
+                    Text("No contexts selected yet.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                } else {
+                    VStack(spacing: 8) {
+                        ForEach(Array(selectedListed.enumerated()), id: \.offset) { _, kind in
+                            Button {
+                                chatContext.toggleSelected(kind)
+                            } label: {
+                                ContextCard(
+                                    icon: chatContext.icon(for: kind),
+                                    title: chatContext.label(for: kind),
+                                    subtitle: chatContext.typeName(for: kind),
+                                    isActive: true
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -89,16 +150,13 @@ struct ChatContextPanel: View {
                 VStack(spacing: 8) {
                     ForEach(Array(Self.mockPinned.enumerated()), id: \.offset) { _, kind in
                         Button {
-                            chatContext.selectedContext = kind
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                isExpanded = false
-                            }
+                            chatContext.toggleSelected(kind)
                         } label: {
                             ContextCard(
                                 icon: icon(for: kind),
                                 title: label(for: kind),
                                 subtitle: typeName(for: kind),
-                                isActive: chatContext.selectedContext == kind
+                                isActive: chatContext.isSelected(kind)
                             )
                         }
                         .buttonStyle(.plain)

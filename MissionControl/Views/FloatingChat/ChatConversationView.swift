@@ -198,7 +198,7 @@ struct ChatConversationView: View {
     ///   to `.agentChat(...)` and routes through that agent unconditionally.
     private var activeContext: ChatContextKind {
         if useDefaultAgent {
-            return chatContext.selectedContext ?? .app
+            return chatContext.primarySelectedContext ?? .app
         } else {
             return chatContext.pageContext
         }

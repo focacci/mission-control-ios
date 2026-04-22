@@ -69,17 +69,34 @@ final class ChatContextStore {
     /// as the chat's grounding — it only drives page-level toolbar pills and
     /// the "Current" card in the floating chat's context picker. To ground
     /// the chat on this page, the user must explicitly select it from the
-    /// picker (setting `selectedContext`).
+    /// picker (adding it to `selectedContexts`).
     var pageContext: ChatContextKind = .app
 
     var showingChat: Bool = false
     var isLocked: Bool = false
 
-    /// The context that actually grounds the floating chat. `nil` means the
-    /// chat runs without context grounding. Set by the user from the context
-    /// picker panel. Cleared by `ContentView` on sheet dismissal when the
-    /// chat is unlocked; preserved across dismissals when locked.
-    var selectedContext: ChatContextKind? = nil
+    /// Contexts the user has selected to ground the floating chat, in the
+    /// order they were added (most recently selected is last). Empty means
+    /// the chat runs without context grounding. Cleared by `ContentView` on
+    /// sheet dismissal when the chat is unlocked; preserved across dismissals
+    /// when locked.
+    var selectedContexts: [ChatContextKind] = []
+
+    /// Most recently selected context — used as the primary grounding for
+    /// chat routing and the welcome message. `nil` when nothing is selected.
+    var primarySelectedContext: ChatContextKind? { selectedContexts.last }
+
+    func isSelected(_ kind: ChatContextKind) -> Bool {
+        selectedContexts.contains(kind)
+    }
+
+    func toggleSelected(_ kind: ChatContextKind) {
+        if let idx = selectedContexts.firstIndex(of: kind) {
+            selectedContexts.remove(at: idx)
+        } else {
+            selectedContexts.append(kind)
+        }
+    }
 
     /// Live connection state for the selected agent. Drives the agent picker
     /// toolbar icon. Mocked on chat open until real transport lands.
@@ -180,7 +197,7 @@ final class ChatContextStore {
     /// selected grounding; falls back to a generic greeting when nothing is
     /// selected (same copy as `.app`).
     var welcomeMessage: String {
-        welcomeMessage(for: selectedContext ?? .app)
+        welcomeMessage(for: primarySelectedContext ?? .app)
     }
 
     func welcomeMessage(for kind: ChatContextKind) -> String {
