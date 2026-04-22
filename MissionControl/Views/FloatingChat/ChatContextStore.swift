@@ -13,6 +13,8 @@ enum ChatContextKind: Equatable {
     case schedule(date: Date, mode: ScheduleViewMode)
     case health(section: String)
     case faith(section: String)
+    case briefs
+    case brief(kind: DailyBrief, date: Date)
 
     /// OpenClaw agent the chat should route through. `nil` means use the
     /// API's default agent (currently `intella`).
@@ -38,6 +40,8 @@ enum ChatContextKind: Equatable {
         case .schedule:     return "schedule"
         case .health:       return "health"
         case .faith:        return "faith"
+        case .briefs:       return "briefs"
+        case .brief:        return "brief"
         }
     }
 
@@ -148,6 +152,9 @@ final class ChatContextStore {
             return f.string(from: d)
         case .health(let s):             return s
         case .faith(let s):              return s
+        case .briefs:                    return "List"
+        case .brief(_, let d):
+            return d.formatted(.dateTime.month(.abbreviated).day())
         }
     }
 
@@ -165,6 +172,13 @@ final class ChatContextStore {
         case .schedule:     return "calendar"
         case .health:       return "heart"
         case .faith:        return "cross"
+        case .briefs:       return "applescript"
+        case .brief(let k, _):
+            switch k {
+            case .morning:   return "sunrise"
+            case .afternoon: return "sun.max"
+            case .evening:   return "moon.stars"
+            }
         }
     }
 
@@ -188,6 +202,13 @@ final class ChatContextStore {
             }
         case .health:       return "Health"
         case .faith:        return "Faith"
+        case .briefs:       return "Briefs"
+        case .brief(let k, _):
+            switch k {
+            case .morning:   return "Morning Brief"
+            case .afternoon: return "Afternoon Brief"
+            case .evening:   return "Evening Brief"
+            }
         }
     }
 
@@ -241,6 +262,18 @@ final class ChatContextStore {
             return "You're looking at **\(name)**'s details. I can explain how this agent is configured or help you tune it."
         case .agentChat(_, let name, _):
             return "You're chatting with **\(name)**. What can I help you with?"
+        case .briefs:
+            return "Browsing your briefs. I can summarize a day, compare briefs, or pull out what's actionable."
+        case .brief(let k, let d):
+            let label: String = {
+                switch k {
+                case .morning:   return "morning brief"
+                case .afternoon: return "afternoon brief"
+                case .evening:   return "evening brief"
+                }
+            }()
+            let dateStr = d.formatted(.dateTime.month(.wide).day())
+            return "Looking at your **\(label)** for \(dateStr). I can dig into any item, reprioritize, or draft follow-ups."
         case .app:
             return "Hey! I'm your Mission Control agent. I can help with goals, tasks, scheduling, and more. What do you need?"
         }

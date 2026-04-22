@@ -765,7 +765,7 @@ private struct BriefsRow: View {
 
 private struct BriefDetailView: View {
     let brief: DailyBrief
-    @Environment(\.dismiss) private var dismiss
+    @State private var showFullScreen = false
 
     var body: some View {
         NavigationStack {
@@ -818,14 +818,31 @@ private struct BriefDetailView: View {
                 }
                 .padding(20)
             }
-            .navigationBarTitleDisplayMode(.inline)
+            .chatContext(.brief(kind: brief, date: Date()))
+            .chatContextToolbar()
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showFullScreen = true
+                    } label: {
+                        Image(systemName: "arrow.down.left.and.arrow.up.right")
+                    }
                 }
             }
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+        .fullScreenCover(isPresented: $showFullScreen) {
+            NavigationStack {
+                BriefFullScreenView(brief: brief, date: Date())
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button { showFullScreen = false } label: {
+                                Image(systemName: "xmark")
+                            }
+                        }
+                    }
+            }
+        }
     }
 }

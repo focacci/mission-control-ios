@@ -16,26 +16,32 @@ struct ContentView: View {
             PlansView()
                 .floatingChatButton(isPresented: $chatContextStore.showingChat)
                 .tabItem { Label("Plans", systemImage: "list.bullet") }
-                .tag(1)
+                .tag(2)
 
             ScheduleView()
                 .floatingChatButton(isPresented: $chatContextStore.showingChat)
                 .tabItem { Label("Schedule", systemImage: "calendar") }
-                .tag(2)
+                .tag(3)
 
             AgentsListView()
                 .tabItem { Label("Agents", systemImage: "person.2.wave.2") }
-                .tag(3)
+                .tag(4)
 
             FaithView()
                 .floatingChatButton(isPresented: $chatContextStore.showingChat)
                 .tabItem { Label("Faith", systemImage: "cross") }
-                .tag(4)
+                .tag(5)
 
             HealthView()
                 .floatingChatButton(isPresented: $chatContextStore.showingChat)
                 .tabItem { Label("Health", systemImage: "heart") }
-                .tag(5)
+                .tag(6)
+
+            BriefsView()
+                .floatingChatButton(isPresented: $chatContextStore.showingChat)
+                .tabItem { Label("Briefs", systemImage: "applescript.fill") }
+                .tag(1)
+
         }
         .environment(chatContextStore)
         .sheet(isPresented: $chatContextStore.showingChat, onDismiss: {
