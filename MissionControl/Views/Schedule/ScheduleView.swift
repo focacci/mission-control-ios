@@ -1,10 +1,17 @@
 import SwiftUI
 
+enum ScheduleCalendarKind: String, CaseIterable, Identifiable {
+    case user  = "User"
+    case agent = "Agent"
+    var id: String { rawValue }
+}
+
 struct ScheduleView: View {
     @State private var viewModel = ScheduleViewModel()
     @State private var showingScheduleTask = false
     @State private var slotToAssign: ScheduleSlot?
     @State private var path = NavigationPath()
+    @State private var calendarKind: ScheduleCalendarKind = .agent
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -18,7 +25,6 @@ struct ScheduleView: View {
                         .padding(.bottom, 8)
                 }
                 .background(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
 
                 Group {
                     if viewModel.isLoading && viewModel.slotsByDate.isEmpty {
@@ -84,6 +90,7 @@ struct ScheduleView: View {
         case .day:
             DayScheduleView(
                 viewModel: viewModel,
+                calendarKind: $calendarKind,
                 onAssignToSlot: { slot in
                     slotToAssign = slot
                     showingScheduleTask = true

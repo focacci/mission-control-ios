@@ -14,6 +14,7 @@ private enum ListItem: Identifiable {
 
 struct DayScheduleView: View {
     @Bindable var viewModel: ScheduleViewModel
+    @Binding var calendarKind: ScheduleCalendarKind
     let onAssignToSlot: (ScheduleSlot) -> Void
     let onSelectSlot: (ScheduleSlot) -> Void
 
@@ -57,9 +58,23 @@ struct DayScheduleView: View {
                 onNext: { viewModel.stepWeek(by: 1) }
             )
             .padding(.top, 10)
+            .padding(.bottom, 8)
+
+            Picker("Calendar", selection: $calendarKind) {
+                ForEach(ScheduleCalendarKind.allCases) { kind in
+                    Text(kind.rawValue).tag(kind)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 16)
             .padding(.bottom, 6)
 
-            timeline
+            switch calendarKind {
+            case .agent:
+                timeline
+            case .user:
+                UserCalendarDayView(focusDate: viewModel.focusDate)
+            }
         }
     }
 
@@ -258,5 +273,104 @@ private struct CurrentTimeMarkerRow: View {
                 .frame(height: 1)
         }
         .padding(.vertical, 1)
+    }
+}
+
+// MARK: - iOS-style day view (user calendar)
+
+/// Empty iOS-style day grid: hour labels on the left, a hairline per hour, and
+/// a live red "now" indicator on today. Events aren't wired up yet — this is a
+/// placeholder surface for when user-calendar data lands (EventKit).
+private struct UserCalendarDayView: View {
+    let focusDate: Date
+
+    private let hourHeight: CGFloat = 52
+    private let gutterWidth: CGFloat = 56
+
+    private var isToday: Bool {
+        Calendar.current.isDateInToday(focusDate)
+    }
+
+    var body: some View {
+        TimelineView(.everyMinute) { context in
+            ScrollViewReader { proxy in
+                ScrollView {
+                    ZStack(alignment: .topLeading) {
+                        grid
+                        if isToday {
+                            nowIndicator(at: context.date)
+                        }
+                    }
+                    .frame(height: hourHeight * 24)
+                    .padding(.bottom, 90)
+                }
+                .onAppear { scrollToRelevantHour(proxy: proxy, now: context.date) }
+            }
+        }
+    }
+
+    private var grid: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<24, id: \.self) { hour in
+                HStack(alignment: .top, spacing: 0) {
+                    Text(hourLabel(hour))
+                        .font(.system(size: 11, design: .default))
+                        .foregroundStyle(.secondary)
+                        .frame(width: gutterWidth, alignment: .trailing)
+                        .padding(.trailing, 8)
+                        .offset(y: -6)
+
+                    VStack(spacing: 0) {
+                        Rectangle()
+                            .fill(Color(.separator).opacity(0.6))
+                            .frame(height: 0.5)
+                        Spacer(minLength: 0)
+                    }
+                }
+                .frame(height: hourHeight)
+                .id(hour)
+            }
+        }
+    }
+
+    private func hourLabel(_ hour: Int) -> String {
+        switch hour {
+        case 0:  return "12 AM"
+        case 12: return "Noon"
+        case 1...11:  return "\(hour) AM"
+        default: return "\(hour - 12) PM"
+        }
+    }
+
+    private func nowIndicator(at date: Date) -> some View {
+        let cal = Calendar.current
+        let minutes = CGFloat(cal.component(.hour, from: date) * 60 + cal.component(.minute, from: date))
+        let y = (minutes / 60) * hourHeight
+        let f = DateFormatter()
+        f.dateFormat = "h:mm"
+        return HStack(spacing: 0) {
+            Text(f.string(from: date))
+                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                .foregroundStyle(.red)
+                .frame(width: gutterWidth, alignment: .trailing)
+                .padding(.trailing, 8)
+            Circle()
+                .fill(Color.red)
+                .frame(width: 7, height: 7)
+            Rectangle()
+                .fill(Color.red)
+                .frame(height: 1.5)
+        }
+        .offset(y: y - 4)
+    }
+
+    private func scrollToRelevantHour(proxy: ScrollViewProxy, now: Date) {
+        let hour: Int
+        if isToday {
+            hour = max(0, Calendar.current.component(.hour, from: now) - 1)
+        } else {
+            hour = 7
+        }
+        proxy.scrollTo(hour, anchor: .top)
     }
 }
