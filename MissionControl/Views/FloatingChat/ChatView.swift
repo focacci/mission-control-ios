@@ -1,10 +1,9 @@
 import SwiftUI
 
 /// Ephemeral floating chat sheet. Opens from the global bubble button. The
-/// center-toolbar context button surfaces the current grounding surface and
-/// (eventually) becomes the entry point for pinning and cross-page
-/// navigation within context groups. For the dedicated agent chat page,
-/// see `AgentChatView`.
+/// leading toolbar carries the lock toggle and a context picker that expands
+/// into the list of available grounding surfaces. For the dedicated agent
+/// chat page, see `AgentChatView`.
 struct ChatView: View {
     @Environment(ChatContextStore.self) private var chatContext
 
@@ -14,10 +13,13 @@ struct ChatView: View {
             welcomeMessage: { chatContext.welcomeMessage },
             externalState: chatContext.floatingChat
         )
-        .chatContextToolbar(placement: .principal)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 ChatLockToolbarButton()
+            }
+            ToolbarItem(placement: .topBarLeading) {
+                ChatContextPickerToolbarButton()
             }
         }
     }
