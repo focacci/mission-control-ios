@@ -11,13 +11,19 @@ struct ChatLockToolbarButton: View {
             chatContext.isLocked.toggle()
         } label: {
             ZStack {
-                Circle()
-                    .fill(chatContext.isLocked ? Color.blue : Color(.systemGray5))
-                    .frame(width: 32, height: 32)
-
-                Image(systemName: chatContext.isLocked ? "lock.fill" : "lock.open.fill")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(chatContext.isLocked ? .white : .secondary)
+                if chatContext.isLocked {
+                    Circle()
+                        .fill(Color.blue)
+                        .frame(width: 32, height: 32)
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.white)
+                } else {
+                    Image(systemName: "lock.open")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.red)
+                        .frame(width: 32, height: 32)
+                }
             }
         }
         .buttonStyle(.plain)

@@ -32,6 +32,15 @@ struct ChatView: View {
                 }
             }
         }
+        .task {
+            // Mock agent connection until real transport lands. Show connecting
+            // for ~3 seconds then flip to connected.
+            chatContext.agentConnectionState = .connecting
+            try? await Task.sleep(for: .seconds(3))
+            if !Task.isCancelled {
+                chatContext.agentConnectionState = .connected
+            }
+        }
     }
 
     @ViewBuilder

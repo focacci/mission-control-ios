@@ -56,11 +56,26 @@ enum ChatContextKind: Equatable {
     }
 }
 
+enum AgentConnectionState: Equatable {
+    case connecting
+    case connected
+    case offline
+}
+
 @Observable
 final class ChatContextStore {
     var context: ChatContextKind = .app
     var showingChat: Bool = false
     var isLocked: Bool = false
+
+    /// Whether the current `context` is treated as active for the chat. Users
+    /// can deselect the current context from the picker panel; deselected
+    /// state means the chat runs without context grounding.
+    var isContextActive: Bool = true
+
+    /// Live connection state for the selected agent. Drives the agent picker
+    /// toolbar icon. Mocked on chat open until real transport lands.
+    var agentConnectionState: AgentConnectionState = .offline
 
     /// Agent the floating chat should route through. `nil` falls back to the
     /// workspace default (`intella`). Chosen from the agent picker panel in

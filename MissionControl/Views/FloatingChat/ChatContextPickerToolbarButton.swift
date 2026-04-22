@@ -14,14 +14,15 @@ struct ChatContextPickerToolbarButton: View {
                 isExpanded.toggle()
             }
         } label: {
+            let hasContext = chatContext.isContextActive
+            let iconName = hasContext
+                ? "point.3.filled.connected.trianglepath.dotted"
+                : "point.3.connected.trianglepath.dotted"
             ZStack {
-                Circle()
-                    .fill(isExpanded ? Color.accentColor.opacity(0.2) : Color(.systemGray5))
+                Image(systemName: iconName)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(hasContext ? Color.blue : .secondary)
                     .frame(width: 32, height: 32)
-
-                Image(systemName: "point.3.filled.connected.trianglepath.dotted")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(isExpanded ? Color.accentColor : .secondary)
             }
         }
         .accessibilityLabel("Chat context: \(chatContext.contextTypeName) \(chatContext.displayLabel)")

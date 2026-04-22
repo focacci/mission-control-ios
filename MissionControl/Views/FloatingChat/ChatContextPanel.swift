@@ -58,12 +58,17 @@ struct ChatContextPanel: View {
     private var currentSection: some View {
         VStack(alignment: .leading, spacing: 6) {
             sectionHeader("Current")
-            ContextCard(
-                icon: chatContext.displayIcon,
-                title: chatContext.displayLabel,
-                subtitle: chatContext.contextTypeName,
-                isActive: true
-            )
+            Button {
+                chatContext.isContextActive.toggle()
+            } label: {
+                ContextCard(
+                    icon: chatContext.displayIcon,
+                    title: chatContext.displayLabel,
+                    subtitle: chatContext.contextTypeName,
+                    isActive: chatContext.isContextActive
+                )
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -84,6 +89,7 @@ struct ChatContextPanel: View {
                     ForEach(Array(Self.mockPinned.enumerated()), id: \.offset) { _, kind in
                         Button {
                             chatContext.context = kind
+                            chatContext.isContextActive = true
                             withAnimation(.easeInOut(duration: 0.2)) {
                                 isExpanded = false
                             }
