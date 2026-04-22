@@ -62,6 +62,13 @@ final class ChatContextStore {
     var showingChat: Bool = false
     var isLocked: Bool = false
 
+    /// Agent the floating chat should route through. `nil` falls back to the
+    /// workspace default (`intella`). Chosen from the agent picker panel in
+    /// the floating chat toolbar.
+    var selectedAgentId: String? = nil
+    var selectedAgentName: String? = nil
+    var selectedAgentEmoji: String? = nil
+
     /// Persistent conversation state for the floating chat sheet. Survives
     /// sheet dismissals so that locking preserves history; cleared by
     /// `ContentView` when the sheet closes unlocked.

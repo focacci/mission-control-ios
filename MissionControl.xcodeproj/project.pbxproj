@@ -62,6 +62,8 @@
 		A0967B45DA6499F38335568C /* FloatingChatButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E75296C46CA0C8996DC4BAF /* FloatingChatButton.swift */; };
 		A2DF9AE4D54C68E1F8A29028 /* WatchTaskDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DB0C4B089A88464E97507DF /* WatchTaskDetail.swift */; };
 		A7E69CD73E24BAF47FF06796 /* ChatContextPickerToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F017DDEA204F0381C8BE88F /* ChatContextPickerToolbarButton.swift */; };
+		A1B2C3D4E5F6789012345601 /* ChatAgentPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6789012345602 /* ChatAgentPanel.swift */; };
+		A1B2C3D4E5F6789012345603 /* ChatAgentPickerToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6789012345604 /* ChatAgentPickerToolbarButton.swift */; };
 		A90E690AC7A5884639F6832F /* TaskDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C00013EDEAE09D6A94EB486 /* TaskDetailViewModel.swift */; };
 		AAF18F78BE5F14CF2E70848E /* HealthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E251E2D32513D439F785BD /* HealthView.swift */; };
 		AC4AAD7D0F6CFE1F74FA99CD /* MissionControlWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C188665B80A8B294010B439D /* MissionControlWatchApp.swift */; };
@@ -110,6 +112,8 @@
 		1B130C1D36811FA485A56165 /* AgentsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentsListView.swift; sourceTree = "<group>"; };
 		1CB3A5C0F80C7582E47F13AD /* TestsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestsCard.swift; sourceTree = "<group>"; };
 		1F017DDEA204F0381C8BE88F /* ChatContextPickerToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatContextPickerToolbarButton.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6789012345602 /* ChatAgentPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAgentPanel.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6789012345604 /* ChatAgentPickerToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAgentPickerToolbarButton.swift; sourceTree = "<group>"; };
 		21C304AD361F5DB4F65DADFC /* AgentCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentCard.swift; sourceTree = "<group>"; };
 		23E0B4D9DFC52FE0AAB9E722 /* SlotCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotCard.swift; sourceTree = "<group>"; };
 		2AD53C713E8989E976B0CA26 /* InitiativeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitiativeDetailView.swift; sourceTree = "<group>"; };
@@ -389,6 +393,8 @@
 		BBAA6C107419968FFF4AB861 /* FloatingChat */ = {
 			isa = PBXGroup;
 			children = (
+				A1B2C3D4E5F6789012345602 /* ChatAgentPanel.swift */,
+				A1B2C3D4E5F6789012345604 /* ChatAgentPickerToolbarButton.swift */,
 				4CBCCE83A0C142DF62F424E3 /* ChatContextPanel.swift */,
 				1F017DDEA204F0381C8BE88F /* ChatContextPickerToolbarButton.swift */,
 				3CF3871F567A017C488A8B42 /* ChatContextStore.swift */,
@@ -550,6 +556,8 @@
 				F8DAA4D3B3988DDBC7C8C1AE /* AgentsViewModel.swift in Sources */,
 				3BA3B71A5AFAE6DE02B5BFC6 /* BoardData.swift in Sources */,
 				6DD5FA04755E22B82DBFBF67 /* CardStyle.swift in Sources */,
+				A1B2C3D4E5F6789012345601 /* ChatAgentPanel.swift in Sources */,
+				A1B2C3D4E5F6789012345603 /* ChatAgentPickerToolbarButton.swift in Sources */,
 				25BF264AAA134F4DDD38687A /* ChatContextPanel.swift in Sources */,
 				A7E69CD73E24BAF47FF06796 /* ChatContextPickerToolbarButton.swift in Sources */,
 				5477A5D6C9A5D15B07FD72BE /* ChatContextStore.swift in Sources */,
