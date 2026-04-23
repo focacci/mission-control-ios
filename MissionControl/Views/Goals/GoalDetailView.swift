@@ -5,6 +5,8 @@ struct GoalDetailView: View {
     @State private var viewModel = GoalDetailViewModel()
     @State private var showingEdit = false
     @State private var showingAddInitiative = false
+    @State private var showingDeleteConfirm = false
+    @Environment(\.dismiss) private var dismiss
 
     private var context: ChatContextKind? {
         viewModel.goal.map { .goal(id: $0.id, emoji: $0.emoji, name: $0.name) }
@@ -79,6 +81,11 @@ struct GoalDetailView: View {
                             } label: {
                                 Label("Edit", systemImage: "pencil")
                             }
+                            Button(role: .destructive) {
+                                showingDeleteConfirm = true
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         } label: {
                             Image(systemName: "ellipsis")
                         }
@@ -93,6 +100,18 @@ struct GoalDetailView: View {
                     AddInitiativeSheet { emoji, name, mission in
                         Task { await viewModel.createInitiative(emoji: emoji, name: name, mission: mission) }
                     }
+                }
+                .alert("Delete Goal?", isPresented: $showingDeleteConfirm) {
+                    Button("Cancel", role: .cancel) {}
+                    Button("Delete", role: .destructive) {
+                        Task {
+                            if await viewModel.deleteGoal(id: goalId) {
+                                dismiss()
+                            }
+                        }
+                    }
+                } message: {
+                    Text("This will permanently delete \"\(goal.name)\" and all of its initiatives and tasks.")
                 }
                 .errorAlert(message: $viewModel.error)
             } else if let error = viewModel.error {

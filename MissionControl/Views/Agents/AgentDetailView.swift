@@ -3,17 +3,25 @@ import SwiftUI
 struct AgentDetailView: View {
     let agent: Agent
     var onAgentChanged: ((Agent) -> Void)? = nil
+    var onAgentDeleted: ((String) -> Void)? = nil
 
     @Environment(ChatContextStore.self) private var chatContext
+    @Environment(\.dismiss) private var dismiss
     @State private var current: Agent
     @State private var isEditingPrompt = false
     @State private var isSaving = false
     @State private var error: String?
     @State private var selectedSession: ChatSession?
+    @State private var showingDeleteConfirm = false
 
-    init(agent: Agent, onAgentChanged: ((Agent) -> Void)? = nil) {
+    init(
+        agent: Agent,
+        onAgentChanged: ((Agent) -> Void)? = nil,
+        onAgentDeleted: ((String) -> Void)? = nil
+    ) {
         self.agent = agent
         self.onAgentChanged = onAgentChanged
+        self.onAgentDeleted = onAgentDeleted
         _current = State(initialValue: agent)
     }
 
@@ -46,6 +54,13 @@ struct AgentDetailView: View {
                     } label: {
                         Label("Edit System Prompt", systemImage: "pencil")
                     }
+                    if !current.isDefault {
+                        Button(role: .destructive) {
+                            showingDeleteConfirm = true
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
                 } label: {
                     Image(systemName: "ellipsis")
                 }
@@ -61,6 +76,14 @@ struct AgentDetailView: View {
             ) { newPrompt in
                 await saveSystemPrompt(newPrompt)
             }
+        }
+        .alert("Delete Agent?", isPresented: $showingDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                Task { await deleteAgent() }
+            }
+        } message: {
+            Text("This will permanently delete \"\(current.displayName)\" and its workspace.")
         }
         .errorAlert(message: $error)
     }
@@ -164,6 +187,18 @@ struct AgentDetailView: View {
     }
 
     // MARK: - Actions
+
+    private func deleteAgent() async {
+        isSaving = true
+        defer { isSaving = false }
+        do {
+            try await APIClient.shared.deleteAgent(id: current.id)
+            onAgentDeleted?(current.id)
+            dismiss()
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
 
     private func saveSystemPrompt(_ newPrompt: String) async {
         isSaving = true

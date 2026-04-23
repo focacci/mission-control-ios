@@ -69,11 +69,17 @@ struct AgentsListView: View {
                     .refreshable { await viewModel.load() }
                     .errorAlert(message: $viewModel.error)
                     .navigationDestination(for: Agent.self) { agent in
-                        AgentDetailView(agent: agent) { updated in
-                            if let idx = viewModel.agents.firstIndex(where: { $0.id == updated.id }) {
-                                viewModel.agents[idx] = updated
+                        AgentDetailView(
+                            agent: agent,
+                            onAgentChanged: { updated in
+                                if let idx = viewModel.agents.firstIndex(where: { $0.id == updated.id }) {
+                                    viewModel.agents[idx] = updated
+                                }
+                            },
+                            onAgentDeleted: { id in
+                                viewModel.agents.removeAll { $0.id == id }
                             }
-                        }
+                        )
                     }
                 }
             }

@@ -8,6 +8,8 @@ struct InitiativeDetailView: View {
     @State private var blockingTaskId: String?
     @State private var blockReason = ""
     @State private var showingBlockSheet = false
+    @State private var showingDeleteConfirm = false
+    @Environment(\.dismiss) private var dismiss
 
     private var context: ChatContextKind? {
         viewModel.initiative.map { .initiative(id: $0.id, emoji: $0.emoji, name: $0.name) }
@@ -107,6 +109,11 @@ struct InitiativeDetailView: View {
                             } label: {
                                 Label("Edit", systemImage: "pencil")
                             }
+                            Button(role: .destructive) {
+                                showingDeleteConfirm = true
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         } label: {
                             Image(systemName: "ellipsis")
                         }
@@ -130,6 +137,18 @@ struct InitiativeDetailView: View {
                         blockReason = ""
                         blockingTaskId = nil
                     }
+                }
+                .alert("Delete Initiative?", isPresented: $showingDeleteConfirm) {
+                    Button("Cancel", role: .cancel) {}
+                    Button("Delete", role: .destructive) {
+                        Task {
+                            if await viewModel.deleteInitiative(id: initiativeId) {
+                                dismiss()
+                            }
+                        }
+                    }
+                } message: {
+                    Text("This will permanently delete \"\(initiative.name)\" and all of its tasks.")
                 }
                 .errorAlert(message: $viewModel.error)
             } else if let error = viewModel.error {

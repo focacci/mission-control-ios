@@ -12,6 +12,8 @@ struct TaskDetailView: View {
     @State private var showingAddAssignment = false
     @State private var newAssignmentTitle = ""
     @State private var newAssignmentInstructions = ""
+    @State private var showingDeleteConfirm = false
+    @Environment(\.dismiss) private var dismiss
 
     private var context: ChatContextKind? {
         viewModel.task.map { .task(id: $0.id, name: $0.name) }
@@ -87,9 +89,15 @@ struct TaskDetailView: View {
                 .refreshable { await viewModel.load(id: taskId) }
                 .chatContextToolbar()
                 .navigationDestination(for: Requirement.self) { req in
-                    RequirementDetailView(requirement: req) { _ in
-                        Task { await viewModel.load(id: taskId) }
-                    }
+                    RequirementDetailView(
+                        requirement: req,
+                        onChange: { _ in
+                            Task { await viewModel.load(id: taskId) }
+                        },
+                        onDelete: { _ in
+                            Task { await viewModel.load(id: taskId) }
+                        }
+                    )
                 }
                 .navigationDestination(for: AgentAssignment.self) { aa in
                     AgentAssignmentDetailView(assignment: aa) { _ in
@@ -104,6 +112,11 @@ struct TaskDetailView: View {
                             } label: {
                                 Label("Edit", systemImage: "pencil")
                             }
+                            Button(role: .destructive) {
+                                showingDeleteConfirm = true
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         } label: {
                             Image(systemName: "ellipsis")
                         }
@@ -113,6 +126,18 @@ struct TaskDetailView: View {
                     TaskEditSheet(task: task) { body in
                         Task { await viewModel.update(id: taskId, body: body) }
                     }
+                }
+                .alert("Delete Task?", isPresented: $showingDeleteConfirm) {
+                    Button("Cancel", role: .cancel) {}
+                    Button("Delete", role: .destructive) {
+                        Task {
+                            if await viewModel.deleteTask(id: taskId) {
+                                dismiss()
+                            }
+                        }
+                    }
+                } message: {
+                    Text("This will permanently delete \"\(task.name)\".")
                 }
                 .errorAlert(message: $viewModel.error)
             } else if let error = viewModel.error {

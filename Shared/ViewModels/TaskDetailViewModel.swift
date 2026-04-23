@@ -62,6 +62,16 @@ final class TaskDetailViewModel {
         isSaving = false
     }
 
+    func deleteTask(id: String) async -> Bool {
+        do {
+            try await APIClient.shared.deleteTask(id: id)
+            return true
+        } catch {
+            self.error = error.localizedDescription
+            return false
+        }
+    }
+
     func cancelTask() async {
         guard let id = task?.id else { return }
         isSaving = true

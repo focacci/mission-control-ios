@@ -36,6 +36,16 @@ final class GoalDetailViewModel {
         isSaving = false
     }
 
+    func deleteGoal(id: String) async -> Bool {
+        do {
+            try await APIClient.shared.deleteGoal(id: id)
+            return true
+        } catch {
+            self.error = error.localizedDescription
+            return false
+        }
+    }
+
     func deleteInitiative(id: String) async {
         do {
             try await APIClient.shared.deleteInitiative(id: id)

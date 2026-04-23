@@ -76,6 +76,16 @@ final class RequirementDetailViewModel {
             self.error = error.localizedDescription
         }
     }
+
+    func deleteRequirement() async -> Bool {
+        do {
+            try await APIClient.shared.deleteRequirement(reqId: requirement.id)
+            return true
+        } catch {
+            self.error = error.localizedDescription
+            return false
+        }
+    }
 }
 
 struct RequirementDetailView: View {
@@ -83,14 +93,22 @@ struct RequirementDetailView: View {
     @State private var editedDescription: String
     @State private var showingAddTest = false
     @State private var newTest = ""
+    @State private var showingDeleteConfirm = false
     @FocusState private var descriptionFocused: Bool
+    @Environment(\.dismiss) private var dismiss
 
     let onChange: ((Requirement) -> Void)?
+    let onDelete: ((String) -> Void)?
 
-    init(requirement: Requirement, onChange: ((Requirement) -> Void)? = nil) {
+    init(
+        requirement: Requirement,
+        onChange: ((Requirement) -> Void)? = nil,
+        onDelete: ((String) -> Void)? = nil
+    ) {
         _viewModel = State(initialValue: RequirementDetailViewModel(requirement: requirement))
         _editedDescription = State(initialValue: requirement.description)
         self.onChange = onChange
+        self.onDelete = onDelete
     }
 
     private var context: ChatContextKind {
@@ -186,6 +204,38 @@ struct RequirementDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .chatContext(context)
         .chatContextToolbar()
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Menu {
+                    Button {
+                        descriptionFocused = true
+                    } label: {
+                        Label("Edit", systemImage: "pencil")
+                    }
+                    Button(role: .destructive) {
+                        showingDeleteConfirm = true
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                }
+            }
+        }
+        .alert("Delete Requirement?", isPresented: $showingDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                Task {
+                    let id = viewModel.requirement.id
+                    if await viewModel.deleteRequirement() {
+                        onDelete?(id)
+                        dismiss()
+                    }
+                }
+            }
+        } message: {
+            Text("This will permanently delete \"\(viewModel.requirement.description)\".")
+        }
         .alert("Add Test", isPresented: $showingAddTest) {
             TextField("Description", text: $newTest)
             Button("Add") {

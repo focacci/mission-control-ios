@@ -14,6 +14,9 @@ struct ContextGroupDetailView: View {
     let groupId: ContextGroup.ID
 
     @Environment(ChatContextStore.self) private var chatContext
+    @Environment(\.dismiss) private var dismiss
+    @State private var showingEdit = false
+    @State private var showingDeleteConfirm = false
 
     private var groupIndex: Int? {
         chatContext.contextGroups.firstIndex(where: { $0.id == groupId })
@@ -69,11 +72,106 @@ struct ContextGroupDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .chatContext(detailContext)
         .chatContextToolbar()
+        .toolbar {
+            if group != nil {
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Menu {
+                        Button {
+                            showingEdit = true
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                        Button(role: .destructive) {
+                            showingDeleteConfirm = true
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showingEdit) {
+            if let group {
+                NavigationStack {
+                    EditContextGroupSheet(
+                        name: group.name,
+                        summary: group.summary
+                    ) { newName, newSummary in
+                        if let gIdx = groupIndex {
+                            chatContext.contextGroups[gIdx].name = newName
+                            chatContext.contextGroups[gIdx].summary = newSummary
+                        }
+                    }
+                }
+                .presentationDetents([.medium, .large])
+            }
+        }
+        .alert("Delete Context Group?", isPresented: $showingDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                if let gIdx = groupIndex {
+                    chatContext.contextGroups.remove(at: gIdx)
+                    dismiss()
+                }
+            }
+        } message: {
+            if let group {
+                Text("This will permanently delete the group \"\(group.name)\". Its members are unaffected.")
+            }
+        }
     }
 
     private func removeMembers(at offsets: IndexSet) {
         guard let gIdx = groupIndex else { return }
         chatContext.contextGroups[gIdx].members.remove(atOffsets: offsets)
+    }
+}
+
+// MARK: - Edit Sheet
+
+private struct EditContextGroupSheet: View {
+    let initialName: String
+    let initialSummary: String
+    let onSave: (String, String) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var name: String
+    @State private var summary: String
+
+    init(name: String, summary: String, onSave: @escaping (String, String) -> Void) {
+        self.initialName = name
+        self.initialSummary = summary
+        self.onSave = onSave
+        _name = State(initialValue: name)
+        _summary = State(initialValue: summary)
+    }
+
+    var body: some View {
+        Form {
+            Section("Name") {
+                TextField("Group name", text: $name)
+            }
+            Section("Summary") {
+                TextEditor(text: $summary)
+                    .frame(minHeight: 80)
+            }
+        }
+        .navigationTitle("Edit Group")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") { dismiss() }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Save") {
+                    onSave(name.trimmingCharacters(in: .whitespaces), summary)
+                    dismiss()
+                }
+                .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+        }
     }
 }
 

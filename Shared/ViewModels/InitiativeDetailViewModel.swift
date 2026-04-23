@@ -61,6 +61,16 @@ final class InitiativeDetailViewModel {
         }
     }
 
+    func deleteInitiative(id: String) async -> Bool {
+        do {
+            try await APIClient.shared.deleteInitiative(id: id)
+            return true
+        } catch {
+            self.error = error.localizedDescription
+            return false
+        }
+    }
+
     func update(id: String, body: UpdateInitiativeBody) async {
         do {
             initiative = try await APIClient.shared.updateInitiative(id: id, body: body)
