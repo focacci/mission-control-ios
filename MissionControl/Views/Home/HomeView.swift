@@ -5,7 +5,6 @@ struct HomeView: View {
     @State private var rosaryState = RosaryState()
     @State private var dailyNote = DailyNote()
     @State private var showingNoteEditor = false
-    @State private var showingSettings = false
     @State private var selectedBrief: DailyBrief?
     @State private var expandedBrief: BriefFullScreenContext?
     @State private var pendingExpandBrief: DailyBrief?
@@ -35,22 +34,6 @@ struct HomeView: View {
             .refreshable { await viewModel.load() }
             .errorAlert(message: $viewModel.error)
             .task { await viewModel.load() }
-            .toolbar {
-                ToolbarItemGroup(placement: .topBarTrailing) {
-                    Menu {
-                        Button {
-                            showingSettings = true
-                        } label: {
-                            Label("Settings", systemImage: "gearshape")
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis")
-                    }
-                }
-            }
-            .sheet(isPresented: $showingSettings) {
-                SettingsView()
-            }
             .sheet(isPresented: $showingNoteEditor) {
                 DailyNoteEditorView(note: dailyNote)
             }

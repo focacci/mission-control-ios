@@ -39,6 +39,7 @@ enum FeatureListEntry: String, CaseIterable, Identifiable, Hashable {
     case faith
     case health
     case briefings
+    case settings
 
     var id: String { rawValue }
 
@@ -47,6 +48,7 @@ enum FeatureListEntry: String, CaseIterable, Identifiable, Hashable {
         case .faith:     return "Faith"
         case .health:    return "Health"
         case .briefings: return "Briefings"
+        case .settings:  return "Settings"
         }
     }
 
@@ -55,6 +57,7 @@ enum FeatureListEntry: String, CaseIterable, Identifiable, Hashable {
         case .faith:     return "cross"
         case .health:    return "heart"
         case .briefings: return "briefcase"
+        case .settings:  return "gearshape"
         }
     }
 
@@ -64,6 +67,7 @@ enum FeatureListEntry: String, CaseIterable, Identifiable, Hashable {
         case .faith:     FaithView()
         case .health:    HealthView()
         case .briefings: BriefsView()
+        case .settings:  SettingsView()
         }
     }
 }

@@ -15,6 +15,7 @@ enum ChatContextKind: Equatable {
     case faith(section: String)
     case briefs
     case brief(kind: DailyBrief, date: Date)
+    case settings(section: String)
     /// The "More" tab's custom landing page — a list of features (Faith,
     /// Health, Briefings, …) that aren't pinned to the main tab bar. The
     /// associated list is the feature names so the agent knows which
@@ -48,6 +49,7 @@ enum ChatContextKind: Equatable {
         case .briefs:       return "briefs"
         case .brief:        return "brief"
         case .featureList:  return "feature_list"
+        case .settings:     return "settings"
         }
     }
 
@@ -156,6 +158,7 @@ final class ChatContextStore {
         case .brief(_, let d):
             return d.formatted(.dateTime.month(.abbreviated).day())
         case .featureList:               return "Features"
+        case .settings(let s):           return s
         }
     }
 
@@ -181,6 +184,7 @@ final class ChatContextStore {
             case .evening:   return "moon.stars"
             }
         case .featureList:  return "ellipsis"
+        case .settings:     return "gearshape"
         }
     }
 
@@ -211,6 +215,7 @@ final class ChatContextStore {
             case .evening:   return "Evening Brief"
             }
         case .featureList:  return "Features"
+        case .settings:     return "Settings"
         }
     }
 
@@ -278,6 +283,8 @@ final class ChatContextStore {
             }
             let list = features.map { "**\($0)**" }.joined(separator: ", ")
             return "You're on your feature list. You have \(list) available. Ask me to jump into one or to help you organize them."
+        case .settings(let s):
+            return "You're in **\(s)** settings. I can help you configure the API connection, troubleshoot, or walk through your options."
         }
     }
 }
