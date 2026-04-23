@@ -12,6 +12,7 @@ struct ScheduleView: View {
     @State private var slotToAssign: ScheduleSlot?
     @State private var path = NavigationPath()
     @State private var calendarKind: ScheduleCalendarKind = .agent
+    @State private var selectedBrief: DailyBrief?
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -64,10 +65,9 @@ struct ScheduleView: View {
                 }
             }
             .navigationDestination(for: ScheduleSlot.self) { slot in
-                if let taskId = slot.taskId {
-                    TaskDetailView(taskId: taskId)
-                } else {
-                    SlotDetailView(slot: slot, viewModel: viewModel)
+                TimeSlotView(slot: slot, viewModel: viewModel) {
+                    slotToAssign = slot
+                    showingScheduleTask = true
                 }
             }
             .sheet(isPresented: $showingScheduleTask, onDismiss: { slotToAssign = nil }) {
@@ -78,6 +78,9 @@ struct ScheduleView: View {
                 ) {
                     Task { await viewModel.load() }
                 }
+            }
+            .sheet(item: $selectedBrief) { brief in
+                BriefDetailView(brief: brief, onExpand: { selectedBrief = nil })
             }
             .task(id: viewModel.loadKey) { await viewModel.load() }
             .chatContext(.schedule(date: viewModel.focusDate, mode: viewModel.mode))
@@ -91,12 +94,11 @@ struct ScheduleView: View {
             DayScheduleView(
                 viewModel: viewModel,
                 calendarKind: $calendarKind,
-                onAssignToSlot: { slot in
-                    slotToAssign = slot
-                    showingScheduleTask = true
-                },
                 onSelectSlot: { slot in
                     path.append(slot)
+                },
+                onTapBrief: { brief in
+                    selectedBrief = brief
                 }
             )
         case .month:

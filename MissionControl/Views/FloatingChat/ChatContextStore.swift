@@ -11,6 +11,10 @@ enum ChatContextKind: Equatable {
     case initiative(id: String, emoji: String, name: String)
     case task(id: String, name: String)
     case schedule(date: Date, mode: ScheduleViewMode)
+    /// A specific slot on the agent calendar — the focused page for assigning
+    /// a task plus extra context (linked contexts, context groups, prompt
+    /// addendum) the agent should consult when the slot fires.
+    case timeSlot(slotId: String, time: String, dayLabel: String)
     case health(section: String)
     case faith(section: String)
     case briefs
@@ -58,6 +62,7 @@ enum ChatContextKind: Equatable {
         case .initiative:   return "initiative"
         case .task:         return "task"
         case .schedule:     return "schedule"
+        case .timeSlot:     return "time_slot"
         case .health:       return "health"
         case .faith:        return "faith"
         case .briefs:       return "briefs"
@@ -79,6 +84,8 @@ enum ChatContextKind: Equatable {
              .agent(let id, _, _),
              .agentChat(let id, _, _),
              .contextGroupDetails(let id, _):
+            return id
+        case .timeSlot(let id, _, _):
             return id
         default:
             return nil
@@ -227,6 +234,8 @@ final class ChatContextStore {
             case .year:  f.dateFormat = "yyyy"
             }
             return f.string(from: d)
+        case .timeSlot(_, let time, let day):
+            return "\(day) \(time)"
         case .health(let s):             return s
         case .faith(let s):              return s
         case .briefs:                    return "List"
@@ -252,6 +261,7 @@ final class ChatContextStore {
         case .initiative:   return "flag.pattern.checkered"
         case .task:         return "list.bullet.clipboard"
         case .schedule:     return "calendar"
+        case .timeSlot:     return "calendar.day.timeline.leading"
         case .health:       return "heart"
         case .faith:        return "cross"
         case .briefs:       return "briefcase"
@@ -286,6 +296,7 @@ final class ChatContextStore {
             case .month: return "Schedule - Month"
             case .year:  return "Schedule - Year"
             }
+        case .timeSlot:     return "Time Slot"
         case .health:       return "Health"
         case .faith:        return "Faith"
         case .briefs:       return "Briefings"
@@ -320,6 +331,8 @@ final class ChatContextStore {
             return "You've got **\(name)** open. I can suggest tasks you might have missed, check for blockers, or help you move things forward."
         case .task(_, let name):
             return "Looking at **\(name)**. I can help you break it down, draft requirements, or mark it done. What's up?"
+        case .timeSlot(_, let time, let day):
+            return "You're focused on the **\(day) \(time)** time slot. I can suggest a task to assign, attach contexts the agent should consult, or draft an extra prompt for this run."
         case .schedule(let d, let m):
             let f = DateFormatter()
             switch m {

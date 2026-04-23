@@ -63,7 +63,7 @@ struct SlotCard: View {
             }
         }
         .opacity(slot.status == .skipped ? 0.45 : 1)
-        .cardStyle(.compact)
+        .modifier(SlotCardChrome(isEmpty: isEmpty))
         .overlay(alignment: .leading) {
             if isBrief {
                 Rectangle()
@@ -72,6 +72,31 @@ struct SlotCard: View {
                     .padding(.vertical, 6)
                     .clipShape(RoundedRectangle(cornerRadius: 2))
             }
+        }
+    }
+}
+
+/// Empty slots render with a faint dashed outline and no filled background so
+/// they read as "available to assign" instead of looking like committed work.
+private struct SlotCardChrome: ViewModifier {
+    let isEmpty: Bool
+
+    func body(content: Content) -> some View {
+        if isEmpty {
+            content
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.regularMaterial.opacity(0.35), in: RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(
+                            Color.secondary.opacity(0.35),
+                            style: StrokeStyle(lineWidth: 1, dash: [4, 3])
+                        )
+                )
+        } else {
+            content.cardStyle(.compact)
         }
     }
 }

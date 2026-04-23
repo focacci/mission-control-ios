@@ -15,8 +15,20 @@ private enum ListItem: Identifiable {
 struct DayScheduleView: View {
     @Bindable var viewModel: ScheduleViewModel
     @Binding var calendarKind: ScheduleCalendarKind
-    let onAssignToSlot: (ScheduleSlot) -> Void
     let onSelectSlot: (ScheduleSlot) -> Void
+    let onTapBrief: (DailyBrief) -> Void
+
+    /// Maps a brief slot to its `DailyBrief` case by start time. Returns `nil`
+    /// if the slot isn't a known brief slot.
+    static func brief(for slot: ScheduleSlot) -> DailyBrief? {
+        guard slot.type == .brief else { return nil }
+        switch slot.time {
+        case "07:00": return .morning
+        case "12:30": return .afternoon
+        case "19:00": return .evening
+        default:      return nil
+        }
+    }
 
     private var isToday: Bool {
         Calendar.current.isDateInToday(viewModel.focusDate)
@@ -118,44 +130,45 @@ struct DayScheduleView: View {
                                 .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
                                 .listRowSeparator(.hidden)
                         case .slot(let slot):
-                            let isAssignable = slot.isOpenSlot
-                            if slot.taskId != nil {
-                                Button { onSelectSlot(slot) } label: {
-                                    SlotCard(slot: slot)
-                                        .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                                .swipeActions(edge: .trailing) {
-                                    slotActions(slot: slot)
-                                }
-                            } else if isAssignable {
-                                Button { onAssignToSlot(slot) } label: {
-                                    SlotCard(slot: slot)
-                                        .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                            } else {
-                                Button { onSelectSlot(slot) } label: {
-                                    SlotCard(slot: slot)
-                                        .contentShape(Rectangle())
-                                }
-                                .buttonStyle(.plain)
-                                .listRowBackground(Color.clear)
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
-                            }
+                            slotRow(for: slot)
                         }
                     }
                 }
                 .listStyle(.plain)
                 .contentMargins(.bottom, 90, for: .scrollContent)
             }
+    }
+
+    /// One row in the agent timeline. Briefs render as a minimal time+name row
+    /// (no card chrome) and open the brief sheet; open slots and assigned slots
+    /// both navigate into `TimeSlotView` via `onSelectSlot` — the detail view
+    /// exposes an "Assign a Task" button for empty slots.
+    @ViewBuilder
+    private func slotRow(for slot: ScheduleSlot) -> some View {
+        if let brief = Self.brief(for: slot) {
+            Button { onTapBrief(brief) } label: {
+                BriefRow(slot: slot, brief: brief)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 2, trailing: 16))
+        } else {
+            Button { onSelectSlot(slot) } label: {
+                SlotCard(slot: slot)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
+            .swipeActions(edge: .trailing) {
+                if !slot.isOpenSlot {
+                    slotActions(slot: slot)
+                }
+            }
+        }
     }
 
     @ViewBuilder
@@ -246,6 +259,34 @@ private struct WeekBar: View {
         }
         .foregroundStyle(.secondary)
         .buttonStyle(.plain)
+    }
+}
+
+/// Minimal row for brief slots: just the time and brief name, no card chrome.
+/// Distinct from task/flex slot cards so briefs read as ambient markers of the
+/// day rather than scheduled work to assign.
+private struct BriefRow: View {
+    let slot: ScheduleSlot
+    let brief: DailyBrief
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text(slot.time)
+                .font(.system(.caption, design: .monospaced))
+                .foregroundStyle(brief.color.opacity(0.85))
+                .frame(width: 42, alignment: .leading)
+
+            Image(systemName: brief.icon)
+                .font(.caption)
+                .foregroundStyle(brief.color)
+
+            Text(slot.typeLabel)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(brief.color)
+
+            Spacer()
+        }
+        .padding(.vertical, 6)
     }
 }
 

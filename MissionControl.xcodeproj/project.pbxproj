@@ -51,6 +51,7 @@
 		9165BFEC23DEBDE2B5ACE33C /* ScheduleSlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6570890967C69B599B52CF1 /* ScheduleSlot.swift */; };
 		92197F371846FA756FCD29DC /* Goal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D04724739E13A9765ACD16 /* Goal.swift */; };
 		92E6B77ABDBAE9D5960BDBFC /* SlotDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777B9574054F2D6131853773 /* SlotDetailView.swift */; };
+		A1B2C3D4E5F6789012346001 /* TimeSlotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6789012346002 /* TimeSlotView.swift */; };
 		94D2B6C30961142C65799CA3 /* GoalDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D77ABFCCEB5AFF2543E5C28C /* GoalDetailViewModel.swift */; };
 		9A24034FA95460D37C2EC06F /* SlotCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23E0B4D9DFC52FE0AAB9E722 /* SlotCard.swift */; };
 		9AD6C74B5EDD85ADC0961104 /* Agent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8030109314A96ACEE4E6C129 /* Agent.swift */; };
@@ -158,6 +159,7 @@
 		6C156323685CC44B680A865D /* WatchTaskList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchTaskList.swift; sourceTree = "<group>"; };
 		6D2985EADFC1BB30478399B4 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 		777B9574054F2D6131853773 /* SlotDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotDetailView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6789012346002 /* TimeSlotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeSlotView.swift; sourceTree = "<group>"; };
 		79425DC5E01A2C3480AFF4F7 /* InvocationDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvocationDetailView.swift; sourceTree = "<group>"; };
 		7C00013EDEAE09D6A94EB486 /* TaskDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailViewModel.swift; sourceTree = "<group>"; };
 		7EE6EAFE31516194D72340D3 /* AgentsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentsViewModel.swift; sourceTree = "<group>"; };
@@ -219,6 +221,7 @@
 				4842F24FC3E265B6A6B8B31C /* ScheduleTaskSheet.swift */,
 				B907B9C061ED212157D3FFF7 /* ScheduleView.swift */,
 				777B9574054F2D6131853773 /* SlotDetailView.swift */,
+				A1B2C3D4E5F6789012346002 /* TimeSlotView.swift */,
 				CFC9558746EC6AC1B889B189 /* YearScheduleView.swift */,
 			);
 			path = Schedule;
@@ -653,6 +656,7 @@
 				9D9E3ADEDABD84BBBFABFFA9 /* SettingsView.swift in Sources */,
 				9A24034FA95460D37C2EC06F /* SlotCard.swift in Sources */,
 				92E6B77ABDBAE9D5960BDBFC /* SlotDetailView.swift in Sources */,
+				A1B2C3D4E5F6789012346001 /* TimeSlotView.swift in Sources */,
 				9C9729F8E9CE32EA8583B1DC /* Task.swift in Sources */,
 				B3F6A6217C4F4520FDD35B24 /* TaskActionBar.swift in Sources */,
 				FA82A64C69166148A9E8FB52 /* TaskCard.swift in Sources */,

@@ -558,7 +558,7 @@ enum DailyBrief: String, Identifiable, CaseIterable {
     }
 }
 
-private struct BriefDetailView: View {
+struct BriefDetailView: View {
     let brief: DailyBrief
     let onExpand: () -> Void
 
