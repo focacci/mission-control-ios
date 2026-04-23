@@ -7,6 +7,8 @@ struct HomeView: View {
     @State private var showingNoteEditor = false
     @State private var showingSettings = false
     @State private var selectedBrief: DailyBrief?
+    @State private var expandedBrief: BriefFullScreenContext?
+    @State private var pendingExpandBrief: DailyBrief?
 
     var body: some View {
         NavigationStack {
@@ -52,8 +54,19 @@ struct HomeView: View {
             .sheet(isPresented: $showingNoteEditor) {
                 DailyNoteEditorView(note: dailyNote)
             }
-            .sheet(item: $selectedBrief) { brief in
-                BriefDetailView(brief: brief)
+            .sheet(item: $selectedBrief, onDismiss: {
+                if let brief = pendingExpandBrief {
+                    pendingExpandBrief = nil
+                    expandedBrief = BriefFullScreenContext(date: Date(), brief: brief)
+                }
+            }) { brief in
+                BriefDetailView(brief: brief, onExpand: {
+                    pendingExpandBrief = brief
+                    selectedBrief = nil
+                })
+            }
+            .navigationDestination(item: $expandedBrief) { ctx in
+                BriefFullScreenView(brief: ctx.brief, date: ctx.date)
             }
         }
     }
@@ -765,7 +778,7 @@ private struct BriefsRow: View {
 
 private struct BriefDetailView: View {
     let brief: DailyBrief
-    @State private var showFullScreen = false
+    let onExpand: () -> Void
 
     var body: some View {
         NavigationStack {
@@ -820,9 +833,7 @@ private struct BriefDetailView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showFullScreen = true
-                    } label: {
+                    Button(action: onExpand) {
                         Image(systemName: "arrow.down.left.and.arrow.up.right")
                     }
                 }
@@ -830,17 +841,5 @@ private struct BriefDetailView: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-        .fullScreenCover(isPresented: $showFullScreen) {
-            NavigationStack {
-                BriefFullScreenView(brief: brief, date: Date())
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button { showFullScreen = false } label: {
-                                Image(systemName: "xmark")
-                            }
-                        }
-                    }
-            }
-        }
     }
 }
