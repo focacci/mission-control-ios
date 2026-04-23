@@ -8,10 +8,19 @@ struct ChatContextToolbarButton: View {
 
     var body: some View {
         Menu {
-            Button {
-                // TODO: wire up pinning once the context group model lands.
-            } label: {
-                Label("Pin Context", systemImage: "pin")
+            let page = chatContext.pageContext
+            if chatContext.isPinned(page) {
+                Button(role: .destructive) {
+                    chatContext.togglePinned(page)
+                } label: {
+                    Label("Unpin Context", systemImage: "pin.slash")
+                }
+            } else {
+                Button {
+                    chatContext.togglePinned(page)
+                } label: {
+                    Label("Pin Context", systemImage: "pin")
+                }
             }
         } label: {
             HStack(spacing: 8) {

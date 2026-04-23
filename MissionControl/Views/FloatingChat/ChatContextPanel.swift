@@ -5,26 +5,15 @@ import SwiftUI
 /// collapsible sections for the user's selected contexts, pinned contexts,
 /// and saved context groups.
 ///
-/// Pinned and saved-group data are mocked for now — real persistence lands
-/// with the backend work tracked separately.
+/// Saved-group data is still mocked; pinning is live against
+/// `ChatContextStore.pinnedContexts`.
 struct ChatContextPanel: View {
     @Environment(ChatContextStore.self) private var chatContext
     @Binding var isExpanded: Bool
 
     @State private var showSelected: Bool = true
-    @State private var showPinned: Bool = false
+    @State private var showPinned: Bool = true
     @State private var showSavedGroups: Bool = false
-
-    // Mocked until we wire real pinning. These reuse the contexts that used
-    // to live in the picker menu so the panel is still functionally useful.
-    private static let mockPinned: [ChatContextKind] = [
-        .home,
-        .agents,
-        .plans(section: "All"),
-        .schedule(date: Date(), mode: .day),
-        .health(section: "Overview"),
-        .faith(section: "Overview")
-    ]
 
     private static let mockSavedGroups: [MockGroup] = [
         MockGroup(name: "Morning Review", icon: "sun.max", count: 3),
@@ -140,26 +129,41 @@ struct ChatContextPanel: View {
         VStack(alignment: .leading, spacing: 6) {
             collapsibleHeader(
                 title: "Pinned",
-                count: Self.mockPinned.count,
+                count: chatContext.pinnedContexts.count,
                 isExpanded: showPinned
             ) {
                 withAnimation(.easeInOut(duration: 0.2)) { showPinned.toggle() }
             }
 
             if showPinned {
-                VStack(spacing: 8) {
-                    ForEach(Array(Self.mockPinned.enumerated()), id: \.offset) { _, kind in
-                        Button {
-                            chatContext.toggleSelected(kind)
-                        } label: {
-                            ContextCard(
-                                icon: icon(for: kind),
-                                title: label(for: kind),
-                                subtitle: typeName(for: kind),
-                                isActive: chatContext.isSelected(kind)
-                            )
+                if chatContext.pinnedContexts.isEmpty {
+                    Text("Pin a page's context from its toolbar pill to keep it one tap away.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                } else {
+                    VStack(spacing: 8) {
+                        ForEach(Array(chatContext.pinnedContexts.enumerated()), id: \.offset) { _, kind in
+                            Button {
+                                chatContext.toggleSelected(kind)
+                            } label: {
+                                ContextCard(
+                                    icon: chatContext.icon(for: kind),
+                                    title: chatContext.label(for: kind),
+                                    subtitle: chatContext.typeName(for: kind),
+                                    isActive: chatContext.isSelected(kind)
+                                )
+                            }
+                            .buttonStyle(.plain)
+                            .contextMenu {
+                                Button(role: .destructive) {
+                                    chatContext.unpin(kind)
+                                } label: {
+                                    Label("Unpin", systemImage: "pin.slash")
+                                }
+                            }
                         }
-                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -225,46 +229,6 @@ struct ChatContextPanel: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Label helpers (mirrors the old menu)
-
-    private func label(for kind: ChatContextKind) -> String {
-        switch kind {
-        case .app:      return "Mission Control"
-        case .home:     return "Home"
-        case .agents:   return "Agents"
-        case .plans:    return "Plans"
-        case .schedule: return "Today"
-        case .health:   return "Health"
-        case .faith:    return "Faith"
-        default:        return kind.contextType.capitalized
-        }
-    }
-
-    private func icon(for kind: ChatContextKind) -> String {
-        switch kind {
-        case .app:      return "cpu"
-        case .home:     return "house"
-        case .agents:   return "person.2.wave.2"
-        case .plans:    return "list.bullet"
-        case .schedule: return "calendar"
-        case .health:   return "heart"
-        case .faith:    return "cross"
-        default:        return "circle"
-        }
-    }
-
-    private func typeName(for kind: ChatContextKind) -> String {
-        switch kind {
-        case .app:          return "App"
-        case .home:         return "Home"
-        case .agents:       return "Agents"
-        case .plans:        return "Plans"
-        case .schedule:     return "Schedule"
-        case .health:       return "Health"
-        case .faith:        return "Faith"
-        default:            return kind.contextType.capitalized
-        }
-    }
 }
 
 // MARK: - Context Card

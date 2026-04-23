@@ -14,6 +14,7 @@ import SwiftUI
 // sessions on the API side.
 
 struct ContextGroupsView: View {
+    @Environment(ChatContextStore.self) private var chatContext
     @State private var groups: [ContextGroup] = ContextGroup.mocks
     @State private var showingCreate = false
 
@@ -23,6 +24,25 @@ struct ContextGroupsView: View {
                 Text("Bundle related contexts from across the app so you — or the agent — can ground a chat on all of them at once.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+
+            Section("Pinned") {
+                if chatContext.pinnedContexts.isEmpty {
+                    Text("Nothing pinned yet. Tap the context pill on any page and choose Pin Context to keep it one tap away.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(Array(chatContext.pinnedContexts.enumerated()), id: \.offset) { _, kind in
+                        PinnedContextRow(
+                            kind: kind,
+                            label: chatContext.label(for: kind),
+                            icon: chatContext.icon(for: kind),
+                            typeName: chatContext.typeName(for: kind)
+                        ) {
+                            chatContext.unpin(kind)
+                        }
+                    }
+                }
             }
 
             Section("Your Groups") {
@@ -87,6 +107,59 @@ struct ContextGroupsView: View {
                 }
             }
             .presentationDetents([.medium, .large])
+        }
+    }
+}
+
+// MARK: - Pinned Row
+
+private struct PinnedContextRow: View {
+    let kind: ChatContextKind
+    let label: String
+    let icon: String
+    let typeName: String
+    let onUnpin: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(Color.accentColor.opacity(0.15))
+                    .frame(width: 32, height: 32)
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                Text(typeName)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 0)
+            Button {
+                onUnpin()
+            } label: {
+                Image(systemName: "pin.slash")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .padding(8)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Unpin \(label)")
+        }
+        .padding(.vertical, 2)
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            Button(role: .destructive) {
+                onUnpin()
+            } label: {
+                Label("Unpin", systemImage: "pin.slash")
+            }
         }
     }
 }

@@ -122,6 +122,30 @@ final class ChatContextStore {
         }
     }
 
+    /// Contexts the user has pinned from a page's context toolbar button.
+    /// Surfaces in the floating chat's context panel (Pinned section) and on
+    /// the Context Groups page (Pinned section) so they're one tap away.
+    /// Persistence lands with the backend; in-memory for now.
+    var pinnedContexts: [ChatContextKind] = []
+
+    func isPinned(_ kind: ChatContextKind) -> Bool {
+        pinnedContexts.contains(kind)
+    }
+
+    func togglePinned(_ kind: ChatContextKind) {
+        if let idx = pinnedContexts.firstIndex(of: kind) {
+            pinnedContexts.remove(at: idx)
+        } else {
+            pinnedContexts.append(kind)
+        }
+    }
+
+    func unpin(_ kind: ChatContextKind) {
+        if let idx = pinnedContexts.firstIndex(of: kind) {
+            pinnedContexts.remove(at: idx)
+        }
+    }
+
     /// Live connection state for the selected agent. Drives the agent picker
     /// toolbar icon. Mocked on chat open until real transport lands.
     var agentConnectionState: AgentConnectionState = .offline
