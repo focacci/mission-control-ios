@@ -12,14 +12,14 @@ struct FeatureListView: View {
     var body: some View {
         NavigationStack {
             List {
-                ForEach(FeatureListEntry.allCases) { entry in
-                    NavigationLink(value: entry) {
-                        Label {
-                            Text(entry.title)
-                        } icon: {
-                            Image(systemName: entry.icon)
-                                .foregroundStyle(.blue)
-                        }
+                Section("Features") {
+                    ForEach(FeatureListEntry.featureCases) { entry in
+                        entryRow(entry)
+                    }
+                }
+                Section("System") {
+                    ForEach(FeatureListEntry.systemCases) { entry in
+                        entryRow(entry)
                     }
                 }
             }
@@ -28,6 +28,17 @@ struct FeatureListView: View {
             .chatContextToolbar()
             .navigationDestination(for: FeatureListEntry.self) { entry in
                 entry.destination
+            }
+        }
+    }
+
+    private func entryRow(_ entry: FeatureListEntry) -> some View {
+        NavigationLink(value: entry) {
+            Label {
+                Text(entry.title)
+            } icon: {
+                Image(systemName: entry.icon)
+                    .foregroundStyle(.blue)
             }
         }
     }
@@ -43,6 +54,9 @@ enum FeatureListEntry: String, CaseIterable, Identifiable, Hashable {
     case settings
 
     var id: String { rawValue }
+
+    static let featureCases: [FeatureListEntry] = [.faith, .health]
+    static let systemCases: [FeatureListEntry] = [.briefings, .profile, .settings]
 
     var title: String {
         switch self {
