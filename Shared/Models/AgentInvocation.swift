@@ -15,6 +15,9 @@ struct AgentInvocation: Codable, Identifiable, Hashable {
     let error: String?
     let tokensIn: Int
     let tokensOut: Int
+    /// OpenClaw gateway `runId` returned by the `agent` RPC (Phase 2+). Absent
+    /// on rows created by the legacy `execFile` path.
+    let gatewayRunId: String?
 
     enum Trigger: String, Codable, CaseIterable {
         case slotStart = "slot_start"
@@ -36,12 +39,17 @@ struct AgentInvocation: Codable, Identifiable, Hashable {
 /// Phase 1 invocations return an empty `toolCalls` array.
 struct ToolCallLog: Codable, Identifiable, Hashable {
     let id: String
-    let messageId: String
+    /// Nullable: a `tool.start` can arrive before any assistant text for the
+    /// block, in which case the runner backfills this on `message_complete`.
+    let messageId: String?
     let invocationId: String
     let toolName: String
     let input: String
     let output: String?
     let isError: Bool
+    /// One-line human summary produced by the server-side presenter (Phase 2+).
+    /// Prefer this for collapsed rows; fall back to `output` when missing.
+    let summary: String?
     let startedAt: String
     let endedAt: String?
     let durationMs: Int?

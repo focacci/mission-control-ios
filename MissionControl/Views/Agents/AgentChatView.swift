@@ -65,9 +65,16 @@ struct AgentChatView: View {
             )
             state.messages = messages.compactMap { msg in
                 switch msg.role {
-                case .user:      return ChatMessage(role: .user, content: msg.content)
-                case .assistant: return ChatMessage(role: .agent, content: msg.content)
-                case .system:    return nil
+                case .user:
+                    return ChatMessage(role: .user, content: msg.content)
+                case .assistant:
+                    return ChatMessage(
+                        role: .agent,
+                        content: msg.content,
+                        invocationId: msg.invocationId
+                    )
+                case .system:
+                    return nil
                 }
             }
             if state.messages.isEmpty {

@@ -66,6 +66,9 @@ struct InvocationDetailView: View {
                 MetaRow(label: "Ended", value: ended, mono: true)
             }
             MetaRow(label: "Tokens",   value: "in \(inv.tokensIn) / out \(inv.tokensOut)", mono: true)
+            if let runId = inv.gatewayRunId {
+                MetaRow(label: "Run ID", value: runId, mono: true)
+            }
 
             if let err = inv.error {
                 Divider()
@@ -111,44 +114,7 @@ struct InvocationDetailView: View {
                 .font(.headline)
 
             ForEach(calls) { call in
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Label(call.toolName, systemImage: "wrench.and.screwdriver")
-                            .font(.footnote.weight(.medium))
-                        Spacer()
-                        if call.isError {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.red)
-                        }
-                        if let ms = call.durationMs {
-                            Text("\(ms)ms")
-                                .font(.caption2.monospacedDigit())
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    if !call.input.isEmpty {
-                        Text("input:")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                        Text(call.input)
-                            .font(.caption2.monospaced())
-                            .lineLimit(4)
-                            .foregroundStyle(.primary)
-                    }
-
-                    if let output = call.output, !output.isEmpty {
-                        Text("output:")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                        Text(output)
-                            .font(.caption2.monospaced())
-                            .lineLimit(4)
-                            .foregroundStyle(.primary)
-                    }
-                }
-                .padding(10)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+                ToolCallRow(call: call)
             }
         }
     }
@@ -161,6 +127,73 @@ struct InvocationDetailView: View {
         } catch {
             self.error = error.localizedDescription
         }
+    }
+}
+
+/// Collapsed row for one tool call. Shows the server-provided `summary` when
+/// available (Phase 2+); expand-on-tap reveals raw input/output JSON for
+/// debugging. Older invocations without a summary render just the raw
+/// payloads.
+private struct ToolCallRow: View {
+    let call: ToolCallLog
+    @State private var isExpanded = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.15)) { isExpanded.toggle() }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: call.isError ? "exclamationmark.triangle.fill" : "wrench.and.screwdriver")
+                        .font(.caption)
+                        .foregroundStyle(call.isError ? .red : .secondary)
+                    Text(call.toolName)
+                        .font(.footnote.weight(.medium))
+                    if let summary = call.summary, !summary.isEmpty {
+                        Text("·")
+                            .foregroundStyle(.tertiary)
+                        Text(summary)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                    Spacer(minLength: 0)
+                    if let ms = call.durationMs {
+                        Text("\(ms)ms")
+                            .font(.caption2.monospacedDigit())
+                            .foregroundStyle(.tertiary)
+                    }
+                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded {
+                if !call.input.isEmpty {
+                    Text("input")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Text(call.input)
+                        .font(.caption2.monospaced())
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                if let output = call.output, !output.isEmpty {
+                    Text("output")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Text(output)
+                        .font(.caption2.monospaced())
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+        }
+        .padding(10)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
     }
 }
 

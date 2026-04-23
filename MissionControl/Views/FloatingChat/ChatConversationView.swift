@@ -6,6 +6,10 @@ struct ChatMessage: Identifiable {
     let id = UUID()
     let role: Role
     let content: String
+    /// Server invocation that produced this reply. Only set on agent bubbles
+    /// from `POST /api/chat` responses or rehydrated transcript messages.
+    /// Enables the "view run →" link to `InvocationDetailView`.
+    var invocationId: String? = nil
 
     enum Role { case user, agent }
 }
@@ -38,7 +42,7 @@ final class ChatService: ObservableObject {
         context: ChatContextKind,
         sessionId: String?,
         useDefaultAgent: Bool
-    ) async throws -> (reply: String, sessionId: String) {
+    ) async throws -> (reply: String, sessionId: String, invocationId: String?) {
         isLoading = true
         defer { isLoading = false }
 
@@ -91,7 +95,8 @@ final class ChatService: ObservableObject {
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] ?? [:]
         let reply = json["reply"] as? String ?? "No response."
         let sid = json["sessionId"] as? String ?? ""
-        return (reply, sid)
+        let invId = json["invocationId"] as? String
+        return (reply, sid, invId)
     }
 
 }
@@ -244,9 +249,16 @@ struct ChatConversationView: View {
     private func loadSession(_ session: ChatSession, messages: [ChatTranscriptMessage]) {
         state.messages = messages.compactMap { msg in
             switch msg.role {
-            case .user:      return ChatMessage(role: .user, content: msg.content)
-            case .assistant: return ChatMessage(role: .agent, content: msg.content)
-            case .system:    return nil
+            case .user:
+                return ChatMessage(role: .user, content: msg.content)
+            case .assistant:
+                return ChatMessage(
+                    role: .agent,
+                    content: msg.content,
+                    invocationId: msg.invocationId
+                )
+            case .system:
+                return nil
             }
         }
         if state.messages.isEmpty {
@@ -373,7 +385,11 @@ struct ChatConversationView: View {
                     useDefaultAgent: useDefaultAgent
                 )
                 state.sessionId = result.sessionId
-                state.messages.append(ChatMessage(role: .agent, content: result.reply))
+                state.messages.append(ChatMessage(
+                    role: .agent,
+                    content: result.reply,
+                    invocationId: result.invocationId
+                ))
             } catch {
                 state.messages.append(ChatMessage(
                     role: .agent,
@@ -427,19 +443,36 @@ struct MessageBubble: View {
                 Spacer(minLength: 52)
             }
 
-            Text(LocalizedStringKey(message.content))
-                .font(.body)
-                .foregroundStyle(isUser ? .white : .primary)
-                .multilineTextAlignment(.leading)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(
-                    isUser
-                        ? AnyShapeStyle(Color.blue)
-                        : AnyShapeStyle(Material.regularMaterial),
-                    in: RoundedRectangle(cornerRadius: 18)
-                )
-                .frame(maxWidth: .infinity, alignment: isUser ? .trailing : .leading)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(LocalizedStringKey(message.content))
+                    .font(.body)
+                    .foregroundStyle(isUser ? .white : .primary)
+                    .multilineTextAlignment(.leading)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(
+                        isUser
+                            ? AnyShapeStyle(Color.blue)
+                            : AnyShapeStyle(Material.regularMaterial),
+                        in: RoundedRectangle(cornerRadius: 18)
+                    )
+                    .frame(maxWidth: .infinity, alignment: isUser ? .trailing : .leading)
+
+                if !isUser, let invocationId = message.invocationId {
+                    NavigationLink {
+                        InvocationDetailView(invocationId: invocationId)
+                    } label: {
+                        HStack(spacing: 3) {
+                            Text("View run")
+                            Image(systemName: "arrow.up.right")
+                        }
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .padding(.leading, 14)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
 
             if isUser {
                 Spacer(minLength: 0)
