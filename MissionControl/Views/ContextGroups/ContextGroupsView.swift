@@ -257,13 +257,18 @@ struct ContextGroupMember: Identifiable, Hashable {
     let icon: String
     let contextType: String
     let contextId: String?
+    /// The full `ChatContextKind` this member was captured from. Preserves
+    /// enough detail (names, emoji, mode, etc.) that selecting a group can
+    /// round-trip the kind back into `selectedContexts`.
+    let kind: ChatContextKind
 
-    init(id: UUID = UUID(), label: String, icon: String, contextType: String, contextId: String? = nil) {
+    init(id: UUID = UUID(), label: String, icon: String, kind: ChatContextKind) {
         self.id = id
         self.label = label
         self.icon = icon
-        self.contextType = contextType
-        self.contextId = contextId
+        self.contextType = kind.contextType
+        self.contextId = kind.contextId
+        self.kind = kind
     }
 
     func matches(_ kind: ChatContextKind) -> Bool {

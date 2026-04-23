@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum ChatContextKind: Equatable {
+enum ChatContextKind: Equatable, Hashable {
     case app
     case home
     case agents
@@ -190,10 +190,36 @@ final class ChatContextStore {
                 ContextGroupMember(
                     label: label(for: kind),
                     icon: icon(for: kind),
-                    contextType: kind.contextType,
-                    contextId: kind.contextId
+                    kind: kind
                 )
             )
+        }
+    }
+
+    /// Whether every member of `groupId` is currently in `selectedContexts`.
+    /// Empty groups are treated as "not fully selected" so the UI keeps the
+    /// add-all button enabled rather than showing a meaningless checkmark.
+    func isGroupFullySelected(_ groupId: ContextGroup.ID) -> Bool {
+        guard let group = contextGroups.first(where: { $0.id == groupId }),
+              !group.members.isEmpty else { return false }
+        return group.members.allSatisfy { isSelected($0.kind) }
+    }
+
+    /// Toggle selection of every member of a group. If the group is fully
+    /// selected, deselect its members; otherwise select the members that
+    /// aren't already in `selectedContexts`.
+    func toggleGroupSelected(_ groupId: ContextGroup.ID) {
+        guard let group = contextGroups.first(where: { $0.id == groupId }) else { return }
+        if isGroupFullySelected(groupId) {
+            for m in group.members {
+                if let idx = selectedContexts.firstIndex(of: m.kind) {
+                    selectedContexts.remove(at: idx)
+                }
+            }
+        } else {
+            for m in group.members where !isSelected(m.kind) {
+                selectedContexts.append(m.kind)
+            }
         }
     }
 

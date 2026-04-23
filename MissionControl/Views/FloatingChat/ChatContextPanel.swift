@@ -11,6 +11,7 @@ struct ChatContextPanel: View {
     @State private var showSelected: Bool = true
     @State private var showPinned: Bool = true
     @State private var showSavedGroups: Bool = false
+    @State private var expandedGroups: Set<ContextGroup.ID> = []
 
     var body: some View {
         // Wrapped in a ScrollView so scroll gestures are consumed inside the
@@ -18,7 +19,7 @@ struct ChatContextPanel: View {
         // `basedOnSize` keeps short content from bouncing; the maxHeight caps
         // how much of the sheet the panel can cover when both sections expand.
         ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 16) {
                 currentSection
                 selectedSection
                 pinnedSection
@@ -39,46 +40,55 @@ struct ChatContextPanel: View {
 
     // MARK: - Current
 
-    private var isCurrentSelected: Bool {
-        chatContext.isSelected(chatContext.pageContext)
-    }
-
-    /// Hidden once the current context is selected — it then appears at the
-    /// top of the Selected section instead.
-    @ViewBuilder
+    /// Always-visible row for the page the user is looking at. Exposes add
+    /// and pin toggles directly on the card so the most common action is one
+    /// tap away; the card itself stays put regardless of selection state and
+    /// the duplicate in the Selected / Pinned sections below is filtered out.
     private var currentSection: some View {
-        if !isCurrentSelected {
-            let page = chatContext.pageContext
-            VStack(alignment: .leading, spacing: 6) {
-                sectionHeader("Current")
-                Button {
-                    chatContext.toggleSelected(page)
-                } label: {
-                    ContextCard(
-                        icon: chatContext.displayIcon,
-                        title: chatContext.displayLabel,
-                        subtitle: chatContext.contextTypeName,
-                        isActive: false
+        let page = chatContext.pageContext
+        return VStack(alignment: .leading, spacing: 8) {
+            sectionLabel("Current")
+            ContextCard(
+                icon: chatContext.displayIcon,
+                title: chatContext.displayLabel,
+                subtitle: chatContext.contextTypeName,
+                isActive: chatContext.isSelected(page),
+                trailing: {
+                    AnyView(
+                        HStack(spacing: 4) {
+                            CardIconButton(
+                                systemName: chatContext.isSelected(page) ? "checkmark.circle.fill" : "plus.circle",
+                                isActive: chatContext.isSelected(page),
+                                accessibilityLabel: chatContext.isSelected(page) ? "Remove from selected" : "Add to selected"
+                            ) {
+                                chatContext.toggleSelected(page)
+                            }
+                            CardIconButton(
+                                systemName: chatContext.isPinned(page) ? "pin.fill" : "pin",
+                                isActive: chatContext.isPinned(page),
+                                accessibilityLabel: chatContext.isPinned(page) ? "Unpin" : "Pin"
+                            ) {
+                                chatContext.togglePinned(page)
+                            }
+                        }
                     )
                 }
-                .buttonStyle(.plain)
-            }
+            )
         }
     }
 
     // MARK: - Selected
 
-    /// Selected contexts for the Selected section. When the current page
-    /// context is selected, it's pinned to the top; other selections follow
-    /// in selection order.
+    /// All selected contexts in selection order. The current page appears
+    /// here *in addition to* the always-on-top Current row when it's been
+    /// selected — duplication is intentional so the section reflects the full
+    /// grounding set.
     private var selectedListed: [ChatContextKind] {
-        let page = chatContext.pageContext
-        let rest = chatContext.selectedContexts.filter { $0 != page }
-        return isCurrentSelected ? [page] + rest : rest
+        chatContext.selectedContexts
     }
 
     private var selectedSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             collapsibleHeader(
                 title: "Selected",
                 count: selectedListed.count,
@@ -89,11 +99,7 @@ struct ChatContextPanel: View {
 
             if showSelected {
                 if selectedListed.isEmpty {
-                    Text("No contexts selected yet.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                    emptyRow("No contexts selected yet.")
                 } else {
                     VStack(spacing: 8) {
                         ForEach(Array(selectedListed.enumerated()), id: \.offset) { _, kind in
@@ -117,26 +123,26 @@ struct ChatContextPanel: View {
 
     // MARK: - Pinned
 
+    private var pinnedListed: [ChatContextKind] {
+        chatContext.pinnedContexts
+    }
+
     private var pinnedSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             collapsibleHeader(
                 title: "Pinned",
-                count: chatContext.pinnedContexts.count,
+                count: pinnedListed.count,
                 isExpanded: showPinned
             ) {
                 withAnimation(.easeInOut(duration: 0.2)) { showPinned.toggle() }
             }
 
             if showPinned {
-                if chatContext.pinnedContexts.isEmpty {
-                    Text("Pin a page's context from its toolbar pill to keep it one tap away.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                if pinnedListed.isEmpty {
+                    emptyRow("Pin a page's context from its toolbar pill to keep it one tap away.")
                 } else {
                     VStack(spacing: 8) {
-                        ForEach(Array(chatContext.pinnedContexts.enumerated()), id: \.offset) { _, kind in
+                        ForEach(Array(pinnedListed.enumerated()), id: \.offset) { _, kind in
                             Button {
                                 chatContext.toggleSelected(kind)
                             } label: {
@@ -165,7 +171,7 @@ struct ChatContextPanel: View {
     // MARK: - Saved Groups
 
     private var savedGroupsSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             collapsibleHeader(
                 title: "Saved Groups",
                 count: chatContext.contextGroups.count,
@@ -176,20 +182,11 @@ struct ChatContextPanel: View {
 
             if showSavedGroups {
                 if chatContext.contextGroups.isEmpty {
-                    Text("No saved groups yet. Create one from the Context Groups page or from any page's context pill.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                    emptyRow("No saved groups yet. Create one from the Context Groups page or from any page's context pill.")
                 } else {
                     VStack(spacing: 8) {
                         ForEach(chatContext.contextGroups) { group in
-                            ContextCard(
-                                icon: group.icon,
-                                title: group.name,
-                                subtitle: "\(group.members.count) contexts",
-                                isActive: false
-                            )
+                            savedGroupRow(group)
                         }
                     }
                 }
@@ -197,13 +194,81 @@ struct ChatContextPanel: View {
         }
     }
 
+    @ViewBuilder
+    private func savedGroupRow(_ group: ContextGroup) -> some View {
+        let isExpanded = expandedGroups.contains(group.id)
+        let isFullySelected = chatContext.isGroupFullySelected(group.id)
+
+        VStack(spacing: 6) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    if isExpanded {
+                        expandedGroups.remove(group.id)
+                    } else {
+                        expandedGroups.insert(group.id)
+                    }
+                }
+            } label: {
+                ContextCard(
+                    icon: group.icon,
+                    title: group.name,
+                    subtitle: "\(group.members.count) context\(group.members.count == 1 ? "" : "s")",
+                    isActive: isFullySelected,
+                    trailing: {
+                        AnyView(
+                            HStack(spacing: 4) {
+                                CardIconButton(
+                                    systemName: isFullySelected ? "checkmark.circle.fill" : "plus.circle",
+                                    isActive: isFullySelected,
+                                    accessibilityLabel: isFullySelected ? "Remove group from selected" : "Add whole group to selected"
+                                ) {
+                                    chatContext.toggleGroupSelected(group.id)
+                                }
+                                Image(systemName: "chevron.down")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                    .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                                    .frame(width: 28, height: 28)
+                            }
+                        )
+                    }
+                )
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded {
+                if group.members.isEmpty {
+                    emptyRow("This group has no contexts yet.")
+                        .padding(.leading, 16)
+                } else {
+                    VStack(spacing: 6) {
+                        ForEach(group.members) { member in
+                            let isSelected = chatContext.isSelected(member.kind)
+                            Button {
+                                chatContext.toggleSelected(member.kind)
+                            } label: {
+                                ContextCard(
+                                    icon: member.icon,
+                                    title: member.label,
+                                    subtitle: chatContext.typeName(for: member.kind),
+                                    isActive: isSelected
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.leading, 16)
+                }
+            }
+        }
+    }
+
     // MARK: - Building blocks
 
-    private func sectionHeader(_ text: String) -> some View {
-        Text(text.uppercased())
-            .font(.caption2.weight(.semibold))
+    private func sectionLabel(_ text: String) -> some View {
+        Text(text)
+            .font(.subheadline.weight(.semibold))
             .foregroundStyle(.secondary)
-            .tracking(0.5)
     }
 
     private func collapsibleHeader(
@@ -213,22 +278,30 @@ struct ChatContextPanel: View {
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 Image(systemName: "chevron.right")
-                    .font(.caption2.weight(.semibold))
+                    .font(.footnote.weight(.semibold))
                     .foregroundStyle(.secondary)
                     .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                sectionHeader(title)
+                sectionLabel(title)
                 Text("\(count)")
-                    .font(.caption2.weight(.semibold))
+                    .font(.footnote.weight(.semibold))
                     .foregroundStyle(.tertiary)
                 Spacer()
             }
+            .padding(.vertical, 8)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 
+    private func emptyRow(_ text: String) -> some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+    }
 }
 
 // MARK: - Context Card
@@ -238,6 +311,7 @@ private struct ContextCard: View {
     let title: String
     let subtitle: String
     let isActive: Bool
+    var trailing: () -> AnyView = { AnyView(EmptyView()) }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -263,11 +337,7 @@ private struct ContextCard: View {
 
             Spacer(minLength: 0)
 
-            if isActive {
-                Image(systemName: "checkmark")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(Color.accentColor)
-            }
+            trailing()
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -282,3 +352,26 @@ private struct ContextCard: View {
     }
 }
 
+// MARK: - Card Icon Button
+
+/// Circular tap target sized for comfortable touch on the trailing edge of a
+/// context card. `isActive` drives the filled accent treatment that doubles
+/// as a status indicator (selected / pinned / fully-added group).
+private struct CardIconButton: View {
+    let systemName: String
+    let isActive: Bool
+    let accessibilityLabel: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(isActive ? Color.accentColor : .secondary)
+                .frame(width: 32, height: 32)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel)
+    }
+}
