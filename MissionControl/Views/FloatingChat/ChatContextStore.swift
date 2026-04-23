@@ -10,6 +10,14 @@ enum ChatContextKind: Equatable {
     case goal(id: String, emoji: String, name: String)
     case initiative(id: String, emoji: String, name: String)
     case task(id: String, name: String)
+    /// A single Requirement on a task — title + acceptance tests the user
+    /// checks off. Grounds the chat on how to satisfy or critique this
+    /// specific criterion.
+    case requirement(id: String, title: String)
+    /// A single Agent Assignment under a task — the discrete agent-driven
+    /// unit of work. Grounds the chat on the instructions the agent will
+    /// follow when its slot fires.
+    case agentAssignment(id: String, title: String)
     case schedule(date: Date, mode: ScheduleViewMode)
     /// A specific slot on the agent calendar — the focused page for assigning
     /// a task plus extra context (linked contexts, context groups, prompt
@@ -61,6 +69,8 @@ enum ChatContextKind: Equatable {
         case .goal:         return "goal"
         case .initiative:   return "initiative"
         case .task:         return "task"
+        case .requirement:  return "requirement"
+        case .agentAssignment: return "agent_assignment"
         case .schedule:     return "schedule"
         case .timeSlot:     return "time_slot"
         case .health:       return "health"
@@ -81,6 +91,8 @@ enum ChatContextKind: Equatable {
         case .goal(let id, _, _),
              .initiative(let id, _, _),
              .task(let id, _),
+             .requirement(let id, _),
+             .agentAssignment(let id, _),
              .agent(let id, _, _),
              .agentChat(let id, _, _),
              .contextGroupDetails(let id, _):
@@ -226,6 +238,8 @@ final class ChatContextStore {
         case .goal(_, _, let n):         return n
         case .initiative(_, _, let n):   return n
         case .task(_, let n):         return n
+        case .requirement(_, let t):  return t
+        case .agentAssignment(_, let t): return t
         case .schedule(let d, let m):
             let f = DateFormatter()
             switch m {
@@ -260,6 +274,8 @@ final class ChatContextStore {
         case .goal:         return "trophy"
         case .initiative:   return "flag.pattern.checkered"
         case .task:         return "list.bullet.clipboard"
+        case .requirement:  return "checkmark.square"
+        case .agentAssignment: return "person.badge.clock"
         case .schedule:     return "calendar"
         case .timeSlot:     return "calendar.day.timeline.leading"
         case .health:       return "heart"
@@ -290,6 +306,8 @@ final class ChatContextStore {
         case .goal:         return "Goal"
         case .initiative:   return "Initiative"
         case .task:         return "Task"
+        case .requirement:  return "Requirement"
+        case .agentAssignment: return "Agent Assignment"
         case .schedule(_, let m):
             switch m {
             case .day:   return "Schedule - Day"
@@ -331,6 +349,10 @@ final class ChatContextStore {
             return "You've got **\(name)** open. I can suggest tasks you might have missed, check for blockers, or help you move things forward."
         case .task(_, let name):
             return "Looking at **\(name)**. I can help you break it down, draft requirements, or mark it done. What's up?"
+        case .requirement(_, let title):
+            return "You're on the **\(title)** requirement. I can refine its wording, draft tests that would prove it's satisfied, or help you check it off once it is."
+        case .agentAssignment(_, let title):
+            return "You're looking at the **\(title)** agent assignment. I can tighten the instructions, scope what the agent should produce, or suggest where to slot it on the calendar."
         case .timeSlot(_, let time, let day):
             return "You're focused on the **\(day) \(time)** time slot. I can suggest a task to assign, attach contexts the agent should consult, or draft an extra prompt for this run."
         case .schedule(let d, let m):

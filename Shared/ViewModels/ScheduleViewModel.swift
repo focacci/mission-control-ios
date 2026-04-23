@@ -75,7 +75,7 @@ final class ScheduleViewModel {
 
     var datesWithSlots: Set<String> {
         var set: Set<String> = []
-        for (iso, slots) in slotsByDate where slots.contains(where: { $0.type == .task }) {
+        for (iso, slots) in slotsByDate where slots.contains(where: { $0.type == .agentAssignment }) {
             set.insert(iso)
         }
         return set
@@ -84,7 +84,7 @@ final class ScheduleViewModel {
     /// Whether any loaded slot falls inside the given month (for year-view dots).
     func monthHasSlots(year: Int, month: Int) -> Bool {
         for (iso, slots) in slotsByDate {
-            guard slots.contains(where: { $0.type == .task }) else { continue }
+            guard slots.contains(where: { $0.type == .agentAssignment }) else { continue }
             let parts = iso.split(separator: "-")
             guard parts.count == 3,
                   let y = Int(parts[0]), let m = Int(parts[1]),
@@ -194,9 +194,9 @@ final class ScheduleViewModel {
         }
     }
 
-    func assignTask(taskId: String, slotId: String) async {
+    func assignAgentAssignment(agentAssignmentId: String, slotId: String) async {
         do {
-            _ = try await APIClient.shared.assignTask(taskId: taskId, slotId: slotId)
+            _ = try await APIClient.shared.assignAgentAssignment(agentAssignmentId: agentAssignmentId, slotId: slotId)
             invalidateCache()
             await load()
         } catch {
@@ -204,14 +204,14 @@ final class ScheduleViewModel {
         }
     }
 
-    func unassignTask(slot: ScheduleSlot) async {
+    func unassignAgentAssignment(slot: ScheduleSlot) async {
         var optimistic = slot
-        optimistic.taskId = nil
-        optimistic.task = nil
+        optimistic.agentAssignmentId = nil
+        optimistic.agentAssignment = nil
         optimistic.status = .pending
         replace(slot: optimistic)
         do {
-            let updated = try await APIClient.shared.unassignTask(slotId: slot.id)
+            let updated = try await APIClient.shared.unassignAgentAssignment(slotId: slot.id)
             replace(slot: updated)
         } catch {
             replace(slot: slot)

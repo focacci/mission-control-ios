@@ -60,6 +60,10 @@ final class ChatService: ObservableObject {
             ctx["id"] = id; ctx["emoji"] = emoji; ctx["name"] = name
         case .task(let id, let name):
             ctx["id"] = id; ctx["name"] = name
+        case .requirement(let id, let title):
+            ctx["id"] = id; ctx["name"] = title
+        case .agentAssignment(let id, let title):
+            ctx["id"] = id; ctx["name"] = title
         case .agent(let id, let name, let emoji):
             ctx["id"] = id; ctx["name"] = name; ctx["emoji"] = emoji
         case .schedule(let d, let m):

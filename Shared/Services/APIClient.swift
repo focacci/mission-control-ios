@@ -208,41 +208,76 @@ final class APIClient {
                        body: ["description": description])
     }
 
-    func checkRequirement(taskId: String, reqId: String) async throws -> Requirement {
-        try await send("/api/tasks/\(taskId)/requirements/\(reqId)/check", method: "POST")
-    }
-
-    func uncheckRequirement(taskId: String, reqId: String) async throws -> Requirement {
-        try await send("/api/tasks/\(taskId)/requirements/\(reqId)/uncheck", method: "POST")
-    }
-
-    func deleteRequirement(taskId: String, reqId: String) async throws {
-        try await sendNoBody("/api/tasks/\(taskId)/requirements/\(reqId)", method: "DELETE")
-    }
-
-    // MARK: - Tests
-
-    func addTest(taskId: String, description: String) async throws -> TaskTest {
-        try await send("/api/tasks/\(taskId)/tests", method: "POST",
+    func updateRequirement(reqId: String, description: String) async throws -> Requirement {
+        try await send("/api/requirements/\(reqId)", method: "PATCH",
                        body: ["description": description])
     }
 
-    func deleteTest(taskId: String, testId: String) async throws {
-        try await sendNoBody("/api/tasks/\(taskId)/tests/\(testId)", method: "DELETE")
+    func checkRequirement(reqId: String) async throws -> Requirement {
+        try await send("/api/requirements/\(reqId)/check", method: "POST")
     }
 
-    // MARK: - Outputs
-
-    func addOutput(taskId: String, label: String, url: String?) async throws -> TaskOutput {
-        var body: [String: String?] = ["label": label]
-        body["url"] = url
-        // Use a concrete Encodable wrapper
-        return try await send("/api/tasks/\(taskId)/outputs", method: "POST",
-                              body: OutputBody(label: label, url: url))
+    func uncheckRequirement(reqId: String) async throws -> Requirement {
+        try await send("/api/requirements/\(reqId)/uncheck", method: "POST")
     }
 
-    func deleteOutput(taskId: String, outputId: String) async throws {
-        try await sendNoBody("/api/tasks/\(taskId)/outputs/\(outputId)", method: "DELETE")
+    func deleteRequirement(reqId: String) async throws {
+        try await sendNoBody("/api/requirements/\(reqId)", method: "DELETE")
+    }
+
+    // MARK: - Requirement Tests
+
+    func addRequirementTest(reqId: String, description: String) async throws -> RequirementTest {
+        try await send("/api/requirements/\(reqId)/tests", method: "POST",
+                       body: ["description": description])
+    }
+
+    func passRequirementTest(reqId: String, testId: String) async throws -> RequirementTest {
+        try await send("/api/requirements/\(reqId)/tests/\(testId)/pass", method: "POST")
+    }
+
+    func unpassRequirementTest(reqId: String, testId: String) async throws -> RequirementTest {
+        try await send("/api/requirements/\(reqId)/tests/\(testId)/unpass", method: "POST")
+    }
+
+    func deleteRequirementTest(reqId: String, testId: String) async throws {
+        try await sendNoBody("/api/requirements/\(reqId)/tests/\(testId)", method: "DELETE")
+    }
+
+    // MARK: - Agent Assignments
+
+    func agentAssignments(taskId: String) async throws -> [AgentAssignment] {
+        try await fetch("/api/tasks/\(taskId)/agent-assignments")
+    }
+
+    func agentAssignment(id: String) async throws -> AgentAssignment {
+        try await fetch("/api/agent-assignments/\(id)")
+    }
+
+    func createAgentAssignment(taskId: String, body: CreateAgentAssignmentBody) async throws -> AgentAssignment {
+        try await send("/api/tasks/\(taskId)/agent-assignments", method: "POST", body: body)
+    }
+
+    func updateAgentAssignment(id: String, body: UpdateAgentAssignmentBody) async throws -> AgentAssignment {
+        try await send("/api/agent-assignments/\(id)", method: "PATCH", body: body)
+    }
+
+    func completeAgentAssignment(id: String) async throws -> AgentAssignment {
+        try await send("/api/agent-assignments/\(id)/complete", method: "POST")
+    }
+
+    func deleteAgentAssignment(id: String) async throws {
+        try await sendNoBody("/api/agent-assignments/\(id)", method: "DELETE")
+    }
+
+    // MARK: - Slot Outputs
+
+    func addSlotOutput(slotId: String, body: SlotOutputBody) async throws -> SlotOutput {
+        try await send("/api/schedule/slots/\(slotId)/outputs", method: "POST", body: body)
+    }
+
+    func deleteSlotOutput(slotId: String, outputId: String) async throws {
+        try await sendNoBody("/api/schedule/slots/\(slotId)/outputs/\(outputId)", method: "DELETE")
     }
 
     // MARK: - Schedule
@@ -276,13 +311,13 @@ final class APIClient {
                        body: reason.map { ["reason": $0] } ?? [:])
     }
 
-    func assignTask(taskId: String, slotId: String) async throws -> ScheduleSlot {
+    func assignAgentAssignment(agentAssignmentId: String, slotId: String) async throws -> ScheduleSlot {
         try await send("/api/schedule/assign", method: "POST",
-                       body: AssignTaskBody(taskId: taskId, slotId: slotId))
+                       body: AssignAgentAssignmentBody(agentAssignmentId: agentAssignmentId, slotId: slotId))
     }
 
-    func unassignTask(slotId: String) async throws -> ScheduleSlot {
-        try await send("/api/schedule/slots/\(slotId)/task", method: "DELETE")
+    func unassignAgentAssignment(slotId: String) async throws -> ScheduleSlot {
+        try await send("/api/schedule/slots/\(slotId)/assignment", method: "DELETE")
     }
 
     // MARK: - Board
@@ -431,7 +466,6 @@ struct CreateTaskBody: Encodable {
     let initiativeId: String?
     let emoji: String?
     let requirements: [String]?
-    let tests: [String]?
 }
 
 struct UpdateTaskBody: Encodable {
@@ -442,17 +476,30 @@ struct UpdateTaskBody: Encodable {
 
 struct CompleteTaskBody: Encodable {
     let summary: String
-    let outputs: [OutputBody]
 }
 
-struct OutputBody: Encodable {
+struct AssignAgentAssignmentBody: Encodable {
+    let agentAssignmentId: String
+    let slotId: String
+}
+
+struct CreateAgentAssignmentBody: Encodable {
+    let title: String
+    let instructions: String
+    let agentId: String?
+}
+
+struct UpdateAgentAssignmentBody: Encodable {
+    let title: String?
+    let instructions: String?
+    let agentId: String?
+    let sortOrder: Int?
+}
+
+struct SlotOutputBody: Encodable {
     let label: String
     let url: String?
-}
-
-struct AssignTaskBody: Encodable {
-    let taskId: String
-    let slotId: String
+    let kind: String
 }
 
 struct CreateAgentBody: Encodable {

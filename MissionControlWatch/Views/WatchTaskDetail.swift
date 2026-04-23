@@ -113,18 +113,18 @@ struct WatchTaskDetail: View {
         do {
             let updated: Requirement
             if req.completed {
-                updated = try await APIClient.shared.uncheckRequirement(taskId: taskId, reqId: req.id)
+                updated = try await APIClient.shared.uncheckRequirement(reqId: req.id)
             } else {
-                updated = try await APIClient.shared.checkRequirement(taskId: taskId, reqId: req.id)
+                updated = try await APIClient.shared.checkRequirement(reqId: req.id)
             }
-            if var t = task, var reqs = t.requirements,
+            if let t = task, var reqs = t.requirements,
                let idx = reqs.firstIndex(where: { $0.id == updated.id }) {
                 reqs[idx] = updated
                 task = MCTask(
                     id: t.id, name: t.name,
                     initiativeId: t.initiativeId, status: t.status, objective: t.objective,
-                    summary: t.summary, requirements: reqs, tests: t.tests,
-                    outputs: t.outputs, initiative: t.initiative, goal: t.goal, slot: t.slot
+                    summary: t.summary, requirements: reqs, agentAssignments: t.agentAssignments,
+                    initiative: t.initiative, goal: t.goal
                 )
             }
         } catch {

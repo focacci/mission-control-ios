@@ -8,18 +8,18 @@ struct SlotCard: View {
     private var isEmpty: Bool { slot.isOpenSlot }
 
     private var statusIcon: String {
-        slot.task?.statusIcon ?? slot.statusIcon
+        slot.agentAssignment?.statusIcon ?? slot.statusIcon
     }
 
     private var statusColor: Color {
-        slot.task?.statusColor ?? slot.statusColor
+        slot.agentAssignment?.statusColor ?? slot.statusColor
     }
 
     private var breadcrumb: String? {
-        guard let task = slot.task,
-              let goalName = task.goal?.name,
-              let initiativeName = task.initiative?.name else { return nil }
-        return "\(goalName) › \(initiativeName)"
+        // Breadcrumb context (goal › initiative) isn't carried on the assignment
+        // payload yet; show instructions preview instead when available.
+        guard let aa = slot.agentAssignment, !aa.instructions.isEmpty else { return nil }
+        return aa.instructions
     }
 
     var body: some View {
@@ -51,11 +51,6 @@ struct SlotCard: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
-                    } else if let task = slot.task, let objective = task.objective, !objective.isEmpty {
-                        Text(objective)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
                     }
                 }
 
@@ -76,8 +71,6 @@ struct SlotCard: View {
     }
 }
 
-/// Empty slots render with a faint dashed outline and no filled background so
-/// they read as "available to assign" instead of looking like committed work.
 private struct SlotCardChrome: ViewModifier {
     let isEmpty: Bool
 

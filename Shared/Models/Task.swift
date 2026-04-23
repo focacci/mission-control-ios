@@ -5,20 +5,17 @@ struct MCTask: Codable, Identifiable, Hashable {
     let id: String
     let name: String
     let initiativeId: String?
-    let status: String         // pending | assigned | in-progress | done | blocked | cancelled
+    let status: String         // pending | in-progress | done | blocked | cancelled
     let objective: String?
     let summary: String?
-    let requirements: [Requirement]?
-    let tests: [TaskTest]?
-    let outputs: [TaskOutput]?
+    var requirements: [Requirement]?
+    var agentAssignments: [AgentAssignment]?
     let initiative: InitiativeRef?
     let goal: GoalRef?
-    let slot: SlotRef?
 
     var statusColor: Color {
         switch status {
         case "pending":     return .gray
-        case "assigned":    return .yellow
         case "in-progress": return .green
         case "done":        return .blue
         case "blocked":     return .orange
@@ -30,7 +27,6 @@ struct MCTask: Codable, Identifiable, Hashable {
     var statusIcon: String {
         switch status {
         case "pending":     return "circle.dotted"
-        case "assigned":    return "calendar.circle"
         case "in-progress": return "circle.circle.fill"
         case "done":        return "checkmark.circle.fill"
         case "blocked":     return "pause.circle.fill"
@@ -52,8 +48,14 @@ struct MCTask: Codable, Identifiable, Hashable {
         return "\(done)/\(reqs.count)"
     }
 
+    var agentAssignmentProgress: String {
+        guard let aas = agentAssignments, !aas.isEmpty else { return "" }
+        let done = aas.filter(\.completed).count
+        return "\(done)/\(aas.count)"
+    }
+
     var canStart: Bool {
-        status == "pending" || status == "assigned" || status == "blocked"
+        status == "pending" || status == "blocked"
     }
 
     var canComplete: Bool { status == "in-progress" }
@@ -63,32 +65,25 @@ struct MCTask: Codable, Identifiable, Hashable {
 
 struct Requirement: Codable, Identifiable, Hashable {
     let id: String
-    let description: String
-    let completed: Bool
+    var description: String
+    var completed: Bool
+    var tests: [RequirementTest]?
+
+    var testsProgress: String {
+        guard let t = tests, !t.isEmpty else { return "" }
+        let passed = t.filter(\.passed).count
+        return "\(passed)/\(t.count)"
+    }
 }
 
-struct TaskTest: Codable, Identifiable, Hashable {
+struct RequirementTest: Codable, Identifiable, Hashable {
     let id: String
-    let description: String
-    let passed: Bool
-}
-
-struct TaskOutput: Codable, Identifiable, Hashable {
-    let id: String
-    let label: String
-    let url: String?
+    var description: String
+    var passed: Bool
 }
 
 struct InitiativeRef: Codable, Identifiable, Hashable {
     let id: String
     let emoji: String
     let name: String
-}
-
-struct SlotRef: Codable, Identifiable, Hashable {
-    let id: String
-    let date: String
-    let time: String
-    let datetime: String
-    let type: String
 }

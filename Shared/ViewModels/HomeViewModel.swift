@@ -27,9 +27,9 @@ final class HomeViewModel {
         return (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: sunday) }
     }
 
-    var todayTaskSlots: [ScheduleSlot] {
+    var todayAgentAssignmentSlots: [ScheduleSlot] {
         let today = Date().isoDate
-        return todaySlots.filter { $0.type == .task && $0.date == today && $0.taskId != nil }
+        return todaySlots.filter { $0.type == .agentAssignment && $0.date == today && $0.agentAssignmentId != nil }
     }
 
     func load() async {
@@ -63,9 +63,9 @@ final class HomeViewModel {
         }
     }
 
-    func assignTask(taskId: String, slotId: String) async {
+    func assignAgentAssignment(agentAssignmentId: String, slotId: String) async {
         do {
-            _ = try await APIClient.shared.assignTask(taskId: taskId, slotId: slotId)
+            _ = try await APIClient.shared.assignAgentAssignment(agentAssignmentId: agentAssignmentId, slotId: slotId)
             await load()
         } catch {
             self.error = error.localizedDescription

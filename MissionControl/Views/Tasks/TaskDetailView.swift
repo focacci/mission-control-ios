@@ -4,14 +4,14 @@ struct TaskDetailView: View {
     let taskId: String
     @State private var viewModel = TaskDetailViewModel()
     @State private var showingEdit = false
-    @State private var showingReschedule = false
     @State private var showingComplete = false
     @State private var showingBlock = false
     @State private var blockReason = ""
     @State private var showingAddRequirement = false
     @State private var newRequirement = ""
-    @State private var showingAddTest = false
-    @State private var newTest = ""
+    @State private var showingAddAssignment = false
+    @State private var newAssignmentTitle = ""
+    @State private var newAssignmentInstructions = ""
 
     private var context: ChatContextKind? {
         viewModel.task.map { .task(id: $0.id, name: $0.name) }
@@ -33,33 +33,6 @@ struct TaskDetailView: View {
                                     .padding(.vertical, 6)
                                     .background(task.statusColor.opacity(0.15), in: Capsule())
 
-                                if let slot = task.slot {
-                                    Divider()
-
-                                    HStack(spacing: 8) {
-                                        Label(slot.time, systemImage: "calendar.badge.clock")
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-
-                                        Spacer()
-
-                                        Button("Reschedule") {
-                                            showingReschedule = true
-                                        }
-                                        .font(.caption)
-                                        .buttonStyle(.bordered)
-                                        .disabled(viewModel.isSaving)
-
-                                        Button("Unschedule") {
-                                            Task { await viewModel.unschedule() }
-                                        }
-                                        .font(.caption)
-                                        .buttonStyle(.bordered)
-                                        .tint(.red)
-                                        .disabled(viewModel.isSaving)
-                                    }
-                                }
-
                                 if !task.isTerminal {
                                     TaskActionBar(
                                         task: task,
@@ -72,7 +45,6 @@ struct TaskDetailView: View {
                             }
                         }
 
-                        // Summary (if done)
                         if let summary = task.summary, !summary.isEmpty {
                             SectionCard(title: "Summary", icon: "checkmark.seal.fill") {
                                 Text(summary)
@@ -81,7 +53,6 @@ struct TaskDetailView: View {
                             }
                         }
 
-                        // Objective
                         if let objective = task.objective, !objective.isEmpty {
                             SectionCard(title: "Objective", icon: "target") {
                                 Text(objective)
@@ -90,7 +61,6 @@ struct TaskDetailView: View {
                             }
                         }
 
-                        // Requirements
                         RequirementsCard(
                             requirements: task.requirements ?? [],
                             isSaving: viewModel.isSaving,
@@ -99,19 +69,13 @@ struct TaskDetailView: View {
                             onAdd: { showingAddRequirement = true }
                         )
 
-                        // Tests
-                        TestsCard(
-                            tests: task.tests ?? [],
-                            onDelete: { id in Task { await viewModel.deleteTest(testId: id) } },
-                            onAdd: { showingAddTest = true }
+                        AgentAssignmentsCard(
+                            assignments: task.agentAssignments ?? [],
+                            isSaving: viewModel.isSaving,
+                            onDelete: { id in Task { await viewModel.deleteAgentAssignment(id: id) } },
+                            onAdd: { showingAddAssignment = true }
                         )
 
-                        // Outputs
-                        if let outputs = task.outputs, !outputs.isEmpty {
-                            OutputsCard(outputs: outputs)
-                        }
-
-                        // Past chats scoped to this task
                         ContextChatHistorySection(
                             contextType: "task",
                             contextId: task.id
@@ -122,6 +86,16 @@ struct TaskDetailView: View {
                 }
                 .refreshable { await viewModel.load(id: taskId) }
                 .chatContextToolbar()
+                .navigationDestination(for: Requirement.self) { req in
+                    RequirementDetailView(requirement: req) { _ in
+                        Task { await viewModel.load(id: taskId) }
+                    }
+                }
+                .navigationDestination(for: AgentAssignment.self) { aa in
+                    AgentAssignmentDetailView(assignment: aa) { _ in
+                        Task { await viewModel.load(id: taskId) }
+                    }
+                }
                 .toolbar {
                     ToolbarItemGroup(placement: .primaryAction) {
                         Menu {
@@ -133,15 +107,6 @@ struct TaskDetailView: View {
                         } label: {
                             Image(systemName: "ellipsis")
                         }
-                    }
-                }
-                .sheet(isPresented: $showingReschedule) {
-                    ScheduleTaskSheet(
-                        preselectedTask: task,
-                        targetDate: task.slot.flatMap { ISO8601DateFormatter.shared.date(from: $0.date) },
-                        preselectedSlotId: task.slot?.id
-                    ) {
-                        Task { await viewModel.load(id: taskId) }
                     }
                 }
                 .sheet(isPresented: $showingEdit) {
@@ -187,14 +152,17 @@ struct TaskDetailView: View {
             }
             Button("Cancel", role: .cancel) { newRequirement = "" }
         }
-        .alert("Add Test", isPresented: $showingAddTest) {
-            TextField("Description", text: $newTest)
-            Button("Add") {
-                let desc = newTest
-                newTest = ""
-                Task { await viewModel.addTest(description: desc) }
+        .sheet(isPresented: $showingAddAssignment) {
+            AddAgentAssignmentSheet(
+                title: $newAssignmentTitle,
+                instructions: $newAssignmentInstructions
+            ) {
+                let title = newAssignmentTitle
+                let instructions = newAssignmentInstructions
+                newAssignmentTitle = ""
+                newAssignmentInstructions = ""
+                Task { await viewModel.addAgentAssignment(title: title, instructions: instructions) }
             }
-            Button("Cancel", role: .cancel) { newTest = "" }
         }
     }
 }
@@ -226,6 +194,47 @@ struct BlockReasonSheet: View {
                         dismiss()
                     }
                     .disabled(reason.isEmpty)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Add Agent Assignment Sheet
+
+struct AddAgentAssignmentSheet: View {
+    @Binding var title: String
+    @Binding var instructions: String
+    let onSave: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Title") {
+                    TextField("Short title", text: $title)
+                }
+                Section {
+                    TextEditor(text: $instructions)
+                        .frame(minHeight: 140)
+                } header: {
+                    Text("Instructions")
+                } footer: {
+                    Text("What the agent should do when the assignment's slot runs.")
+                }
+            }
+            .navigationTitle("New Agent Assignment")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Add") {
+                        onSave()
+                        dismiss()
+                    }
+                    .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
         }

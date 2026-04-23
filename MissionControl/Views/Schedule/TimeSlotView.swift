@@ -48,8 +48,8 @@ struct TimeSlotView: View {
         .navigationBarTitleDisplayMode(.inline)
         .chatContext(.timeSlot(slotId: slot.id, time: slot.time, dayLabel: dayLabel))
         .chatContextToolbar()
-        .navigationDestination(for: MCTask.self) { task in
-            TaskDetailView(taskId: task.id)
+        .navigationDestination(for: AgentAssignment.self) { aa in
+            AgentAssignmentDetailView(assignment: aa)
         }
         .sheet(isPresented: $showingContextPicker) {
             ContextSourcePicker(
@@ -98,17 +98,17 @@ struct TimeSlotView: View {
 
     @ViewBuilder
     private var taskSection: some View {
-        Section("Assigned Task") {
-            if let task = slot.task {
-                NavigationLink(value: task) {
+        Section("Assigned Agent Assignment") {
+            if let aa = slot.agentAssignment {
+                NavigationLink(value: aa) {
                     HStack(spacing: 10) {
-                        Image(systemName: task.statusIcon)
-                            .foregroundStyle(task.statusColor)
+                        Image(systemName: aa.statusIcon)
+                            .foregroundStyle(aa.statusColor)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(task.name)
+                            Text(aa.title)
                                 .font(.body)
-                            if let objective = task.objective, !objective.isEmpty {
-                                Text(objective)
+                            if !aa.instructions.isEmpty {
+                                Text(aa.instructions)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .lineLimit(2)
@@ -117,13 +117,13 @@ struct TimeSlotView: View {
                     }
                 }
                 Button(role: .destructive) {
-                    Task { await viewModel.unassignTask(slot: slot) }
+                    Task { await viewModel.unassignAgentAssignment(slot: slot) }
                 } label: {
-                    Label("Unassign Task", systemImage: "minus.circle")
+                    Label("Unassign", systemImage: "minus.circle")
                 }
             } else {
                 Button(action: onAssignTap) {
-                    Label("Assign a Task", systemImage: "plus.circle")
+                    Label("Assign Agent Assignment", systemImage: "plus.circle")
                 }
             }
         }

@@ -28,11 +28,33 @@ struct SlotDetailView: View {
                 Text("Slot Info")
             }
 
-            if let task = slot.task {
-                Section("Assigned Task") {
-                    NavigationLink(value: task) {
-                        HStack {
-                            Text(task.name)
+            if let aa = slot.agentAssignment {
+                Section("Assigned Agent Assignment") {
+                    NavigationLink(value: aa) {
+                        HStack(spacing: 10) {
+                            Image(systemName: aa.statusIcon)
+                                .foregroundStyle(aa.statusColor)
+                            Text(aa.title)
+                        }
+                    }
+                }
+            }
+
+            if let outputs = slot.outputs, !outputs.isEmpty {
+                Section("Outputs") {
+                    ForEach(outputs) { output in
+                        HStack(spacing: 10) {
+                            Image(systemName: output.kind.icon)
+                                .foregroundStyle(output.kind.color)
+                            if let urlStr = output.url, let url = URL(string: urlStr) {
+                                Link(output.label, destination: url)
+                            } else {
+                                Text(output.label)
+                            }
+                            Spacer()
+                            Text(output.kind.label)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -62,8 +84,8 @@ struct SlotDetailView: View {
         }
         .chatContext(.schedule(date: slotDate, mode: .day))
         .chatContextToolbar()
-        .navigationDestination(for: MCTask.self) { task in
-            TaskDetailView(taskId: task.id)
+        .navigationDestination(for: AgentAssignment.self) { aa in
+            AgentAssignmentDetailView(assignment: aa)
         }
     }
 }

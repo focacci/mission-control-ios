@@ -184,7 +184,7 @@ struct PlansView: View {
                     Task {
                         _ = try? await APIClient.shared.createTask(
                             CreateTaskBody(name: name, objective: objective, initiativeId: nil,
-                                          emoji: emoji, requirements: nil, tests: nil)
+                                          emoji: emoji, requirements: nil)
                         )
                         await viewModel.load()
                     }

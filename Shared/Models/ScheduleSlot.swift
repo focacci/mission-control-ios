@@ -20,7 +20,7 @@ struct WeekPlan: Codable, Identifiable, Hashable {
 enum SlotType: String, Codable, Hashable, CaseIterable {
     case maintenance
     case planning
-    case task
+    case agentAssignment = "agent_assignment"
     case brief
     case flex
     case unknown
@@ -64,19 +64,22 @@ struct ScheduleSlot: Codable, Identifiable, Hashable {
     let datetime: String
     let type: SlotType
     var status: SlotStatus
-    var taskId: String?
+    var agentAssignmentId: String?
     let goalId: String?
     let note: String?
     let dayOfWeek: String
-    var task: MCTask?
+    var agentAssignment: AgentAssignment?
+    /// Artifacts the agent touched while running during this slot. Populated
+    /// once the agent runner completes; the slot detail view renders them.
+    var outputs: [SlotOutput]?
 
     var typeIcon: String {
         switch type {
-        case .maintenance: return "wrench.and.screwdriver"
-        case .planning:    return "calendar"
-        case .brief:       return "sun.horizon"
-        case .task:        return "checkmark.circle"
-        case .flex, .unknown: return "circle.dotted"
+        case .maintenance:     return "wrench.and.screwdriver"
+        case .planning:        return "calendar"
+        case .brief:           return "sun.horizon"
+        case .agentAssignment: return "person.badge.clock"
+        case .flex, .unknown:  return "circle.dotted"
         }
     }
 
@@ -91,9 +94,16 @@ struct ScheduleSlot: Codable, Identifiable, Hashable {
             case "19:00": return "Evening Brief"
             default:      return "Brief"
             }
-        case .task:        return task?.name ?? "Task"
-        case .flex, .unknown: return "Flex"
+        case .agentAssignment: return agentAssignment?.title ?? "Agent Assignment"
+        case .flex, .unknown:  return "Flex"
         }
+    }
+
+    /// Parent task of the assigned agent assignment, when present in the
+    /// view's task store. The API doesn't bundle the task on the assignment
+    /// yet, so views requiring task context look it up separately.
+    var assignmentSubtitle: String? {
+        agentAssignment?.title
     }
 
     var statusColor: Color {
@@ -118,9 +128,10 @@ struct ScheduleSlot: Codable, Identifiable, Hashable {
         type == .maintenance || status == .skipped
     }
 
-    /// True for slots the user can claim with a task (an open flex/task slot).
+    /// True for slots the user can claim with an agent assignment (an open
+    /// flex or agent-assignment slot).
     var isOpenSlot: Bool {
-        taskId == nil && (type == .flex || type == .task)
+        agentAssignmentId == nil && (type == .flex || type == .agentAssignment)
     }
 }
 

@@ -95,8 +95,8 @@ struct HomeView: View {
                 BriefFullScreenView(brief: ctx.brief, date: ctx.date)
             }
             .navigationDestination(for: ScheduleSlot.self) { slot in
-                if let taskId = slot.taskId {
-                    TaskDetailView(taskId: taskId)
+                if let aa = slot.agentAssignment {
+                    AgentAssignmentDetailView(assignment: aa)
                 }
             }
         }
@@ -270,10 +270,8 @@ private struct NextUpRow: View {
     let onDone: (ScheduleSlot) -> Void
 
     private var breadcrumb: String? {
-        guard let task = slot.task,
-              let goal = task.goal?.name,
-              let initiative = task.initiative?.name else { return nil }
-        return "\(goal) › \(initiative)"
+        guard let aa = slot.agentAssignment, !aa.instructions.isEmpty else { return nil }
+        return aa.instructions
     }
 
     var body: some View {
@@ -299,17 +297,12 @@ private struct NextUpRow: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
-                    } else if let objective = slot.task?.objective, !objective.isEmpty {
-                        Text(objective)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
                     }
                 }
 
                 Spacer()
 
-                if slot.type == .task && slot.status != .done {
+                if slot.type == .agentAssignment && slot.status != .done {
                     Button {
                         onDone(slot)
                     } label: {

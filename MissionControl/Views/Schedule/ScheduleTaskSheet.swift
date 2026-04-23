@@ -16,6 +16,9 @@ struct ScheduleTaskSheet: View {
     @State private var initiativeExpanded = true
     @State private var tasks: [MCTask] = []
     @State private var selectedTask: MCTask?
+    @State private var assignments: [AgentAssignment] = []
+    @State private var selectedAssignment: AgentAssignment?
+    @State private var isLoadingAssignments = false
     @State private var selectedDate: Date
     @State private var weekResponse: WeekResponse?
     @State private var selectedSlot: ScheduleSlot?
@@ -64,7 +67,7 @@ struct ScheduleTaskSheet: View {
         return (weekResponse?.slots ?? [])
             .filter {
                 $0.date == dateISO
-                    && ($0.taskId == nil || $0.id == pinnedId)
+                    && ($0.agentAssignmentId == nil || $0.id == pinnedId)
                     && $0.status != .done
                     && $0.status != .skipped
             }
@@ -72,7 +75,7 @@ struct ScheduleTaskSheet: View {
     }
 
     private var canAssign: Bool {
-        selectedTask != nil && selectedSlot != nil && !isSaving
+        selectedAssignment != nil && selectedSlot != nil && !isSaving
     }
 
     var body: some View {
@@ -205,12 +208,56 @@ struct ScheduleTaskSheet: View {
                                 ForEach(tasks) { task in
                                     TaskPickerRow(task: task, isSelected: selectedTask?.id == task.id) {
                                         selectedTask = task
+                                        selectedAssignment = nil
+                                        Task { await loadAssignments(for: task.id) }
                                     }
                                 }
                             }
                         }
                         .transition(.opacity)
                     }
+                }
+
+                // Agent Assignment picker (always required — the thing actually scheduled)
+                if selectedTask != nil {
+                    Section("Agent Assignment") {
+                        if isLoadingAssignments {
+                            HStack { Spacer(); ProgressView(); Spacer() }
+                        } else if assignments.isEmpty {
+                            Text("No agent assignments on this task. Add one from the task detail first.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            ForEach(assignments) { aa in
+                                Button {
+                                    selectedAssignment = selectedAssignment?.id == aa.id ? nil : aa
+                                } label: {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: aa.statusIcon)
+                                            .foregroundStyle(aa.statusColor)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(aa.title)
+                                                .font(.subheadline)
+                                                .foregroundStyle(selectedAssignment?.id == aa.id ? Color.accentColor : .primary)
+                                            if !aa.instructions.isEmpty {
+                                                Text(aa.instructions)
+                                                    .font(.caption)
+                                                    .foregroundStyle(.secondary)
+                                                    .lineLimit(1)
+                                            }
+                                        }
+                                        Spacer()
+                                        if selectedAssignment?.id == aa.id {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundStyle(Color.accentColor)
+                                        }
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    .transition(.opacity)
                 }
 
                 // Day picker
@@ -287,12 +334,24 @@ struct ScheduleTaskSheet: View {
         do {
             tasks = try await APIClient.shared.tasks(
                 initiativeId: initiativeId,
-                statuses: ["pending", "assigned", "in-progress", "blocked"]
+                statuses: ["pending", "in-progress", "blocked"]
             )
         } catch {
             self.error = error.localizedDescription
         }
         isLoadingTasks = false
+    }
+
+    private func loadAssignments(for taskId: String) async {
+        isLoadingAssignments = true
+        assignments = []
+        do {
+            let all = try await APIClient.shared.agentAssignments(taskId: taskId)
+            assignments = all.filter { !$0.completed }
+        } catch {
+            self.error = error.localizedDescription
+        }
+        isLoadingAssignments = false
     }
 
     private func loadSlots() async {
@@ -315,10 +374,12 @@ struct ScheduleTaskSheet: View {
     }
 
     private func assign() async {
-        guard let task = selectedTask, let slot = selectedSlot else { return }
+        guard let assignment = selectedAssignment, let slot = selectedSlot else { return }
         isSaving = true
         do {
-            _ = try await APIClient.shared.assignTask(taskId: task.id, slotId: slot.id)
+            _ = try await APIClient.shared.assignAgentAssignment(
+                agentAssignmentId: assignment.id, slotId: slot.id
+            )
             onAssigned?()
             dismiss()
         } catch {
@@ -564,7 +625,7 @@ private struct SlotPickerRow: View {
                     .foregroundStyle(isSelected ? Color.accentColor : .secondary)
                     .frame(width: 48, alignment: .leading)
 
-                Text(slot.type == .task ? "Task Slot" : "Open Slot")
+                Text(slot.type == .agentAssignment ? "Agent Slot" : "Open Slot")
                     .font(.subheadline)
                     .foregroundStyle(isSelected ? Color.accentColor : .primary)
                     .fontWeight(isSelected ? .medium : .regular)

@@ -34,7 +34,7 @@ final class TaskDetailViewModel {
         guard let id = task?.id else { return }
         isSaving = true
         do {
-            task = try await APIClient.shared.completeTask(id: id, body: CompleteTaskBody(summary: summary, outputs: []))
+            task = try await APIClient.shared.completeTask(id: id, body: CompleteTaskBody(summary: summary))
         } catch {
             self.error = error.localizedDescription
         }
@@ -62,18 +62,6 @@ final class TaskDetailViewModel {
         isSaving = false
     }
 
-    func unschedule() async {
-        guard let slotId = task?.slot?.id, let id = task?.id else { return }
-        isSaving = true
-        do {
-            _ = try await APIClient.shared.unassignTask(slotId: slotId)
-            await load(id: id)
-        } catch {
-            self.error = error.localizedDescription
-        }
-        isSaving = false
-    }
-
     func cancelTask() async {
         guard let id = task?.id else { return }
         isSaving = true
@@ -85,15 +73,16 @@ final class TaskDetailViewModel {
         isSaving = false
     }
 
+    // MARK: - Requirements
+
     func toggleRequirement(reqId: String) async {
-        guard let taskId = task?.id,
-              let req = task?.requirements?.first(where: { $0.id == reqId }) else { return }
+        guard let req = task?.requirements?.first(where: { $0.id == reqId }) else { return }
         do {
             let updated: Requirement
             if req.completed {
-                updated = try await APIClient.shared.uncheckRequirement(taskId: taskId, reqId: reqId)
+                updated = try await APIClient.shared.uncheckRequirement(reqId: reqId)
             } else {
-                updated = try await APIClient.shared.checkRequirement(taskId: taskId, reqId: reqId)
+                updated = try await APIClient.shared.checkRequirement(reqId: reqId)
             }
             replaceRequirement(updated)
         } catch {
@@ -116,9 +105,8 @@ final class TaskDetailViewModel {
     }
 
     func deleteRequirement(reqId: String) async {
-        guard let taskId = task?.id else { return }
         do {
-            try await APIClient.shared.deleteRequirement(taskId: taskId, reqId: reqId)
+            try await APIClient.shared.deleteRequirement(reqId: reqId)
             if let t = task {
                 let reqs = (t.requirements ?? []).filter { $0.id != reqId }
                 task = rebuildTask(t, requirements: reqs)
@@ -128,41 +116,31 @@ final class TaskDetailViewModel {
         }
     }
 
-    func addTest(description: String) async {
+    // MARK: - Agent Assignments
+
+    func addAgentAssignment(title: String, instructions: String) async {
         guard let taskId = task?.id else { return }
         do {
-            let test = try await APIClient.shared.addTest(taskId: taskId, description: description)
+            let aa = try await APIClient.shared.createAgentAssignment(
+                taskId: taskId,
+                body: CreateAgentAssignmentBody(title: title, instructions: instructions, agentId: nil)
+            )
             if let t = task {
-                var tests = t.tests ?? []
-                tests.append(test)
-                task = rebuildTask(t, tests: tests)
+                var aas = t.agentAssignments ?? []
+                aas.append(aa)
+                task = rebuildTask(t, agentAssignments: aas)
             }
         } catch {
             self.error = error.localizedDescription
         }
     }
 
-    func deleteTest(testId: String) async {
-        guard let taskId = task?.id else { return }
+    func deleteAgentAssignment(id: String) async {
         do {
-            try await APIClient.shared.deleteTest(taskId: taskId, testId: testId)
+            try await APIClient.shared.deleteAgentAssignment(id: id)
             if let t = task {
-                let tests = (t.tests ?? []).filter { $0.id != testId }
-                task = rebuildTask(t, tests: tests)
-            }
-        } catch {
-            self.error = error.localizedDescription
-        }
-    }
-
-    func addOutput(label: String, url: String?) async {
-        guard let taskId = task?.id else { return }
-        do {
-            let output = try await APIClient.shared.addOutput(taskId: taskId, label: label, url: url)
-            if let t = task {
-                var outputs = t.outputs ?? []
-                outputs.append(output)
-                task = rebuildTask(t, outputs: outputs)
+                let aas = (t.agentAssignments ?? []).filter { $0.id != id }
+                task = rebuildTask(t, agentAssignments: aas)
             }
         } catch {
             self.error = error.localizedDescription
@@ -181,19 +159,16 @@ final class TaskDetailViewModel {
     private func rebuildTask(
         _ t: MCTask,
         requirements: [Requirement]? = nil,
-        tests: [TaskTest]? = nil,
-        outputs: [TaskOutput]? = nil
+        agentAssignments: [AgentAssignment]? = nil
     ) -> MCTask {
         MCTask(
             id: t.id, name: t.name,
             initiativeId: t.initiativeId, status: t.status, objective: t.objective,
             summary: t.summary,
             requirements: requirements ?? t.requirements,
-            tests: tests ?? t.tests,
-            outputs: outputs ?? t.outputs,
+            agentAssignments: agentAssignments ?? t.agentAssignments,
             initiative: t.initiative,
-            goal: t.goal,
-            slot: t.slot
+            goal: t.goal
         )
     }
 }

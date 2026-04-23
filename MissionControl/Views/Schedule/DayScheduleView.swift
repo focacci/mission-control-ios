@@ -107,11 +107,12 @@ struct DayScheduleView: View {
                 datetime: "\(isoDate)T\(time):00",
                 type: .flex,
                 status: .pending,
-                taskId: nil,
+                agentAssignmentId: nil,
                 goalId: nil,
                 note: nil,
                 dayOfWeek: dayOfWeek,
-                task: nil
+                agentAssignment: nil,
+                outputs: nil
             )
         }
     }
@@ -173,9 +174,9 @@ struct DayScheduleView: View {
 
     @ViewBuilder
     private func slotActions(slot: ScheduleSlot) -> some View {
-        if slot.taskId != nil {
+        if slot.agentAssignmentId != nil {
             Button {
-                Task { await viewModel.unassignTask(slot: slot) }
+                Task { await viewModel.unassignAgentAssignment(slot: slot) }
             } label: {
                 Label("Unassign", systemImage: "minus.circle")
             }

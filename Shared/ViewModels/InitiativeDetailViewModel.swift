@@ -75,7 +75,7 @@ final class InitiativeDetailViewModel {
             let task = try await APIClient.shared.createTask(
                 CreateTaskBody(name: name, objective: objective, initiativeId: initiativeId,
                                emoji: emoji.flatMap { $0.isEmpty ? nil : $0 },
-                               requirements: nil, tests: nil)
+                               requirements: nil)
             )
             tasks.append(task)
         } catch {
