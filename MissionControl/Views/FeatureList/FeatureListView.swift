@@ -36,6 +36,7 @@ struct FeatureListView: View {
 // MARK: - Entries
 
 enum FeatureListEntry: String, CaseIterable, Identifiable, Hashable {
+    case profile
     case faith
     case health
     case briefings
@@ -45,6 +46,7 @@ enum FeatureListEntry: String, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
+        case .profile:   return "Profile"
         case .faith:     return "Faith"
         case .health:    return "Health"
         case .briefings: return "Briefings"
@@ -54,6 +56,7 @@ enum FeatureListEntry: String, CaseIterable, Identifiable, Hashable {
 
     var icon: String {
         switch self {
+        case .profile:   return "person.text.rectangle"
         case .faith:     return "cross"
         case .health:    return "heart"
         case .briefings: return "briefcase"
@@ -64,6 +67,7 @@ enum FeatureListEntry: String, CaseIterable, Identifiable, Hashable {
     @ViewBuilder
     var destination: some View {
         switch self {
+        case .profile:   ProfileView()
         case .faith:     FaithView()
         case .health:    HealthView()
         case .briefings: BriefsView()

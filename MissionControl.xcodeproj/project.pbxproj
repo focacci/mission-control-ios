@@ -65,6 +65,7 @@
 		A1B2C3D4E5F6789012345603 /* ChatAgentPickerToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6789012345604 /* ChatAgentPickerToolbarButton.swift */; };
 		A1B2C3D4E5F6789012345701 /* BriefsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6789012345702 /* BriefsView.swift */; };
 		A1B2C3D4E5F6789012345801 /* FeatureListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6789012345802 /* FeatureListView.swift */; };
+		A1B2C3D4E5F6789012345901 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6789012345902 /* ProfileView.swift */; };
 		A90E690AC7A5884639F6832F /* TaskDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C00013EDEAE09D6A94EB486 /* TaskDetailViewModel.swift */; };
 		AAF18F78BE5F14CF2E70848E /* HealthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E251E2D32513D439F785BD /* HealthView.swift */; };
 		AC4AAD7D0F6CFE1F74FA99CD /* MissionControlWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C188665B80A8B294010B439D /* MissionControlWatchApp.swift */; };
@@ -116,6 +117,7 @@
 		A1B2C3D4E5F6789012345604 /* ChatAgentPickerToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAgentPickerToolbarButton.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6789012345702 /* BriefsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BriefsView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6789012345802 /* FeatureListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureListView.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F6789012345902 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		21C304AD361F5DB4F65DADFC /* AgentCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentCard.swift; sourceTree = "<group>"; };
 		23E0B4D9DFC52FE0AAB9E722 /* SlotCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotCard.swift; sourceTree = "<group>"; };
 		2AD53C713E8989E976B0CA26 /* InitiativeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitiativeDetailView.swift; sourceTree = "<group>"; };
@@ -383,6 +385,7 @@
 				FCD50AF9D6672D6CC21E657A /* Home */,
 				964B24F1197AA0476E48C368 /* Initiatives */,
 				981378B0A570E2F75E8FBA64 /* Plans */,
+				A1B2C3D4E5F6789012345903 /* Profile */,
 				1FBD7CB7230AA3F0D162A2A4 /* Schedule */,
 				768E41DD6A833806ABF56198 /* Sections */,
 				5AF3F4B7CD878A5138036EE7 /* Settings */,
@@ -405,6 +408,14 @@
 				A1B2C3D4E5F6789012345802 /* FeatureListView.swift */,
 			);
 			path = FeatureList;
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F6789012345903 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F6789012345902 /* ProfileView.swift */,
+			);
+			path = Profile;
 			sourceTree = "<group>";
 		};
 		BBAA6C107419968FFF4AB861 /* FloatingChat */ = {
@@ -592,6 +603,7 @@
 				DCD26085F50A68A4139323B2 /* DayScheduleView.swift in Sources */,
 				0AA68E122AC36DA27B23AB73 /* FaithView.swift in Sources */,
 				A1B2C3D4E5F6789012345801 /* FeatureListView.swift in Sources */,
+				A1B2C3D4E5F6789012345901 /* ProfileView.swift in Sources */,
 				A0967B45DA6499F38335568C /* FloatingChatButton.swift in Sources */,
 				C351B3DE8AF3E80759737351 /* Goal.swift in Sources */,
 				E01EA3C00ADEAB896D7FFB00 /* GoalCard.swift in Sources */,

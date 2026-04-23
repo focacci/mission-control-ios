@@ -16,6 +16,11 @@ enum ChatContextKind: Equatable {
     case briefs
     case brief(kind: DailyBrief, date: Date)
     case settings(section: String)
+    /// User profile page — long-running picture the agent has built of the
+    /// user: tendencies, strengths/weaknesses, favorite places/activities,
+    /// and the purpose behind their goals. Grounding here tells the agent to
+    /// reason about the "why" behind the user.
+    case profile(section: String)
     /// The "More" tab's custom landing page — a list of features (Faith,
     /// Health, Briefings, …) that aren't pinned to the main tab bar. The
     /// associated list is the feature names so the agent knows which
@@ -50,6 +55,7 @@ enum ChatContextKind: Equatable {
         case .brief:        return "brief"
         case .featureList:  return "feature_list"
         case .settings:     return "settings"
+        case .profile:      return "profile"
         }
     }
 
@@ -159,6 +165,7 @@ final class ChatContextStore {
             return d.formatted(.dateTime.month(.abbreviated).day())
         case .featureList:               return "Features"
         case .settings(let s):           return s
+        case .profile(let s):            return s
         }
     }
 
@@ -185,6 +192,7 @@ final class ChatContextStore {
             }
         case .featureList:  return "ellipsis"
         case .settings:     return "gearshape"
+        case .profile:      return "person.text.rectangle"
         }
     }
 
@@ -216,6 +224,7 @@ final class ChatContextStore {
             }
         case .featureList:  return "Features"
         case .settings:     return "Settings"
+        case .profile:      return "Profile"
         }
     }
 
@@ -285,6 +294,8 @@ final class ChatContextStore {
             return "You're on your feature list. You have \(list) available. Ask me to jump into one or to help you organize them."
         case .settings(let s):
             return "You're in **\(s)** settings. I can help you configure the API connection, troubleshoot, or walk through your options."
+        case .profile(let s):
+            return "You're on your profile's **\(s)** view. Ask me why something here is on file, correct anything I've gotten wrong, or have me reason about how it should shape today's plan."
         }
     }
 }
