@@ -39,7 +39,7 @@ struct ContentView: View {
 
             BriefsView()
                 .floatingChatButton(isPresented: $chatContextStore.showingChat)
-                .tabItem { Label("Briefs", systemImage: "applescript.fill") }
+                .tabItem { Label("Briefings", systemImage: "briefcase") }
                 .tag(1)
 
         }

@@ -166,7 +166,7 @@ final class ChatContextStore {
         case .schedule:     return "calendar"
         case .health:       return "heart"
         case .faith:        return "cross"
-        case .briefs:       return "applescript"
+        case .briefs:       return "briefcase"
         case .brief(let k, _):
             switch k {
             case .morning:   return "sunrise"
@@ -195,7 +195,7 @@ final class ChatContextStore {
             }
         case .health:       return "Health"
         case .faith:        return "Faith"
-        case .briefs:       return "Briefs"
+        case .briefs:       return "Briefings"
         case .brief(let k, _):
             switch k {
             case .morning:   return "Morning Brief"
@@ -250,7 +250,7 @@ final class ChatContextStore {
         case .agentChat(_, let name, _):
             return "You're chatting with **\(name)**. What can I help you with?"
         case .briefs:
-            return "Browsing your briefs. I can summarize a day, compare briefs, or pull out what's actionable."
+            return "Browsing your briefings. I can summarize a day, compare briefings, or pull out what's actionable."
         case .brief(let k, let d):
             let label: String = {
                 switch k {

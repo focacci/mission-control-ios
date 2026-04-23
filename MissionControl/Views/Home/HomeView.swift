@@ -819,7 +819,6 @@ private struct BriefDetailView: View {
                 .padding(20)
             }
             .chatContext(.brief(kind: brief, date: Date()))
-            .chatContextToolbar()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

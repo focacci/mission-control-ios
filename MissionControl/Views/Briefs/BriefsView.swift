@@ -1,9 +1,8 @@
 import SwiftUI
 
-// MARK: - Briefs Tab Root
+// MARK: - Briefings Tab Root
 
 struct BriefsView: View {
-    @State private var expandedDays: Set<Date>
     @State private var selectedBrief: BriefFullScreenContext?
 
     private let days: [Date]
@@ -12,7 +11,6 @@ struct BriefsView: View {
         let cal = Calendar.current
         let today = cal.startOfDay(for: Date())
         self.days = (0..<14).compactMap { cal.date(byAdding: .day, value: -$0, to: today) }
-        self._expandedDays = State(initialValue: [today])
     }
 
     var body: some View {
@@ -22,8 +20,6 @@ struct BriefsView: View {
                     ForEach(days, id: \.self) { day in
                         DayBriefsSection(
                             day: day,
-                            isExpanded: expandedDays.contains(day),
-                            onToggle: { toggle(day) },
                             onSelect: { brief in
                                 selectedBrief = BriefFullScreenContext(date: day, brief: brief)
                             }
@@ -38,16 +34,6 @@ struct BriefsView: View {
             .chatContextToolbar()
             .navigationDestination(item: $selectedBrief) { ctx in
                 BriefFullScreenView(brief: ctx.brief, date: ctx.date)
-            }
-        }
-    }
-
-    private func toggle(_ day: Date) {
-        withAnimation(.easeInOut(duration: 0.2)) {
-            if expandedDays.contains(day) {
-                expandedDays.remove(day)
-            } else {
-                expandedDays.insert(day)
             }
         }
     }
@@ -124,8 +110,6 @@ struct BriefFullScreenView: View {
 
 private struct DayBriefsSection: View {
     let day: Date
-    let isExpanded: Bool
-    let onToggle: () -> Void
     let onSelect: (DailyBrief) -> Void
 
     private var dayLabel: String {
@@ -136,60 +120,39 @@ private struct DayBriefsSection: View {
     }
 
     private var dateLabel: String {
-        day.formatted(.dateTime.month(.abbreviated).day().year())
+        let f = DateFormatter()
+        f.dateFormat = "dd MMM, yyyy"
+        return f.string(from: day)
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Button(action: onToggle) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(dayLabel)
-                            .font(.headline)
-                            .foregroundStyle(.primary)
-                        Text(dateLabel)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .contentShape(Rectangle())
-                .padding(14)
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(dayLabel)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                Text(dateLabel)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            .buttonStyle(.plain)
-
-            if isExpanded {
-                Divider()
-                HStack(spacing: 8) {
-                    ForEach(DailyBrief.allCases) { brief in
-                        Button {
-                            onSelect(brief)
-                        } label: {
-                            VStack(spacing: 6) {
-                                Image(systemName: brief.icon)
-                                    .font(.title3)
-                                    .foregroundStyle(brief.color)
-                                Text(brief.shortLabel)
-                                    .font(.caption)
-                                    .fontWeight(.medium)
-                                    .foregroundStyle(.primary)
-                                Text("Brief")
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
+            Spacer(minLength: 8)
+            HStack(spacing: 8) {
+                ForEach(DailyBrief.allCases) { brief in
+                    Button {
+                        onSelect(brief)
+                    } label: {
+                        Image(systemName: brief.icon)
+                            .font(.title3)
+                            .foregroundStyle(brief.color)
+                            .frame(width: 40, height: 40)
                             .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
-                        }
-                        .buttonStyle(.plain)
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(brief.shortLabel) brief")
                 }
-                .padding(14)
             }
         }
+        .padding(14)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
 }
