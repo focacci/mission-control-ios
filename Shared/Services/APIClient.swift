@@ -11,10 +11,30 @@ enum APIError: LocalizedError {
         switch self {
         case .invalidURL:           return "Invalid URL"
         case .httpError(let code):  return "HTTP \(code)"
-        case .decodingError(let e): return "Decode error: \(e.localizedDescription)"
+        case .decodingError(let e): return "Decode error: \(Self.describe(e))"
         case .networkError(let e):  return e.localizedDescription
         case .serverError(let m):   return m
         }
+    }
+
+    private static func describe(_ error: Error) -> String {
+        guard let decodingError = error as? DecodingError else { return error.localizedDescription }
+        switch decodingError {
+        case .keyNotFound(let key, let ctx):
+            return "missing key '\(key.stringValue)' at \(path(ctx.codingPath))"
+        case .typeMismatch(let type, let ctx):
+            return "type mismatch for \(type) at \(path(ctx.codingPath)) — \(ctx.debugDescription)"
+        case .valueNotFound(let type, let ctx):
+            return "null value for \(type) at \(path(ctx.codingPath))"
+        case .dataCorrupted(let ctx):
+            return "data corrupted at \(path(ctx.codingPath)) — \(ctx.debugDescription)"
+        @unknown default:
+            return decodingError.localizedDescription
+        }
+    }
+
+    private static func path(_ codingPath: [CodingKey]) -> String {
+        codingPath.isEmpty ? "<root>" : codingPath.map(\.stringValue).joined(separator: ".")
     }
 }
 
