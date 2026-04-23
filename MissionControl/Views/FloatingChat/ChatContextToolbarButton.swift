@@ -5,6 +5,8 @@ import SwiftUI
 /// floating chat sheet. Tapping reveals context actions (pin, etc).
 struct ChatContextToolbarButton: View {
     @Environment(ChatContextStore.self) private var chatContext
+    @State private var showingNewGroupAlert = false
+    @State private var newGroupName = ""
 
     var body: some View {
         Menu {
@@ -21,6 +23,31 @@ struct ChatContextToolbarButton: View {
                 } label: {
                     Label("Pin Context", systemImage: "pin")
                 }
+            }
+
+            Menu {
+                ForEach(chatContext.contextGroups) { group in
+                    Button {
+                        chatContext.toggleKind(page, inGroup: group.id)
+                    } label: {
+                        if chatContext.isKind(page, inGroup: group.id) {
+                            Label(group.name, systemImage: "checkmark")
+                        } else {
+                            Label(group.name, systemImage: group.icon)
+                        }
+                    }
+                }
+                if !chatContext.contextGroups.isEmpty {
+                    Divider()
+                }
+                Button {
+                    newGroupName = ""
+                    showingNewGroupAlert = true
+                } label: {
+                    Label("New Group…", systemImage: "plus")
+                }
+            } label: {
+                Label("Add to Context Group", systemImage: "point.3.connected.trianglepath.dotted")
             }
         } label: {
             HStack(spacing: 8) {
@@ -54,6 +81,18 @@ struct ChatContextToolbarButton: View {
         }
         .accessibilityLabel("\(chatContext.contextTypeName) context: \(chatContext.displayLabel)")
         .accessibilityHint("Opens context actions")
+        .alert("New Context Group", isPresented: $showingNewGroupAlert) {
+            TextField("Name", text: $newGroupName)
+            Button("Cancel", role: .cancel) {}
+            Button("Create") {
+                let trimmed = newGroupName.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.isEmpty else { return }
+                let group = chatContext.createGroup(name: trimmed)
+                chatContext.toggleKind(chatContext.pageContext, inGroup: group.id)
+            }
+        } message: {
+            Text("Create a new group and add “\(chatContext.displayLabel)” to it.")
+        }
     }
 }
 

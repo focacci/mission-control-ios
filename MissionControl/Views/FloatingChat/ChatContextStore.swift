@@ -146,6 +146,39 @@ final class ChatContextStore {
         }
     }
 
+    /// User-created Context Groups. Each bundles several `ChatContextKind`
+    /// selections so they can be applied together when grounding a chat.
+    /// In-memory until the backend lands.
+    var contextGroups: [ContextGroup] = []
+
+    func isKind(_ kind: ChatContextKind, inGroup groupId: ContextGroup.ID) -> Bool {
+        guard let group = contextGroups.first(where: { $0.id == groupId }) else { return false }
+        return group.members.contains { $0.matches(kind) }
+    }
+
+    func toggleKind(_ kind: ChatContextKind, inGroup groupId: ContextGroup.ID) {
+        guard let gIdx = contextGroups.firstIndex(where: { $0.id == groupId }) else { return }
+        if let mIdx = contextGroups[gIdx].members.firstIndex(where: { $0.matches(kind) }) {
+            contextGroups[gIdx].members.remove(at: mIdx)
+        } else {
+            contextGroups[gIdx].members.append(
+                ContextGroupMember(
+                    label: label(for: kind),
+                    icon: icon(for: kind),
+                    contextType: kind.contextType,
+                    contextId: kind.contextId
+                )
+            )
+        }
+    }
+
+    @discardableResult
+    func createGroup(name: String, icon: String = "point.3.connected.trianglepath.dotted", summary: String = "", members: [ContextGroupMember] = []) -> ContextGroup {
+        let group = ContextGroup(name: name, icon: icon, summary: summary, members: members)
+        contextGroups.append(group)
+        return group
+    }
+
     /// Live connection state for the selected agent. Drives the agent picker
     /// toolbar icon. Mocked on chat open until real transport lands.
     var agentConnectionState: AgentConnectionState = .offline

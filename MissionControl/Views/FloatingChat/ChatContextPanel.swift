@@ -4,9 +4,6 @@ import SwiftUI
 /// taps the context picker button. Stacks the current context on top of
 /// collapsible sections for the user's selected contexts, pinned contexts,
 /// and saved context groups.
-///
-/// Saved-group data is still mocked; pinning is live against
-/// `ChatContextStore.pinnedContexts`.
 struct ChatContextPanel: View {
     @Environment(ChatContextStore.self) private var chatContext
     @Binding var isExpanded: Bool
@@ -14,11 +11,6 @@ struct ChatContextPanel: View {
     @State private var showSelected: Bool = true
     @State private var showPinned: Bool = true
     @State private var showSavedGroups: Bool = false
-
-    private static let mockSavedGroups: [MockGroup] = [
-        MockGroup(name: "Morning Review", icon: "sun.max", count: 3),
-        MockGroup(name: "Weekly Planning", icon: "calendar.badge.clock", count: 5)
-    ]
 
     var body: some View {
         // Wrapped in a ScrollView so scroll gestures are consumed inside the
@@ -176,21 +168,29 @@ struct ChatContextPanel: View {
         VStack(alignment: .leading, spacing: 6) {
             collapsibleHeader(
                 title: "Saved Groups",
-                count: Self.mockSavedGroups.count,
+                count: chatContext.contextGroups.count,
                 isExpanded: showSavedGroups
             ) {
                 withAnimation(.easeInOut(duration: 0.2)) { showSavedGroups.toggle() }
             }
 
             if showSavedGroups {
-                VStack(spacing: 8) {
-                    ForEach(Self.mockSavedGroups) { group in
-                        ContextCard(
-                            icon: group.icon,
-                            title: group.name,
-                            subtitle: "\(group.count) contexts",
-                            isActive: false
-                        )
+                if chatContext.contextGroups.isEmpty {
+                    Text("No saved groups yet. Create one from the Context Groups page or from any page's context pill.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                } else {
+                    VStack(spacing: 8) {
+                        ForEach(chatContext.contextGroups) { group in
+                            ContextCard(
+                                icon: group.icon,
+                                title: group.name,
+                                subtitle: "\(group.members.count) contexts",
+                                isActive: false
+                            )
+                        }
                     }
                 }
             }
@@ -282,11 +282,3 @@ private struct ContextCard: View {
     }
 }
 
-// MARK: - Mock Model
-
-private struct MockGroup: Identifiable {
-    let id = UUID()
-    let name: String
-    let icon: String
-    let count: Int
-}

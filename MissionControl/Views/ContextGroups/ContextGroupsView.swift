@@ -9,13 +9,12 @@ import SwiftUI
 // surfaces these groups under its "Saved Groups" section; this page is the
 // management surface where they're created, reviewed, and curated.
 //
-// Storage is mocked until the backend lands. Group members reference existing
-// contexts by `(contextType, contextId)` — the same pair persisted with chat
-// sessions on the API side.
+// Storage lives on `ChatContextStore.contextGroups`. Group members reference
+// existing contexts by `(contextType, contextId)` — the same pair persisted
+// with chat sessions on the API side.
 
 struct ContextGroupsView: View {
     @Environment(ChatContextStore.self) private var chatContext
-    @State private var groups: [ContextGroup] = ContextGroup.mocks
     @State private var showingCreate = false
 
     var body: some View {
@@ -46,41 +45,17 @@ struct ContextGroupsView: View {
             }
 
             Section("Your Groups") {
-                if groups.isEmpty {
-                    Text("No groups yet. Create one to save a recurring set of contexts.")
+                if chatContext.contextGroups.isEmpty {
+                    Text("No groups yet. Create one, then add contexts to it from any page's context pill.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(groups) { group in
+                    ForEach(chatContext.contextGroups) { group in
                         ContextGroupRow(group: group)
                     }
-                }
-            }
-
-            Section("Suggested") {
-                ForEach(ContextGroup.suggestions) { suggestion in
-                    Button {
-                        groups.append(suggestion)
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: suggestion.icon)
-                                .foregroundStyle(.blue)
-                                .frame(width: 24)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(suggestion.name)
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(.primary)
-                                Text(suggestion.summary)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(2)
-                            }
-                            Spacer()
-                            Image(systemName: "plus.circle")
-                                .foregroundStyle(.secondary)
-                        }
+                    .onDelete { indexSet in
+                        chatContext.contextGroups.remove(atOffsets: indexSet)
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
@@ -101,8 +76,8 @@ struct ContextGroupsView: View {
         }
         .sheet(isPresented: $showingCreate) {
             NavigationStack {
-                NewContextGroupSheet { newGroup in
-                    groups.append(newGroup)
+                NewContextGroupSheet { name in
+                    chatContext.createGroup(name: name)
                     showingCreate = false
                 }
             }
@@ -217,45 +192,22 @@ private struct ContextGroupRow: View {
     }
 }
 
-// MARK: - New Group Sheet (stub)
+// MARK: - New Group Sheet
 
 private struct NewContextGroupSheet: View {
-    let onCreate: (ContextGroup) -> Void
+    let onCreate: (String) -> Void
 
     @State private var name: String = ""
-    @State private var selectedMembers: Set<ContextGroupMember.ID> = []
-
-    private let candidates: [ContextGroupMember] = ContextGroupMember.library
 
     var body: some View {
         Form {
             Section("Name") {
                 TextField("e.g. Morning Review", text: $name)
             }
-            Section("Contexts") {
-                ForEach(candidates) { member in
-                    Button {
-                        if selectedMembers.contains(member.id) {
-                            selectedMembers.remove(member.id)
-                        } else {
-                            selectedMembers.insert(member.id)
-                        }
-                    } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: member.icon)
-                                .frame(width: 22)
-                                .foregroundStyle(.blue)
-                            Text(member.label)
-                                .foregroundStyle(.primary)
-                            Spacer()
-                            if selectedMembers.contains(member.id) {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(Color.accentColor)
-                            }
-                        }
-                    }
-                    .buttonStyle(.plain)
-                }
+            Section {
+                Text("Add contexts to this group from any page by tapping the context pill and choosing Add to Context Group.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .navigationTitle("New Group")
@@ -263,16 +215,9 @@ private struct NewContextGroupSheet: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Create") {
-                    let members = candidates.filter { selectedMembers.contains($0.id) }
-                    let group = ContextGroup(
-                        name: name.isEmpty ? "Untitled Group" : name,
-                        icon: "point.3.connected.trianglepath.dotted",
-                        summary: "",
-                        members: members
-                    )
-                    onCreate(group)
+                    onCreate(name.trimmingCharacters(in: .whitespaces))
                 }
-                .disabled(selectedMembers.isEmpty)
+                .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
     }
@@ -307,74 +252,19 @@ struct ContextGroupMember: Identifiable, Hashable {
     let label: String
     let icon: String
     let contextType: String
+    let contextId: String?
 
-    init(id: UUID = UUID(), label: String, icon: String, contextType: String) {
+    init(id: UUID = UUID(), label: String, icon: String, contextType: String, contextId: String? = nil) {
         self.id = id
         self.label = label
         self.icon = icon
         self.contextType = contextType
+        self.contextId = contextId
     }
-}
 
-extension ContextGroupMember {
-    static let library: [ContextGroupMember] = [
-        .init(label: "Today's Schedule", icon: "calendar", contextType: "schedule"),
-        .init(label: "Morning Brief", icon: "sunrise", contextType: "brief"),
-        .init(label: "Home", icon: "house", contextType: "home"),
-        .init(label: "Plans", icon: "list.bullet", contextType: "plans"),
-        .init(label: "Health Overview", icon: "heart", contextType: "health"),
-        .init(label: "Faith Overview", icon: "cross", contextType: "faith"),
-        .init(label: "Profile — Purpose", icon: "target", contextType: "profile"),
-        .init(label: "Briefings List", icon: "briefcase", contextType: "briefs")
-    ]
-}
-
-extension ContextGroup {
-    static let mocks: [ContextGroup] = [
-        ContextGroup(
-            name: "Morning Review",
-            icon: "sun.max",
-            summary: "What the agent needs to help you plan the day.",
-            members: [
-                .init(label: "Today's Schedule", icon: "calendar", contextType: "schedule"),
-                .init(label: "Morning Brief", icon: "sunrise", contextType: "brief"),
-                .init(label: "Home", icon: "house", contextType: "home")
-            ]
-        ),
-        ContextGroup(
-            name: "Weekly Planning",
-            icon: "calendar.badge.clock",
-            summary: "Zoom out across goals, plans, and the week ahead.",
-            members: [
-                .init(label: "Plans", icon: "list.bullet", contextType: "plans"),
-                .init(label: "This Week", icon: "calendar", contextType: "schedule"),
-                .init(label: "Profile — Purpose", icon: "target", contextType: "profile"),
-                .init(label: "Home", icon: "house", contextType: "home"),
-                .init(label: "Briefings List", icon: "briefcase", contextType: "briefs")
-            ]
-        )
-    ]
-
-    static let suggestions: [ContextGroup] = [
-        ContextGroup(
-            name: "Health Check-in",
-            icon: "heart.text.square",
-            summary: "Health overview plus today's schedule for a daily reflection.",
-            members: [
-                .init(label: "Health Overview", icon: "heart", contextType: "health"),
-                .init(label: "Today's Schedule", icon: "calendar", contextType: "schedule")
-            ]
-        ),
-        ContextGroup(
-            name: "Faith & Purpose",
-            icon: "cross.circle",
-            summary: "Faith section alongside the goals-purpose profile view.",
-            members: [
-                .init(label: "Faith Overview", icon: "cross", contextType: "faith"),
-                .init(label: "Profile — Purpose", icon: "target", contextType: "profile")
-            ]
-        )
-    ]
+    func matches(_ kind: ChatContextKind) -> Bool {
+        contextType == kind.contextType && contextId == kind.contextId
+    }
 }
 
 // MARK: - FlowLayout
