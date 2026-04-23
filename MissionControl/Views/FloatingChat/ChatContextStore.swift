@@ -26,6 +26,11 @@ enum ChatContextKind: Equatable {
     /// associated list is the feature names so the agent knows which
     /// features the user has available.
     case featureList(features: [String])
+    /// Saved-groups management surface. A Context Group bundles multiple
+    /// `ChatContextKind` selections so a chat can be grounded on all of them
+    /// at once. The floating chat's context panel exposes them under "Saved
+    /// Groups"; this context marks the page where they're created and curated.
+    case contextGroups
 
     /// OpenClaw agent the chat should route through. `nil` means use the
     /// API's default agent (currently `intella`).
@@ -54,6 +59,7 @@ enum ChatContextKind: Equatable {
         case .briefs:       return "briefs"
         case .brief:        return "brief"
         case .featureList:  return "feature_list"
+        case .contextGroups:return "context_groups"
         case .settings:     return "settings"
         case .profile:      return "profile"
         }
@@ -164,6 +170,7 @@ final class ChatContextStore {
         case .brief(_, let d):
             return d.formatted(.dateTime.month(.abbreviated).day())
         case .featureList:               return "Features"
+        case .contextGroups:             return "Groups"
         case .settings(let s):           return s
         case .profile(let s):            return s
         }
@@ -191,6 +198,7 @@ final class ChatContextStore {
             case .evening:   return "moon.stars"
             }
         case .featureList:  return "ellipsis"
+        case .contextGroups: return "point.3.connected.trianglepath.dotted"
         case .settings:     return "gearshape"
         case .profile:      return "person.text.rectangle"
         }
@@ -223,6 +231,7 @@ final class ChatContextStore {
             case .evening:   return "Evening Brief"
             }
         case .featureList:  return "Features"
+        case .contextGroups: return "Context Groups"
         case .settings:     return "Settings"
         case .profile:      return "Profile"
         }
@@ -292,6 +301,8 @@ final class ChatContextStore {
             }
             let list = features.map { "**\($0)**" }.joined(separator: ", ")
             return "You're on your feature list. You have \(list) available. Ask me to jump into one or to help you organize them."
+        case .contextGroups:
+            return "You're in **Context Groups**. I can help you bundle related contexts — goals, schedules, briefs — into saved groups you can reuse to ground chats."
         case .settings(let s):
             return "You're in **\(s)** settings. I can help you configure the API connection, troubleshoot, or walk through your options."
         case .profile(let s):
