@@ -31,6 +31,10 @@ enum ChatContextKind: Equatable {
     /// at once. The floating chat's context panel exposes them under "Saved
     /// Groups"; this context marks the page where they're created and curated.
     case contextGroups
+    /// Detail page for a single Context Group — the list of its members. Grounds
+    /// the chat on "this particular group" rather than the management surface,
+    /// so the agent can reason about the group's name/purpose and its contents.
+    case contextGroupDetails(id: String, name: String)
 
     /// OpenClaw agent the chat should route through. `nil` means use the
     /// API's default agent (currently `intella`).
@@ -60,6 +64,7 @@ enum ChatContextKind: Equatable {
         case .brief:        return "brief"
         case .featureList:  return "feature_list"
         case .contextGroups:return "context_groups"
+        case .contextGroupDetails: return "context_group_details"
         case .settings:     return "settings"
         case .profile:      return "profile"
         }
@@ -72,7 +77,8 @@ enum ChatContextKind: Equatable {
              .initiative(let id, _, _),
              .task(let id, _),
              .agent(let id, _, _),
-             .agentChat(let id, _, _):
+             .agentChat(let id, _, _),
+             .contextGroupDetails(let id, _):
             return id
         default:
             return nil
@@ -228,6 +234,7 @@ final class ChatContextStore {
             return d.formatted(.dateTime.month(.abbreviated).day())
         case .featureList:               return "Features"
         case .contextGroups:             return "Groups"
+        case .contextGroupDetails(_, let n): return n
         case .settings(let s):           return s
         case .profile(let s):            return s
         }
@@ -256,6 +263,7 @@ final class ChatContextStore {
             }
         case .featureList:  return "ellipsis"
         case .contextGroups: return "point.3.connected.trianglepath.dotted"
+        case .contextGroupDetails: return "point.3.connected.trianglepath.dotted"
         case .settings:     return "gearshape"
         case .profile:      return "person.text.rectangle"
         }
@@ -289,6 +297,7 @@ final class ChatContextStore {
             }
         case .featureList:  return "Features"
         case .contextGroups: return "Context Groups"
+        case .contextGroupDetails: return "Group Details"
         case .settings:     return "Settings"
         case .profile:      return "Profile"
         }
@@ -360,6 +369,8 @@ final class ChatContextStore {
             return "You're on your feature list. You have \(list) available. Ask me to jump into one or to help you organize them."
         case .contextGroups:
             return "You're in **Context Groups**. I can help you bundle related contexts — goals, schedules, briefs — into saved groups you can reuse to ground chats."
+        case .contextGroupDetails(_, let name):
+            return "You're looking at the **\(name)** group. I can help you curate its members, explain why items are grouped together, or use the group to ground a chat."
         case .settings(let s):
             return "You're in **\(s)** settings. I can help you configure the API connection, troubleshoot, or walk through your options."
         case .profile(let s):

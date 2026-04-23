@@ -51,7 +51,11 @@ struct ContextGroupsView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(chatContext.contextGroups) { group in
-                        ContextGroupRow(group: group)
+                        NavigationLink {
+                            ContextGroupDetailView(groupId: group.id)
+                        } label: {
+                            ContextGroupRow(group: group)
+                        }
                     }
                     .onDelete { indexSet in
                         chatContext.contextGroups.remove(atOffsets: indexSet)
