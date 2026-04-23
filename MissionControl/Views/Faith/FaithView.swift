@@ -6,37 +6,35 @@ struct FaithView: View {
     @State private var section: FaithSection = .calendar
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    Picker("Section", selection: $section) {
-                        ForEach(FaithSection.allCases) { s in
-                            Text(s.label).tag(s)
-                        }
+        ScrollView {
+            VStack(spacing: 16) {
+                Picker("Section", selection: $section) {
+                    ForEach(FaithSection.allCases) { s in
+                        Text(s.label).tag(s)
                     }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 4)
-
-                    Group {
-                        switch section {
-                        case .calendar: LiturgicalCalendarView()
-                        case .prayers:  PrayersView()
-                        case .bible:    BibleView()
-                        }
-                    }
-                    .padding(.horizontal, 16)
                 }
-            }
-            .chatContext(.faith(section: section.label))
-            .chatContextToolbar()
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        // TODO: surface faith actions (e.g. change translation, subscribe to readings).
-                    } label: {
-                        Image(systemName: "ellipsis")
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 16)
+                .padding(.top, 4)
+
+                Group {
+                    switch section {
+                    case .calendar: LiturgicalCalendarView()
+                    case .prayers:  PrayersView()
+                    case .bible:    BibleView()
                     }
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+        .chatContext(.faith(section: section.label))
+        .chatContextToolbar()
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    // TODO: surface faith actions (e.g. change translation, subscribe to readings).
+                } label: {
+                    Image(systemName: "ellipsis")
                 }
             }
         }

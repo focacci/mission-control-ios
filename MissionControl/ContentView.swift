@@ -27,21 +27,10 @@ struct ContentView: View {
                 .tabItem { Label("Agents", systemImage: "person.2.wave.2") }
                 .tag(4)
 
-            FaithView()
+            FeatureListView()
                 .floatingChatButton(isPresented: $chatContextStore.showingChat)
-                .tabItem { Label("Faith", systemImage: "cross") }
+                .tabItem { Label("More", systemImage: "ellipsis") }
                 .tag(5)
-
-            HealthView()
-                .floatingChatButton(isPresented: $chatContextStore.showingChat)
-                .tabItem { Label("Health", systemImage: "heart") }
-                .tag(6)
-
-            BriefsView()
-                .floatingChatButton(isPresented: $chatContextStore.showingChat)
-                .tabItem { Label("Briefings", systemImage: "briefcase") }
-                .tag(1)
-
         }
         .environment(chatContextStore)
         .sheet(isPresented: $chatContextStore.showingChat, onDismiss: {

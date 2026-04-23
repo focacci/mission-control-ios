@@ -69,6 +69,8 @@ final class ChatService: ObservableObject {
         case .plans(let s): ctx["section"] = s
         case .health(let s): ctx["section"] = s
         case .faith(let s): ctx["section"] = s
+        case .featureList(let features):
+            ctx["features"] = features.joined(separator: ",")
         default: break
         }
         body["context"] = ctx

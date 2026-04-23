@@ -15,6 +15,11 @@ enum ChatContextKind: Equatable {
     case faith(section: String)
     case briefs
     case brief(kind: DailyBrief, date: Date)
+    /// The "More" tab's custom landing page — a list of features (Faith,
+    /// Health, Briefings, …) that aren't pinned to the main tab bar. The
+    /// associated list is the feature names so the agent knows which
+    /// features the user has available.
+    case featureList(features: [String])
 
     /// OpenClaw agent the chat should route through. `nil` means use the
     /// API's default agent (currently `intella`).
@@ -42,6 +47,7 @@ enum ChatContextKind: Equatable {
         case .faith:        return "faith"
         case .briefs:       return "briefs"
         case .brief:        return "brief"
+        case .featureList:  return "feature_list"
         }
     }
 
@@ -149,6 +155,7 @@ final class ChatContextStore {
         case .briefs:                    return "List"
         case .brief(_, let d):
             return d.formatted(.dateTime.month(.abbreviated).day())
+        case .featureList:               return "Features"
         }
     }
 
@@ -173,6 +180,7 @@ final class ChatContextStore {
             case .afternoon: return "sun.max"
             case .evening:   return "moon.stars"
             }
+        case .featureList:  return "ellipsis"
         }
     }
 
@@ -202,6 +210,7 @@ final class ChatContextStore {
             case .afternoon: return "Afternoon Brief"
             case .evening:   return "Evening Brief"
             }
+        case .featureList:  return "Features"
         }
     }
 
@@ -263,6 +272,12 @@ final class ChatContextStore {
             return "Looking at your **\(label)** for \(dateStr). I can dig into any item, reprioritize, or draft follow-ups."
         case .app:
             return "Hey! I'm your Mission Control agent. I can help with goals, tasks, scheduling, and more. What do you need?"
+        case .featureList(let features):
+            if features.isEmpty {
+                return "You're on your feature list — no optional features enabled yet. What would you like to work on?"
+            }
+            let list = features.map { "**\($0)**" }.joined(separator: ", ")
+            return "You're on your feature list. You have \(list) available. Ask me to jump into one or to help you organize them."
         }
     }
 }

@@ -6,59 +6,57 @@ struct HealthView: View {
     @State private var section: HealthSection = .meals
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(HealthSection.allCases) { s in
-                                Button {
-                                    withAnimation(.easeInOut(duration: 0.18)) {
-                                        section = s
-                                    }
-                                } label: {
-                                    Label(s.label, systemImage: s.icon)
-                                        .font(.caption)
-                                        .fontWeight(.medium)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(
-                                            section == s
-                                                ? Color.accentColor
-                                                : Color.secondary.opacity(0.15),
-                                            in: Capsule()
-                                        )
-                                        .foregroundStyle(section == s ? .white : .primary)
+        ScrollView {
+            VStack(spacing: 16) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(HealthSection.allCases) { s in
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.18)) {
+                                    section = s
                                 }
-                                .buttonStyle(.plain)
+                            } label: {
+                                Label(s.label, systemImage: s.icon)
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        section == s
+                                            ? Color.accentColor
+                                            : Color.secondary.opacity(0.15),
+                                        in: Capsule()
+                                    )
+                                    .foregroundStyle(section == s ? .white : .primary)
                             }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 4)
-                    }
-
-                    Group {
-                        switch section {
-                        case .meals:     MealsView()
-                        case .workouts:  WorkoutsView()
-                        case .water:     WaterView()
-                        case .sleep:     SleepView()
-                        case .meds:      MedicationsView()
-                        case .symptoms:  SymptomsView()
+                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.horizontal, 16)
+                    .padding(.top, 4)
                 }
-            }
-            .chatContext(.health(section: section.label))
-            .chatContextToolbar()
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        // TODO: surface health actions (e.g. log symptom, add water, start workout).
-                    } label: {
-                        Image(systemName: "ellipsis")
+
+                Group {
+                    switch section {
+                    case .meals:     MealsView()
+                    case .workouts:  WorkoutsView()
+                    case .water:     WaterView()
+                    case .sleep:     SleepView()
+                    case .meds:      MedicationsView()
+                    case .symptoms:  SymptomsView()
                     }
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+        .chatContext(.health(section: section.label))
+        .chatContextToolbar()
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    // TODO: surface health actions (e.g. log symptom, add water, start workout).
+                } label: {
+                    Image(systemName: "ellipsis")
                 }
             }
         }

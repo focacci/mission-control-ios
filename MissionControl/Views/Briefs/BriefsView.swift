@@ -14,27 +14,25 @@ struct BriefsView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 12) {
-                    ForEach(days, id: \.self) { day in
-                        DayBriefsSection(
-                            day: day,
-                            onSelect: { brief in
-                                selectedBrief = BriefFullScreenContext(date: day, brief: brief)
-                            }
-                        )
-                    }
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                ForEach(days, id: \.self) { day in
+                    DayBriefsSection(
+                        day: day,
+                        onSelect: { brief in
+                            selectedBrief = BriefFullScreenContext(date: day, brief: brief)
+                        }
+                    )
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, 24)
             }
-            .chatContext(.briefs)
-            .chatContextToolbar()
-            .navigationDestination(item: $selectedBrief) { ctx in
-                BriefFullScreenView(brief: ctx.brief, date: ctx.date)
-            }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 24)
+        }
+        .chatContext(.briefs)
+        .chatContextToolbar()
+        .navigationDestination(item: $selectedBrief) { ctx in
+            BriefFullScreenView(brief: ctx.brief, date: ctx.date)
         }
     }
 }
