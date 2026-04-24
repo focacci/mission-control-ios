@@ -31,6 +31,19 @@ struct TaskDetailHeader: View {
                     }
                 }
             }
+
+            if let objective = task.objective, !objective.isEmpty {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Image(systemName: "target")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 20)
+                    Text(objective)
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()

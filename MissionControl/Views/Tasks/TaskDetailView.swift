@@ -55,14 +55,6 @@ struct TaskDetailView: View {
                             }
                         }
 
-                        if let objective = task.objective, !objective.isEmpty {
-                            SectionCard(title: "Objective", icon: "target") {
-                                Text(objective)
-                                    .font(.body)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-
                         RequirementsCard(
                             requirements: task.requirements ?? [],
                             isSaving: viewModel.isSaving,
