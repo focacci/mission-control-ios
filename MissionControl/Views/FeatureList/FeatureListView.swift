@@ -72,12 +72,12 @@ enum FeatureListEntry: String, CaseIterable, Identifiable, Hashable {
 
     var icon: String {
         switch self {
-        case .profile:       return "person.text.rectangle"
-        case .faith:         return "cross"
-        case .health:        return "heart"
-        case .contextGroups: return "point.3.connected.trianglepath.dotted"
-        case .briefings:     return "briefcase"
-        case .settings:      return "gearshape"
+        case .profile:       return "person.text.rectangle.fill"
+        case .faith:         return "cross.fill"
+        case .health:        return "heart.fill"
+        case .contextGroups: return "point.3.filled.connected.trianglepath.dotted"
+        case .briefings:     return "briefcase.fill"
+        case .settings:      return "gearshape.fill"
         }
     }
 
