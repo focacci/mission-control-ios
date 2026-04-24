@@ -17,6 +17,15 @@ struct InitiativeDetailHeader: View {
                 Spacer()
             }
 
+            if let goal = initiative.goal {
+                ParentReferenceRow(
+                    icon: "trophy",
+                    emoji: goal.emoji,
+                    name: goal.name,
+                    destination: { GoalDetailView(goalId: goal.id) }
+                )
+            }
+
             HStack(spacing: 12) {
                 Label(initiative.statusLabel, systemImage: initiative.statusIcon)
                     .font(.subheadline)

@@ -11,35 +11,61 @@ struct TaskDetailHeader: View {
                 .multilineTextAlignment(.leading)
 
             if task.goal != nil || task.initiative != nil {
-                HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
                     if let goal = task.goal {
-                        Text("\(goal.emoji) \(goal.name)")
-                            .font(.subheadline)
-                            .lineLimit(1)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(.clear, in: Capsule())
-                            .overlay(Capsule().strokeBorder(.secondary.opacity(0.4), lineWidth: 1))
+                        ParentReferenceRow(
+                            icon: "trophy",
+                            emoji: goal.emoji,
+                            name: goal.name,
+                            destination: { GoalDetailView(goalId: goal.id) }
+                        )
                     }
 
                     if let initiative = task.initiative {
-                        Text("\(initiative.emoji) \(initiative.name)")
-                            .font(.subheadline)
-                            .lineLimit(1)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(.clear, in: Capsule())
-                            .overlay(Capsule().strokeBorder(.secondary.opacity(0.4), lineWidth: 1))
+                        ParentReferenceRow(
+                            icon: "flag.pattern.checkered",
+                            emoji: initiative.emoji,
+                            name: initiative.name,
+                            destination: { InitiativeDetailView(initiativeId: initiative.id) }
+                        )
                     }
-
-                    Spacer()
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+}
+
+struct ParentReferenceRow<Destination: View>: View {
+    let icon: String
+    let emoji: String
+    let name: String
+    @ViewBuilder let destination: () -> Destination
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .frame(width: 20)
+
+            NavigationLink {
+                destination()
+            } label: {
+                Text("\(emoji) \(name)")
+                    .font(.subheadline)
+                    .lineLimit(1)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(.clear, in: Capsule())
+                    .overlay(Capsule().strokeBorder(.secondary.opacity(0.4), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+
+            Spacer(minLength: 0)
+        }
     }
 }
