@@ -20,8 +20,8 @@ struct ChatSession: Codable, Identifiable, Hashable {
     }
 }
 
-/// One row from `chat_messages`. Named to avoid colliding with the local
-/// UI struct `ChatMessage` used by `ChatConversationView`.
+/// One row from `chat_messages`. The UI groups these into `ChatTurn`s —
+/// see `ChatConversationView.swift` for the turn model.
 struct ChatTranscriptMessage: Codable, Identifiable, Hashable {
     let id: String
     let sessionId: String

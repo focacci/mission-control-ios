@@ -2,16 +2,52 @@ import SwiftUI
 
 // MARK: - Data
 
-struct ChatMessage: Identifiable {
+/// One chat exchange: the user's message (optional for the welcome turn) plus
+/// the agent's interleaved response segments. A turn maps 1:1 to one server
+/// `agent_invocations` row once the invocation id is known.
+///
+/// Segments are built in two phases:
+/// 1. Immediately after `POST /api/chat` returns, `segments` gets a single
+///    `.text` entry with the full buffered reply so the user sees output right
+///    away.
+/// 2. A background `GET /api/invocations/:id` fetch enriches the turn:
+///    `segments` is rebuilt by interleaving each assistant `chat_messages`
+///    row with its tool calls (matched via `tool_call_log.messageId`), and
+///    `tokensIn` / `tokensOut` are populated for the footer.
+struct ChatTurn: Identifiable {
     let id = UUID()
-    let role: Role
-    let content: String
-    /// Server invocation that produced this reply. Only set on agent bubbles
-    /// from `POST /api/chat` responses or rehydrated transcript messages.
-    /// Enables the "view run →" link to `InvocationDetailView`.
-    var invocationId: String? = nil
+    var userContent: String?
+    var segments: [TurnSegment] = []
+    var invocationId: String?
+    var tokensIn: Int?
+    var tokensOut: Int?
+    var isSending: Bool = false
+    var isEnriching: Bool = false
+    var hasEnriched: Bool = false
+    var errorMessage: String?
 
-    enum Role { case user, agent }
+    static func welcome(_ text: String) -> ChatTurn {
+        ChatTurn(segments: [.text(id: UUID(), content: text)])
+    }
+
+    static func user(_ text: String) -> ChatTurn {
+        ChatTurn(userContent: text, isSending: true)
+    }
+}
+
+/// One strip of the agent's response. `.text` comes from a `chat_messages` row;
+/// `.toolCall` comes from a `tool_call_log` row (collapsed by default, expand
+/// on tap).
+enum TurnSegment: Identifiable {
+    case text(id: UUID, content: String)
+    case toolCall(id: String, call: ToolCallLog)
+
+    var id: String {
+        switch self {
+        case .text(let id, _):      return "t-\(id.uuidString)"
+        case .toolCall(let id, _):  return "c-\(id)"
+        }
+    }
 }
 
 /// Persistent conversation state. Hoisted out of `ChatConversationView` so the
@@ -20,12 +56,12 @@ struct ChatMessage: Identifiable {
 /// scoped to the view's lifetime.
 @Observable
 final class ChatConversationState {
-    var messages: [ChatMessage] = []
+    var turns: [ChatTurn] = []
     var sessionId: String? = nil
     var inputText: String = ""
 
     func reset() {
-        messages = []
+        turns = []
         sessionId = nil
         inputText = ""
     }
@@ -101,6 +137,90 @@ final class ChatService: ObservableObject {
 
 }
 
+// MARK: - Turn construction helpers
+
+enum ChatTurnBuilder {
+    /// Group a flat transcript into turns: each user message starts a new turn;
+    /// subsequent assistant messages attach to it and supply the `invocationId`.
+    /// Preliminary segments are a text per assistant message — tool rows are
+    /// filled in by `enrich(turn:with:)` once the invocation detail loads.
+    static func turns(from messages: [ChatTranscriptMessage]) -> [ChatTurn] {
+        var out: [ChatTurn] = []
+        var current: ChatTurn? = nil
+
+        func flush() {
+            if let c = current { out.append(c) }
+            current = nil
+        }
+
+        for msg in messages {
+            switch msg.role {
+            case .user:
+                flush()
+                current = ChatTurn(userContent: msg.content)
+            case .assistant:
+                if current == nil {
+                    current = ChatTurn()
+                }
+                if current?.invocationId == nil {
+                    current?.invocationId = msg.invocationId
+                }
+                if !msg.content.isEmpty {
+                    current?.segments.append(.text(id: UUID(), content: msg.content))
+                }
+            case .system:
+                continue
+            }
+        }
+        flush()
+        return out
+    }
+
+    /// Replace `turn.segments` with the interleaved message + tool sequence
+    /// from a freshly loaded `InvocationDetail`. Tool rows with a `messageId`
+    /// attach beneath that message's text; orphan rows (rare — runner covers
+    /// this per plan §6.7) fall through to the end of the turn.
+    static func enrich(_ turn: ChatTurn, with detail: InvocationDetail) -> ChatTurn {
+        var out = turn
+        out.invocationId = detail.invocation.id
+        out.tokensIn = detail.invocation.tokensIn
+        out.tokensOut = detail.invocation.tokensOut
+        out.errorMessage = detail.invocation.error
+        out.isEnriching = false
+        out.hasEnriched = true
+
+        let assistantMessages = detail.messages.filter { $0.role == .assistant }
+        var segments: [TurnSegment] = []
+
+        if assistantMessages.isEmpty {
+            // Fall back to whatever we had (the buffered reply).
+            return out
+        }
+
+        for msg in assistantMessages {
+            if !msg.content.isEmpty {
+                segments.append(.text(id: UUID(), content: msg.content))
+            }
+            let tools = detail.toolCalls
+                .filter { $0.messageId == msg.id }
+                .sorted { $0.startedAt < $1.startedAt }
+            for t in tools {
+                segments.append(.toolCall(id: t.id, call: t))
+            }
+        }
+
+        let orphans = detail.toolCalls
+            .filter { $0.messageId == nil }
+            .sorted { $0.startedAt < $1.startedAt }
+        for t in orphans {
+            segments.append(.toolCall(id: t.id, call: t))
+        }
+
+        out.segments = segments
+        return out
+    }
+}
+
 // MARK: - Shared Chat Conversation
 
 /// Chat bubbles + input bar. Owns its own message/send state and contributes
@@ -149,7 +269,7 @@ struct ChatConversationView: View {
     }
 
     var body: some View {
-        messageList
+        turnList
             .floatingChatButton(isPresented: floatingChatPresented)
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 inputBarContainer
@@ -186,8 +306,8 @@ struct ChatConversationView: View {
                 }
             }
             .onAppear {
-                if state.messages.isEmpty {
-                    state.messages = [ChatMessage(role: .agent, content: welcomeMessage())]
+                if state.turns.isEmpty {
+                    state.turns = [.welcome(welcomeMessage())]
                 }
             }
             .onChange(of: activeContext) {
@@ -220,7 +340,7 @@ struct ChatConversationView: View {
     /// underlying chat context changes — the previous session is already
     /// persisted on the API side.
     private func resetLocalState() {
-        state.messages = [ChatMessage(role: .agent, content: welcomeMessage())]
+        state.turns = [.welcome(welcomeMessage())]
         state.inputText = ""
         state.sessionId = nil
     }
@@ -237,7 +357,7 @@ struct ChatConversationView: View {
                 contextType: activeContext.contextType,
                 contextId: activeContext.contextId
             )
-            state.messages = [ChatMessage(role: .agent, content: welcomeMessage())]
+            state.turns = [.welcome(welcomeMessage())]
             state.inputText = ""
             state.sessionId = session.id
         } catch {
@@ -246,26 +366,24 @@ struct ChatConversationView: View {
     }
 
     /// Replace the in-memory thread with a previously persisted session.
+    /// Groups flat transcript messages into turns, then enriches each one
+    /// that has an `invocationId` with tool calls + token counts.
     private func loadSession(_ session: ChatSession, messages: [ChatTranscriptMessage]) {
-        state.messages = messages.compactMap { msg in
-            switch msg.role {
-            case .user:
-                return ChatMessage(role: .user, content: msg.content)
-            case .assistant:
-                return ChatMessage(
-                    role: .agent,
-                    content: msg.content,
-                    invocationId: msg.invocationId
-                )
-            case .system:
-                return nil
-            }
+        var turns = ChatTurnBuilder.turns(from: messages)
+        if turns.isEmpty {
+            turns = [.welcome(welcomeMessage())]
         }
-        if state.messages.isEmpty {
-            state.messages = [ChatMessage(role: .agent, content: welcomeMessage())]
-        }
+        state.turns = turns
         state.inputText = ""
         state.sessionId = session.id
+
+        // Enrich each turn with tool calls + tokens in the background. One
+        // fetch per invocation; fire-and-forget so the list renders first.
+        for turn in turns {
+            if let invId = turn.invocationId {
+                Task { await enrichTurn(turnId: turn.id, invocationId: invId) }
+            }
+        }
     }
 
     // MARK: - History filter scope
@@ -288,23 +406,23 @@ struct ChatConversationView: View {
         return "intella"
     }
 
-    // MARK: - Message List
+    // MARK: - Turn List
 
-    private var messageList: some View {
+    private var turnList: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 16) {
-                    ForEach(state.messages) { message in
-                        MessageBubble(message: message)
-                            .id(message.id)
+                LazyVStack(alignment: .leading, spacing: 20) {
+                    ForEach(state.turns) { turn in
+                        TurnView(turn: turn)
+                            .id(turn.id)
                     }
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
             }
             .scrollDismissesKeyboard(.interactively)
-            .onChange(of: state.messages.count) {
-                if let last = state.messages.last {
+            .onChange(of: state.turns.count) {
+                if let last = state.turns.last {
                     withAnimation(.easeOut(duration: 0.2)) {
                         proxy.scrollTo(last.id, anchor: .bottom)
                     }
@@ -370,33 +488,273 @@ struct ChatConversationView: View {
             && !chatService.isLoading
     }
 
+    // MARK: - Send flow
+
     private func sendMessage() {
         let text = state.inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         state.inputText = ""
-        state.messages.append(ChatMessage(role: .user, content: text))
 
-        Task {
-            do {
-                let result = try await chatService.send(
-                    message: text,
-                    context: activeContext,
-                    sessionId: state.sessionId,
-                    useDefaultAgent: useDefaultAgent
-                )
-                state.sessionId = result.sessionId
-                state.messages.append(ChatMessage(
-                    role: .agent,
-                    content: result.reply,
-                    invocationId: result.invocationId
-                ))
-            } catch {
-                state.messages.append(ChatMessage(
-                    role: .agent,
-                    content: "⚠️ Error: \(error.localizedDescription)"
-                ))
+        let turn = ChatTurn.user(text)
+        state.turns.append(turn)
+
+        Task { await runTurn(turnId: turn.id, text: text) }
+    }
+
+    private func runTurn(turnId: UUID, text: String) async {
+        do {
+            let result = try await chatService.send(
+                message: text,
+                context: activeContext,
+                sessionId: state.sessionId,
+                useDefaultAgent: useDefaultAgent
+            )
+            state.sessionId = result.sessionId
+            updateTurn(turnId) { t in
+                t.isSending = false
+                t.invocationId = result.invocationId
+                // Seed a single text segment so the buffered reply shows
+                // immediately; the enrich step rebuilds it with tool rows.
+                if !result.reply.isEmpty {
+                    t.segments = [.text(id: UUID(), content: result.reply)]
+                }
+            }
+
+            if let invId = result.invocationId {
+                await enrichTurn(turnId: turnId, invocationId: invId)
+            }
+        } catch {
+            updateTurn(turnId) { t in
+                t.isSending = false
+                t.errorMessage = error.localizedDescription
             }
         }
+    }
+
+    /// Fetch the invocation detail and splice tool calls + token counts into
+    /// the matching turn. Best-effort: if it fails, the user still has the
+    /// buffered reply — we just skip tool rows and the token footer.
+    private func enrichTurn(turnId: UUID, invocationId: String) async {
+        updateTurn(turnId) { $0.isEnriching = true }
+        do {
+            let detail = try await APIClient.shared.invocation(id: invocationId)
+            updateTurn(turnId) { t in
+                t = ChatTurnBuilder.enrich(t, with: detail)
+            }
+        } catch {
+            updateTurn(turnId) { $0.isEnriching = false }
+        }
+    }
+
+    private func updateTurn(_ id: UUID, _ mutate: (inout ChatTurn) -> Void) {
+        guard let idx = state.turns.firstIndex(where: { $0.id == id }) else { return }
+        var t = state.turns[idx]
+        mutate(&t)
+        state.turns[idx] = t
+    }
+}
+
+// MARK: - Turn rendering
+
+struct TurnView: View {
+    let turn: ChatTurn
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if let user = turn.userContent {
+                HStack {
+                    Spacer(minLength: 52)
+                    UserBubble(text: user)
+                }
+            }
+
+            if turn.isSending && turn.segments.isEmpty {
+                ThinkingBubble()
+            }
+
+            ForEach(turn.segments) { segment in
+                switch segment {
+                case .text(_, let content):
+                    AgentTextBubble(content: content, isError: false)
+                case .toolCall(_, let call):
+                    ToolStepRow(call: call)
+                }
+            }
+
+            if let err = turn.errorMessage {
+                AgentTextBubble(content: "⚠️ \(err)", isError: true)
+            }
+
+            TurnFooter(turn: turn)
+        }
+    }
+}
+
+private struct UserBubble: View {
+    let text: String
+    var body: some View {
+        Text(LocalizedStringKey(text))
+            .font(.body)
+            .foregroundStyle(.white)
+            .multilineTextAlignment(.leading)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(Color.blue, in: RoundedRectangle(cornerRadius: 18))
+    }
+}
+
+private struct AgentTextBubble: View {
+    let content: String
+    let isError: Bool
+    var body: some View {
+        Text(LocalizedStringKey(content))
+            .font(.body)
+            .foregroundStyle(isError ? Color.red : .primary)
+            .multilineTextAlignment(.leading)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+private struct ThinkingBubble: View {
+    @State private var phase = 0
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(0..<3) { i in
+                Circle()
+                    .fill(Color.secondary)
+                    .frame(width: 6, height: 6)
+                    .opacity(phase == i ? 1.0 : 0.3)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .background(.regularMaterial, in: Capsule())
+        .task {
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 280_000_000)
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    phase = (phase + 1) % 3
+                }
+            }
+        }
+    }
+}
+
+/// Collapsed inline tool step. Quiet by default — just the tool name + the
+/// server-provided one-line `summary`. Tap to expand and see the raw JSON
+/// input/output (same shape as the debug view).
+private struct ToolStepRow: View {
+    let call: ToolCallLog
+    @State private var isExpanded = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.15)) { isExpanded.toggle() }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: call.isError
+                        ? "exclamationmark.triangle.fill"
+                        : "wrench.and.screwdriver")
+                        .font(.caption)
+                        .foregroundStyle(call.isError ? .red : .secondary)
+                    Text(call.toolName)
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(call.isError ? .red : .primary)
+                    if let summary = call.summary, !summary.isEmpty {
+                        Text("·").foregroundStyle(.tertiary)
+                        Text(summary)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+                    Spacer(minLength: 0)
+                    if let ms = call.durationMs {
+                        Text("\(ms)ms")
+                            .font(.caption2.monospacedDigit())
+                            .foregroundStyle(.tertiary)
+                    }
+                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded {
+                if !call.input.isEmpty {
+                    ToolPayloadBlock(label: "input", content: call.input)
+                }
+                if let output = call.output, !output.isEmpty {
+                    ToolPayloadBlock(label: "output", content: output)
+                }
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+private struct ToolPayloadBlock: View {
+    let label: String
+    let content: String
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Text(content)
+                .font(.caption2.monospaced())
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+}
+
+/// Footer beneath an agent turn: optional token count + "View run →" link
+/// that pushes `InvocationDetailView`. Hidden entirely for turns with no
+/// invocation (e.g. the welcome greeting or an error that never reached the
+/// server).
+private struct TurnFooter: View {
+    let turn: ChatTurn
+
+    var body: some View {
+        guard let invocationId = turn.invocationId else {
+            return AnyView(EmptyView())
+        }
+
+        let totalTokens: Int? = {
+            guard let i = turn.tokensIn, let o = turn.tokensOut else { return nil }
+            let sum = i + o
+            return sum > 0 ? sum : nil
+        }()
+
+        return AnyView(
+            NavigationLink {
+                InvocationDetailView(invocationId: invocationId)
+            } label: {
+                HStack(spacing: 6) {
+                    if let total = totalTokens {
+                        Text("\(total) tokens")
+                        Text("·").foregroundStyle(.tertiary)
+                    } else if turn.isEnriching {
+                        ProgressView().controlSize(.mini)
+                    }
+                    Text("View run")
+                    Image(systemName: "arrow.up.right")
+                }
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .padding(.leading, 14)
+            }
+            .buttonStyle(.plain)
+        )
     }
 }
 
@@ -426,58 +784,6 @@ private struct LiquidGlassSendButtonBackground: ViewModifier {
                 isEnabled ? AnyShapeStyle(Color.blue) : AnyShapeStyle(Material.regularMaterial),
                 in: Circle()
             )
-        }
-    }
-}
-
-// MARK: - Message Bubble
-
-struct MessageBubble: View {
-    let message: ChatMessage
-
-    var isUser: Bool { message.role == .user }
-
-    var body: some View {
-        HStack(alignment: .bottom, spacing: 8) {
-            if isUser {
-                Spacer(minLength: 52)
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(LocalizedStringKey(message.content))
-                    .font(.body)
-                    .foregroundStyle(isUser ? .white : .primary)
-                    .multilineTextAlignment(.leading)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(
-                        isUser
-                            ? AnyShapeStyle(Color.blue)
-                            : AnyShapeStyle(Material.regularMaterial),
-                        in: RoundedRectangle(cornerRadius: 18)
-                    )
-                    .frame(maxWidth: .infinity, alignment: isUser ? .trailing : .leading)
-
-                if !isUser, let invocationId = message.invocationId {
-                    NavigationLink {
-                        InvocationDetailView(invocationId: invocationId)
-                    } label: {
-                        HStack(spacing: 3) {
-                            Text("View run")
-                            Image(systemName: "arrow.up.right")
-                        }
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .padding(.leading, 14)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-
-            if isUser {
-                Spacer(minLength: 0)
-                    .frame(width: 0)
-            }
         }
     }
 }

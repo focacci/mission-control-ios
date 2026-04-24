@@ -63,26 +63,36 @@ struct AgentChatView: View {
                 sessionId: initialSession.id,
                 limit: 500
             )
-            state.messages = messages.compactMap { msg in
-                switch msg.role {
-                case .user:
-                    return ChatMessage(role: .user, content: msg.content)
-                case .assistant:
-                    return ChatMessage(
-                        role: .agent,
-                        content: msg.content,
-                        invocationId: msg.invocationId
-                    )
-                case .system:
-                    return nil
+            var turns = ChatTurnBuilder.turns(from: messages)
+            if turns.isEmpty {
+                turns = [.welcome(welcome())]
+            }
+            state.turns = turns
+            state.sessionId = initialSession.id
+
+            // Enrich each past turn with its tool calls + token counts.
+            // Fire-and-forget so the transcript renders immediately; rows
+            // animate in as each invocation detail lands.
+            for turn in turns {
+                if let invId = turn.invocationId {
+                    Task { await enrichTurn(turnId: turn.id, invocationId: invId) }
                 }
             }
-            if state.messages.isEmpty {
-                state.messages = [ChatMessage(role: .agent, content: welcome())]
-            }
-            state.sessionId = initialSession.id
         } catch {
             self.error = error.localizedDescription
+        }
+    }
+
+    /// Same enrichment as `ChatConversationView.enrichTurn`. Duplicated here
+    /// because history load happens before the child view's state is attached;
+    /// the child's send-flow enrich still runs independently for new turns.
+    private func enrichTurn(turnId: UUID, invocationId: String) async {
+        do {
+            let detail = try await APIClient.shared.invocation(id: invocationId)
+            guard let idx = state.turns.firstIndex(where: { $0.id == turnId }) else { return }
+            state.turns[idx] = ChatTurnBuilder.enrich(state.turns[idx], with: detail)
+        } catch {
+            // Non-fatal: the text-only turn still renders.
         }
     }
 }
