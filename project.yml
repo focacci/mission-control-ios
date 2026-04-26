@@ -22,14 +22,11 @@ targets:
       - path: Shared
       - path: MissionControl
         excludes:
-          - "Assets.xcassets"
           - "Info.plist"
-    resources:
-      - path: MissionControl/Assets.xcassets
     info:
       path: MissionControl/Info.plist
       properties:
-        CFBundleDisplayName: Mission Control
+        CFBundleDisplayName: Intella
         CFBundleShortVersionString: "1.0"
         CFBundleVersion: "1"
         UILaunchScreen:
@@ -53,14 +50,11 @@ targets:
       - path: Shared
       - path: MissionControlWatch
         excludes:
-          - "Assets.xcassets"
           - "Info.plist"
-    resources:
-      - path: MissionControlWatch/Assets.xcassets
     info:
       path: MissionControlWatch/Info.plist
       properties:
-        CFBundleDisplayName: Mission Control
+        CFBundleDisplayName: Intella
         CFBundleShortVersionString: "1.0"
         CFBundleVersion: "1"
         WKApplication: true

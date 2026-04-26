@@ -16,6 +16,88 @@
 		1423C2F088B9B5F7CDFACC32 /* SectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4998C0130DFDE587E684B6A7 /* SectionCard.swift */; };
 		148D9D2A14AF628A58B81DFD /* ScheduleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C72F628F3AECDECD652C88EA /* ScheduleViewModel.swift */; };
 		166E1FD10F7D87FADF84C956 /* CreateAgentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F0FED9F75854392E6B4E5E /* CreateAgentSheet.swift */; };
+		1BA001BC2F9C520900B87A44 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2985EADFC1BB30478399B4 /* APIClient.swift */; };
+		1BA001BD2F9C520900B87A44 /* Agent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8030109314A96ACEE4E6C129 /* Agent.swift */; };
+		1BA001BE2F9C520900B87A44 /* AgentAssignment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590FE9BEA30F0E9CBC537F39 /* AgentAssignment.swift */; };
+		1BA001BF2F9C520900B87A44 /* AgentAssignmentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B694C7B9BD7DF9233B864429 /* AgentAssignmentDetailView.swift */; };
+		1BA001C02F9C520900B87A44 /* AgentAssignmentsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6F72A7BF43E84B23FC42840 /* AgentAssignmentsCard.swift */; };
+		1BA001C12F9C520900B87A44 /* AgentCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21C304AD361F5DB4F65DADFC /* AgentCard.swift */; };
+		1BA001C22F9C520900B87A44 /* AgentChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4713DF6F70D359DA6407692E /* AgentChatView.swift */; };
+		1BA001C32F9C520900B87A44 /* AgentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F1755C7AAEC9D26078FA4 /* AgentDetailView.swift */; };
+		1BA001C42F9C520900B87A44 /* AgentInvocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE9061180BC8423ADC61F41 /* AgentInvocation.swift */; };
+		1BA001C52F9C520900B87A44 /* AgentsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B130C1D36811FA485A56165 /* AgentsListView.swift */; };
+		1BA001C62F9C520900B87A44 /* AgentsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EE6EAFE31516194D72340D3 /* AgentsViewModel.swift */; };
+		1BA001C72F9C520900B87A44 /* BoardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8AE533D1CBDA389517E60F /* BoardData.swift */; };
+		1BA001C82F9C520900B87A44 /* BriefsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67E505BD24E42468D915EF88 /* BriefsView.swift */; };
+		1BA001C92F9C520900B87A44 /* CardStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7600164D95FB619214C9F5E /* CardStyle.swift */; };
+		1BA001CA2F9C520900B87A44 /* ChatAgentPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 302DEACB46640E298F2D00C3 /* ChatAgentPanel.swift */; };
+		1BA001CB2F9C520900B87A44 /* ChatAgentPickerToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2745F043FD7EF9ECD1B8AC2 /* ChatAgentPickerToolbarButton.swift */; };
+		1BA001CC2F9C520900B87A44 /* ChatContextPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CBCCE83A0C142DF62F424E3 /* ChatContextPanel.swift */; };
+		1BA001CD2F9C520900B87A44 /* ChatContextPickerToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F017DDEA204F0381C8BE88F /* ChatContextPickerToolbarButton.swift */; };
+		1BA001CE2F9C520900B87A44 /* ChatContextStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF3871F567A017C488A8B42 /* ChatContextStore.swift */; };
+		1BA001CF2F9C520900B87A44 /* ChatContextToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A8603F68EF347D2D6073BA /* ChatContextToolbarButton.swift */; };
+		1BA001D02F9C520900B87A44 /* ChatConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5653D06464E98241C8607906 /* ChatConversationView.swift */; };
+		1BA001D12F9C520900B87A44 /* ChatHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F93E1E7A80911F047D888E39 /* ChatHistoryView.swift */; };
+		1BA001D22F9C520900B87A44 /* ChatLockToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB15A4165242E5C5D8CC9686 /* ChatLockToolbarButton.swift */; };
+		1BA001D32F9C520900B87A44 /* ChatSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56FE9B08913A098C3C764476 /* ChatSession.swift */; };
+		1BA001D42F9C520900B87A44 /* ChatTranscriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AD8C673B9C9B570ED26E1 /* ChatTranscriptView.swift */; };
+		1BA001D52F9C520900B87A44 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C556F6188837FF7EFE0FA4E8 /* ChatView.swift */; };
+		1BA001D62F9C520900B87A44 /* CompleteTaskSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513EBEA9872A4F80D2B6EF4B /* CompleteTaskSheet.swift */; };
+		1BA001D72F9C520900B87A44 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB5DA73C418961FC7B25AE84 /* ContentView.swift */; };
+		1BA001D82F9C520900B87A44 /* ContextChatHistorySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04AB2386BB8B7FD960E5EBCE /* ContextChatHistorySection.swift */; };
+		1BA001D92F9C520900B87A44 /* ContextGroupDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C6C233AF5D1D0F2E867344D /* ContextGroupDetailView.swift */; };
+		1BA001DA2F9C520900B87A44 /* ContextGroupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BFE19D6CA9CC9B6BFD9F594 /* ContextGroupsView.swift */; };
+		1BA001DB2F9C520900B87A44 /* CreateAgentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F0FED9F75854392E6B4E5E /* CreateAgentSheet.swift */; };
+		1BA001DC2F9C520900B87A44 /* DayScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98C30F27A4B6AA739AD7AB58 /* DayScheduleView.swift */; };
+		1BA001DD2F9C520900B87A44 /* FaithView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5399609CF0E6AAD7853503E /* FaithView.swift */; };
+		1BA001DE2F9C520900B87A44 /* FeatureListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0045A321A5B599D29AFDD443 /* FeatureListView.swift */; };
+		1BA001DF2F9C520900B87A44 /* FloatingChatButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E75296C46CA0C8996DC4BAF /* FloatingChatButton.swift */; };
+		1BA001E02F9C520900B87A44 /* Goal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D04724739E13A9765ACD16 /* Goal.swift */; };
+		1BA001E12F9C520900B87A44 /* GoalCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF63048ED44AD2B05213289 /* GoalCard.swift */; };
+		1BA001E22F9C520900B87A44 /* GoalDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E140BC8C3C6DFC043BAB61 /* GoalDetailHeader.swift */; };
+		1BA001E32F9C520900B87A44 /* GoalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D1D40C9C5FFCEAA565205AB /* GoalDetailView.swift */; };
+		1BA001E42F9C520900B87A44 /* GoalDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D77ABFCCEB5AFF2543E5C28C /* GoalDetailViewModel.swift */; };
+		1BA001E52F9C520900B87A44 /* GoalEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 626C5F933008054ADD6960DB /* GoalEditSheet.swift */; };
+		1BA001E62F9C520900B87A44 /* HealthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E251E2D32513D439F785BD /* HealthView.swift */; };
+		1BA001E72F9C520900B87A44 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB79D70DEC5A71FF3E1D5D75 /* HomeView.swift */; };
+		1BA001E82F9C520900B87A44 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 903FE8B2D3A1755B3C6A74D7 /* HomeViewModel.swift */; };
+		1BA001E92F9C520900B87A44 /* Initiative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BBA4E20A95DBE5434A0C0CC /* Initiative.swift */; };
+		1BA001EA2F9C520900B87A44 /* InitiativeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D11B8F6C5E38EA533C94E7E3 /* InitiativeCard.swift */; };
+		1BA001EB2F9C520900B87A44 /* InitiativeDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC5D58588F625242FFBD339F /* InitiativeDetailHeader.swift */; };
+		1BA001EC2F9C520900B87A44 /* InitiativeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AD53C713E8989E976B0CA26 /* InitiativeDetailView.swift */; };
+		1BA001ED2F9C520900B87A44 /* InitiativeDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F6710A3AFC155620FCA56B4 /* InitiativeDetailViewModel.swift */; };
+		1BA001EE2F9C520900B87A44 /* InitiativeEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCF01256B8E7CD1D7D50A1ED /* InitiativeEditSheet.swift */; };
+		1BA001EF2F9C520900B87A44 /* InvocationDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79425DC5E01A2C3480AFF4F7 /* InvocationDetailView.swift */; };
+		1BA001F02F9C520900B87A44 /* InvocationsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBE0562A481826D772D4A85F /* InvocationsListView.swift */; };
+		1BA001F12F9C520900B87A44 /* MissionControlApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F3A0C88E4BC3F8B5E50F748 /* MissionControlApp.swift */; };
+		1BA001F22F9C520900B87A44 /* MonthScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0814209C981AD7A323B8FBA7 /* MonthScheduleView.swift */; };
+		1BA001F32F9C520900B87A44 /* PlansView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39FD78816B57E54EE47B5070 /* PlansView.swift */; };
+		1BA001F42F9C520900B87A44 /* PlansViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BDF64FA51A80664DBB0465 /* PlansViewModel.swift */; };
+		1BA001F52F9C520900B87A44 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E35E7D266D2F8902F930B99 /* ProfileView.swift */; };
+		1BA001F62F9C520900B87A44 /* RequirementDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6BBDB430379DAA12151D58 /* RequirementDetailView.swift */; };
+		1BA001F72F9C520900B87A44 /* RequirementsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C42111B2F12FADC127BCAD07 /* RequirementsCard.swift */; };
+		1BA001F82F9C520900B87A44 /* ScheduleSlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6570890967C69B599B52CF1 /* ScheduleSlot.swift */; };
+		1BA001F92F9C520900B87A44 /* ScheduleTaskSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4842F24FC3E265B6A6B8B31C /* ScheduleTaskSheet.swift */; };
+		1BA001FA2F9C520900B87A44 /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B907B9C061ED212157D3FFF7 /* ScheduleView.swift */; };
+		1BA001FB2F9C520900B87A44 /* ScheduleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C72F628F3AECDECD652C88EA /* ScheduleViewModel.swift */; };
+		1BA001FC2F9C520900B87A44 /* SectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4998C0130DFDE587E684B6A7 /* SectionCard.swift */; };
+		1BA001FD2F9C520900B87A44 /* ServerHealth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 517A1C942EC1FAB24F183895 /* ServerHealth.swift */; };
+		1BA001FE2F9C520900B87A44 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D0057D0081A53661B4D0EB4 /* SettingsView.swift */; };
+		1BA001FF2F9C520900B87A44 /* SlotCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23E0B4D9DFC52FE0AAB9E722 /* SlotCard.swift */; };
+		1BA002002F9C520900B87A44 /* SlotDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777B9574054F2D6131853773 /* SlotDetailView.swift */; };
+		1BA002012F9C520900B87A44 /* SlotOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F9002A748FE0D27BC2A9991 /* SlotOutput.swift */; };
+		1BA002022F9C520900B87A44 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BB569E8D2910A7991D5C55 /* Task.swift */; };
+		1BA002032F9C520900B87A44 /* TaskActionBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2B98F82ED9603E3F4C492FC /* TaskActionBar.swift */; };
+		1BA002042F9C520900B87A44 /* TaskCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 141A038C317E0F538F22C78C /* TaskCard.swift */; };
+		1BA002052F9C520900B87A44 /* TaskDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA5325368F51381FEEA4716 /* TaskDetailHeader.swift */; };
+		1BA002062F9C520900B87A44 /* TaskDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DE5796F5D1F8B6774F47AD7 /* TaskDetailView.swift */; };
+		1BA002072F9C520900B87A44 /* TaskDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C00013EDEAE09D6A94EB486 /* TaskDetailViewModel.swift */; };
+		1BA002082F9C520900B87A44 /* TaskEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCF120F8D716BA3DD6CD6C08 /* TaskEditSheet.swift */; };
+		1BA002092F9C520900B87A44 /* TaskSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89E0AB30007D4304647B96DB /* TaskSection.swift */; };
+		1BA0020A2F9C520900B87A44 /* TimeSlotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3AF6D12670FF8B4A6F09DE2 /* TimeSlotView.swift */; };
+		1BA0020B2F9C520900B87A44 /* View+ErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E703CF245AF6F5A4A9BD47 /* View+ErrorAlert.swift */; };
+		1BA0020C2F9C520900B87A44 /* YearScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFC9558746EC6AC1B889B189 /* YearScheduleView.swift */; };
+		1BA0020E2F9C520900B87A44 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 368FE371F0B34B2F84F66559 /* Assets.xcassets */; };
 		1C4456DBD54DDF14ACE11C44 /* WatchTaskList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C156323685CC44B680A865D /* WatchTaskList.swift */; };
 		1D9EA653B32C3F77A0079999 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BB569E8D2910A7991D5C55 /* Task.swift */; };
 		1EFA112559079BFBE8B638AA /* AgentInvocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE9061180BC8423ADC61F41 /* AgentInvocation.swift */; };
@@ -30,6 +112,7 @@
 		33ADFDA31376F8EFD488AB28 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D2985EADFC1BB30478399B4 /* APIClient.swift */; };
 		3A942D1719D134DB09AC93AB /* ContextGroupDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C6C233AF5D1D0F2E867344D /* ContextGroupDetailView.swift */; };
 		3BA3B71A5AFAE6DE02B5BFC6 /* BoardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8AE533D1CBDA389517E60F /* BoardData.swift */; };
+		41FAE60D1F44616D3ED6FBF0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 368FE371F0B34B2F84F66559 /* Assets.xcassets */; };
 		45412D0517FB2B7484B661B5 /* Initiative.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BBA4E20A95DBE5434A0C0CC /* Initiative.swift */; };
 		470375A411A87375845745D5 /* TaskDetailHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA5325368F51381FEEA4716 /* TaskDetailHeader.swift */; };
 		481272C861E96B3CE5AFEE79 /* FeatureListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0045A321A5B599D29AFDD443 /* FeatureListView.swift */; };
@@ -43,6 +126,7 @@
 		56EFBDA9A992BFAF8F980944 /* View+ErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E703CF245AF6F5A4A9BD47 /* View+ErrorAlert.swift */; };
 		61DCA6DA7E6573BA8EDBE159 /* TimeSlotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3AF6D12670FF8B4A6F09DE2 /* TimeSlotView.swift */; };
 		6507BF9440EBF207964EBBC3 /* InitiativeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D11B8F6C5E38EA533C94E7E3 /* InitiativeCard.swift */; };
+		680DCFE830FF0EF86BFBA561 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D554D33245175307ABACFB57 /* Assets.xcassets */; };
 		699547A948F2412CAD7224B2 /* AgentChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4713DF6F70D359DA6407692E /* AgentChatView.swift */; };
 		6DD5FA04755E22B82DBFBF67 /* CardStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7600164D95FB619214C9F5E /* CardStyle.swift */; };
 		6E557257E97161C7740FC895 /* ScheduleSlot.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6570890967C69B599B52CF1 /* ScheduleSlot.swift */; };
@@ -120,6 +204,8 @@
 		0814209C981AD7A323B8FBA7 /* MonthScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthScheduleView.swift; sourceTree = "<group>"; };
 		141A038C317E0F538F22C78C /* TaskCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCard.swift; sourceTree = "<group>"; };
 		1B130C1D36811FA485A56165 /* AgentsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentsListView.swift; sourceTree = "<group>"; };
+		1BA002122F9C520900B87A44 /* MissionControl copy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MissionControl copy.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1BA002132F9C520900B87A44 /* MissionControl copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "MissionControl copy-Info.plist"; path = "/Users/michaelfocacci/dev/Intella/mission-control-ios/MissionControl copy-Info.plist"; sourceTree = "<absolute>"; };
 		1F017DDEA204F0381C8BE88F /* ChatContextPickerToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatContextPickerToolbarButton.swift; sourceTree = "<group>"; };
 		21C304AD361F5DB4F65DADFC /* AgentCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentCard.swift; sourceTree = "<group>"; };
 		23E0B4D9DFC52FE0AAB9E722 /* SlotCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotCard.swift; sourceTree = "<group>"; };
@@ -130,6 +216,7 @@
 		302DEACB46640E298F2D00C3 /* ChatAgentPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAgentPanel.swift; sourceTree = "<group>"; };
 		34E140BC8C3C6DFC043BAB61 /* GoalDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDetailHeader.swift; sourceTree = "<group>"; };
 		34E251E2D32513D439F785BD /* HealthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthView.swift; sourceTree = "<group>"; };
+		368FE371F0B34B2F84F66559 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		39FD78816B57E54EE47B5070 /* PlansView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlansView.swift; sourceTree = "<group>"; };
 		3CF3871F567A017C488A8B42 /* ChatContextStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatContextStore.swift; sourceTree = "<group>"; };
 		3D0057D0081A53661B4D0EB4 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -193,6 +280,7 @@
 		D11B8F6C5E38EA533C94E7E3 /* InitiativeCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitiativeCard.swift; sourceTree = "<group>"; };
 		D2745F043FD7EF9ECD1B8AC2 /* ChatAgentPickerToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAgentPickerToolbarButton.swift; sourceTree = "<group>"; };
 		D37F1755C7AAEC9D26078FA4 /* AgentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentDetailView.swift; sourceTree = "<group>"; };
+		D554D33245175307ABACFB57 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D6570890967C69B599B52CF1 /* ScheduleSlot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleSlot.swift; sourceTree = "<group>"; };
 		D77ABFCCEB5AFF2543E5C28C /* GoalDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDetailViewModel.swift; sourceTree = "<group>"; };
 		E3BB569E8D2910A7991D5C55 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
@@ -270,6 +358,7 @@
 			children = (
 				4BF55F93FA2531E7F621514C /* MissionControl.app */,
 				B5B1D1DDFD73BEEC8D7CA352 /* MissionControlWatch Watch App.app */,
+				1BA002122F9C520900B87A44 /* MissionControl copy.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -339,6 +428,7 @@
 		679A8DA0AC938BDEA21A997A /* MissionControl */ = {
 			isa = PBXGroup;
 			children = (
+				368FE371F0B34B2F84F66559 /* Assets.xcassets */,
 				CB5DA73C418961FC7B25AE84 /* ContentView.swift */,
 				8F3A0C88E4BC3F8B5E50F748 /* MissionControlApp.swift */,
 				B94BFA24FB5CC3298603B329 /* Views */,
@@ -491,6 +581,7 @@
 				679A8DA0AC938BDEA21A997A /* MissionControl */,
 				F5A80FA93F27DAD3C2F6384D /* MissionControlWatch */,
 				8D19F0165CC4822263AC6569 /* Shared */,
+				1BA002132F9C520900B87A44 /* MissionControl copy-Info.plist */,
 				3B25E04B574036BA7A981D8A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -532,6 +623,7 @@
 		F5A80FA93F27DAD3C2F6384D /* MissionControlWatch */ = {
 			isa = PBXGroup;
 			children = (
+				D554D33245175307ABACFB57 /* Assets.xcassets */,
 				C188665B80A8B294010B439D /* MissionControlWatchApp.swift */,
 				5426972C78C5CF5BFA457C82 /* Views */,
 			);
@@ -549,11 +641,30 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		1BA001BA2F9C520900B87A44 /* MissionControl copy */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1BA0020F2F9C520900B87A44 /* Build configuration list for PBXNativeTarget "MissionControl copy" */;
+			buildPhases = (
+				1BA001BB2F9C520900B87A44 /* Sources */,
+				1BA0020D2F9C520900B87A44 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "MissionControl copy";
+			packageProductDependencies = (
+			);
+			productName = MissionControl;
+			productReference = 1BA002122F9C520900B87A44 /* MissionControl copy.app */;
+			productType = "com.apple.product-type.application";
+		};
 		81E129A51BDC5064CE5423DA /* MissionControl */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B4F6813337605AD03FB1AF40 /* Build configuration list for PBXNativeTarget "MissionControl" */;
 			buildPhases = (
 				BD78A88B458121846C74AECF /* Sources */,
+				81C094E6D415BBEABB33F335 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -571,6 +682,7 @@
 			buildConfigurationList = A2D2E80B22FE78C6F3E1EC53 /* Build configuration list for PBXNativeTarget "MissionControlWatch Watch App" */;
 			buildPhases = (
 				C6A48986546F7F8455C2167E /* Sources */,
+				BA4CFE21FC0D8F9D7615A6D9 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -608,11 +720,127 @@
 			targets = (
 				81E129A51BDC5064CE5423DA /* MissionControl */,
 				A86064FCA41763AFE10AE4BA /* MissionControlWatch Watch App */,
+				1BA001BA2F9C520900B87A44 /* MissionControl copy */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		1BA0020D2F9C520900B87A44 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1BA0020E2F9C520900B87A44 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		81C094E6D415BBEABB33F335 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				41FAE60D1F44616D3ED6FBF0 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BA4CFE21FC0D8F9D7615A6D9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				680DCFE830FF0EF86BFBA561 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		1BA001BB2F9C520900B87A44 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1BA001BC2F9C520900B87A44 /* APIClient.swift in Sources */,
+				1BA001BD2F9C520900B87A44 /* Agent.swift in Sources */,
+				1BA001BE2F9C520900B87A44 /* AgentAssignment.swift in Sources */,
+				1BA001BF2F9C520900B87A44 /* AgentAssignmentDetailView.swift in Sources */,
+				1BA001C02F9C520900B87A44 /* AgentAssignmentsCard.swift in Sources */,
+				1BA001C12F9C520900B87A44 /* AgentCard.swift in Sources */,
+				1BA001C22F9C520900B87A44 /* AgentChatView.swift in Sources */,
+				1BA001C32F9C520900B87A44 /* AgentDetailView.swift in Sources */,
+				1BA001C42F9C520900B87A44 /* AgentInvocation.swift in Sources */,
+				1BA001C52F9C520900B87A44 /* AgentsListView.swift in Sources */,
+				1BA001C62F9C520900B87A44 /* AgentsViewModel.swift in Sources */,
+				1BA001C72F9C520900B87A44 /* BoardData.swift in Sources */,
+				1BA001C82F9C520900B87A44 /* BriefsView.swift in Sources */,
+				1BA001C92F9C520900B87A44 /* CardStyle.swift in Sources */,
+				1BA001CA2F9C520900B87A44 /* ChatAgentPanel.swift in Sources */,
+				1BA001CB2F9C520900B87A44 /* ChatAgentPickerToolbarButton.swift in Sources */,
+				1BA001CC2F9C520900B87A44 /* ChatContextPanel.swift in Sources */,
+				1BA001CD2F9C520900B87A44 /* ChatContextPickerToolbarButton.swift in Sources */,
+				1BA001CE2F9C520900B87A44 /* ChatContextStore.swift in Sources */,
+				1BA001CF2F9C520900B87A44 /* ChatContextToolbarButton.swift in Sources */,
+				1BA001D02F9C520900B87A44 /* ChatConversationView.swift in Sources */,
+				1BA001D12F9C520900B87A44 /* ChatHistoryView.swift in Sources */,
+				1BA001D22F9C520900B87A44 /* ChatLockToolbarButton.swift in Sources */,
+				1BA001D32F9C520900B87A44 /* ChatSession.swift in Sources */,
+				1BA001D42F9C520900B87A44 /* ChatTranscriptView.swift in Sources */,
+				1BA001D52F9C520900B87A44 /* ChatView.swift in Sources */,
+				1BA001D62F9C520900B87A44 /* CompleteTaskSheet.swift in Sources */,
+				1BA001D72F9C520900B87A44 /* ContentView.swift in Sources */,
+				1BA001D82F9C520900B87A44 /* ContextChatHistorySection.swift in Sources */,
+				1BA001D92F9C520900B87A44 /* ContextGroupDetailView.swift in Sources */,
+				1BA001DA2F9C520900B87A44 /* ContextGroupsView.swift in Sources */,
+				1BA001DB2F9C520900B87A44 /* CreateAgentSheet.swift in Sources */,
+				1BA001DC2F9C520900B87A44 /* DayScheduleView.swift in Sources */,
+				1BA001DD2F9C520900B87A44 /* FaithView.swift in Sources */,
+				1BA001DE2F9C520900B87A44 /* FeatureListView.swift in Sources */,
+				1BA001DF2F9C520900B87A44 /* FloatingChatButton.swift in Sources */,
+				1BA001E02F9C520900B87A44 /* Goal.swift in Sources */,
+				1BA001E12F9C520900B87A44 /* GoalCard.swift in Sources */,
+				1BA001E22F9C520900B87A44 /* GoalDetailHeader.swift in Sources */,
+				1BA001E32F9C520900B87A44 /* GoalDetailView.swift in Sources */,
+				1BA001E42F9C520900B87A44 /* GoalDetailViewModel.swift in Sources */,
+				1BA001E52F9C520900B87A44 /* GoalEditSheet.swift in Sources */,
+				1BA001E62F9C520900B87A44 /* HealthView.swift in Sources */,
+				1BA001E72F9C520900B87A44 /* HomeView.swift in Sources */,
+				1BA001E82F9C520900B87A44 /* HomeViewModel.swift in Sources */,
+				1BA001E92F9C520900B87A44 /* Initiative.swift in Sources */,
+				1BA001EA2F9C520900B87A44 /* InitiativeCard.swift in Sources */,
+				1BA001EB2F9C520900B87A44 /* InitiativeDetailHeader.swift in Sources */,
+				1BA001EC2F9C520900B87A44 /* InitiativeDetailView.swift in Sources */,
+				1BA001ED2F9C520900B87A44 /* InitiativeDetailViewModel.swift in Sources */,
+				1BA001EE2F9C520900B87A44 /* InitiativeEditSheet.swift in Sources */,
+				1BA001EF2F9C520900B87A44 /* InvocationDetailView.swift in Sources */,
+				1BA001F02F9C520900B87A44 /* InvocationsListView.swift in Sources */,
+				1BA001F12F9C520900B87A44 /* MissionControlApp.swift in Sources */,
+				1BA001F22F9C520900B87A44 /* MonthScheduleView.swift in Sources */,
+				1BA001F32F9C520900B87A44 /* PlansView.swift in Sources */,
+				1BA001F42F9C520900B87A44 /* PlansViewModel.swift in Sources */,
+				1BA001F52F9C520900B87A44 /* ProfileView.swift in Sources */,
+				1BA001F62F9C520900B87A44 /* RequirementDetailView.swift in Sources */,
+				1BA001F72F9C520900B87A44 /* RequirementsCard.swift in Sources */,
+				1BA001F82F9C520900B87A44 /* ScheduleSlot.swift in Sources */,
+				1BA001F92F9C520900B87A44 /* ScheduleTaskSheet.swift in Sources */,
+				1BA001FA2F9C520900B87A44 /* ScheduleView.swift in Sources */,
+				1BA001FB2F9C520900B87A44 /* ScheduleViewModel.swift in Sources */,
+				1BA001FC2F9C520900B87A44 /* SectionCard.swift in Sources */,
+				1BA001FD2F9C520900B87A44 /* ServerHealth.swift in Sources */,
+				1BA001FE2F9C520900B87A44 /* SettingsView.swift in Sources */,
+				1BA001FF2F9C520900B87A44 /* SlotCard.swift in Sources */,
+				1BA002002F9C520900B87A44 /* SlotDetailView.swift in Sources */,
+				1BA002012F9C520900B87A44 /* SlotOutput.swift in Sources */,
+				1BA002022F9C520900B87A44 /* Task.swift in Sources */,
+				1BA002032F9C520900B87A44 /* TaskActionBar.swift in Sources */,
+				1BA002042F9C520900B87A44 /* TaskCard.swift in Sources */,
+				1BA002052F9C520900B87A44 /* TaskDetailHeader.swift in Sources */,
+				1BA002062F9C520900B87A44 /* TaskDetailView.swift in Sources */,
+				1BA002072F9C520900B87A44 /* TaskDetailViewModel.swift in Sources */,
+				1BA002082F9C520900B87A44 /* TaskEditSheet.swift in Sources */,
+				1BA002092F9C520900B87A44 /* TaskSection.swift in Sources */,
+				1BA0020A2F9C520900B87A44 /* TimeSlotView.swift in Sources */,
+				1BA0020B2F9C520900B87A44 /* View+ErrorAlert.swift in Sources */,
+				1BA0020C2F9C520900B87A44 /* YearScheduleView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BD78A88B458121846C74AECF /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -811,6 +1039,46 @@
 			};
 			name = Release;
 		};
+		1BA002102F9C520900B87A44 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 7R3SX9X3V2;
+				INFOPLIST_FILE = "MissionControl copy-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.focacci.MissionControl;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1BA002112F9C520900B87A44 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 7R3SX9X3V2;
+				INFOPLIST_FILE = "MissionControl copy-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.focacci.MissionControl;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		245B1274C4587CBE37564CDE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -925,6 +1193,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1BA0020F2F9C520900B87A44 /* Build configuration list for PBXNativeTarget "MissionControl copy" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1BA002102F9C520900B87A44 /* Debug */,
+				1BA002112F9C520900B87A44 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		A2D2E80B22FE78C6F3E1EC53 /* Build configuration list for PBXNativeTarget "MissionControlWatch Watch App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
