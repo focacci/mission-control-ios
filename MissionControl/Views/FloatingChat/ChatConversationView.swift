@@ -67,27 +67,18 @@ final class ChatConversationState {
     }
 }
 
-// MARK: - Chat Service
+// MARK: - Chat Request Builder
 
-@MainActor
-final class ChatService: ObservableObject {
-    @Published var isLoading = false
-
-    func send(
+/// Builds the JSON body shared by both the buffered `POST /api/chat` path and
+/// the streaming `POST /api/chat/stream` path. Pure function so both `ChatService`
+/// and `ChatStream` use a single source of truth for payload shaping.
+enum ChatRequestBuilder {
+    static func body(
         message: String,
         context: ChatContextKind,
         sessionId: String?,
         useDefaultAgent: Bool
-    ) async throws -> (reply: String, sessionId: String, invocationId: String?) {
-        isLoading = true
-        defer { isLoading = false }
-
-        let url = URL(string: APIClient.shared.baseURL + "/api/chat")!
-        var req = URLRequest(url: url)
-        req.httpMethod = "POST"
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        req.timeoutInterval = 120
-
+    ) -> [String: Any] {
         var body: [String: Any] = ["message": message]
         if let sid = sessionId { body["sessionId"] = sid }
         if !useDefaultAgent, let aid = context.agentId { body["agentId"] = aid }
@@ -119,7 +110,37 @@ final class ChatService: ObservableObject {
         default: break
         }
         body["context"] = ctx
+        return body
+    }
+}
 
+// MARK: - Chat Service
+
+@MainActor
+final class ChatService: ObservableObject {
+    @Published var isLoading = false
+
+    func send(
+        message: String,
+        context: ChatContextKind,
+        sessionId: String?,
+        useDefaultAgent: Bool
+    ) async throws -> (reply: String, sessionId: String, invocationId: String?) {
+        isLoading = true
+        defer { isLoading = false }
+
+        let url = URL(string: APIClient.shared.baseURL + "/api/chat")!
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.timeoutInterval = 120
+
+        let body = ChatRequestBuilder.body(
+            message: message,
+            context: context,
+            sessionId: sessionId,
+            useDefaultAgent: useDefaultAgent
+        )
         req.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         let (data, response) = try await URLSession.shared.data(for: req)
@@ -218,6 +239,45 @@ enum ChatTurnBuilder {
 
         out.segments = segments
         return out
+    }
+}
+
+// MARK: - Streaming reducer
+
+/// Folds one streaming `AgentEvent` into a `ChatTurn`. Pure mutation — no
+/// async, no side effects. Tool events are intentionally ignored in this
+/// step; the post-stream `enrichTurn(...)` call splices tool rows in via the
+/// existing buffered-path logic. Step 4 of the POC plan extends `.toolUse` /
+/// `.toolResult` to render inline.
+enum ChatTurnReducer {
+    static func apply(_ event: AgentEvent, to turn: inout ChatTurn) {
+        switch event {
+        case .sessionStarted(_, let invocationId, _):
+            turn.invocationId = invocationId
+
+        case .textDelta(let text):
+            if case .text(let id, let existing) = turn.segments.last {
+                turn.segments[turn.segments.count - 1] = .text(id: id, content: existing + text)
+            } else {
+                turn.segments.append(.text(id: UUID(), content: text))
+            }
+
+        case .messageComplete:
+            // No-op for step 2 — text segment already carries the latest content.
+            break
+
+        case .done(let tokensIn, let tokensOut):
+            turn.tokensIn = tokensIn
+            turn.tokensOut = tokensOut
+            turn.isSending = false
+
+        case .error(let message, _, let fatal):
+            turn.errorMessage = message
+            if fatal { turn.isSending = false }
+
+        case .toolUse, .toolResult, .ping:
+            break
+        }
     }
 }
 
@@ -502,6 +562,14 @@ struct ChatConversationView: View {
     }
 
     private func runTurn(turnId: UUID, text: String) async {
+        if FeatureFlags.useStreamingChat {
+            await runTurnStreaming(turnId: turnId, text: text)
+        } else {
+            await runTurnBuffered(turnId: turnId, text: text)
+        }
+    }
+
+    private func runTurnBuffered(turnId: UUID, text: String) async {
         do {
             let result = try await chatService.send(
                 message: text,
@@ -520,6 +588,37 @@ struct ChatConversationView: View {
                 }
             }
 
+            if let invId = result.invocationId {
+                await enrichTurn(turnId: turnId, invocationId: invId)
+            }
+        } catch {
+            updateTurn(turnId) { t in
+                t.isSending = false
+                t.errorMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func runTurnStreaming(turnId: UUID, text: String) async {
+        let stream = ChatStream()
+        do {
+            let result = try await stream.run(
+                message: text,
+                context: activeContext,
+                sessionId: state.sessionId,
+                useDefaultAgent: useDefaultAgent
+            ) { event in
+                updateTurn(turnId) { t in
+                    ChatTurnReducer.apply(event, to: &t)
+                }
+            }
+            if let sid = result.sessionId {
+                state.sessionId = sid
+            }
+            // Post-stream enrich splices tool rows + token counts via the
+            // existing buffered-path code. Step 4 extends the reducer to
+            // render tool events inline; until then this keeps the tool UI
+            // from regressing.
             if let invId = result.invocationId {
                 await enrichTurn(turnId: turnId, invocationId: invId)
             }

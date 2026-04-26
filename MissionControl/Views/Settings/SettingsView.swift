@@ -206,6 +206,8 @@ private struct ConnectionSection: View {
 // MARK: - Debug Section
 
 private struct DebugSection: View {
+    @State private var useStreamingChat: Bool = FeatureFlags.useStreamingChat
+
     var body: some View {
         VStack(spacing: 12) {
             NavigationLink {
@@ -234,6 +236,29 @@ private struct DebugSection: View {
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
             }
             .buttonStyle(.plain)
+
+            HStack(spacing: 12) {
+                Image(systemName: "dot.radiowaves.left.and.right")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 28)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Streaming chat (SSE)")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    Text("POST /api/chat/stream — falls back to buffered when off")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Toggle("", isOn: $useStreamingChat)
+                    .labelsHidden()
+                    .onChange(of: useStreamingChat) { _, newValue in
+                        FeatureFlags.setUseStreamingChat(newValue)
+                    }
+            }
+            .padding(14)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
         }
     }
 }

@@ -196,6 +196,12 @@
 		F8DAA4D3B3988DDBC7C8C1AE /* AgentsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EE6EAFE31516194D72340D3 /* AgentsViewModel.swift */; };
 		FA82A64C69166148A9E8FB52 /* TaskCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 141A038C317E0F538F22C78C /* TaskCard.swift */; };
 		FE5A1F4D940B78D99D81D209 /* PlansView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39FD78816B57E54EE47B5070 /* PlansView.swift */; };
+		1A2B3C4D5E6F701122334461 /* SSEParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70112233445A /* SSEParser.swift */; };
+		1A2B3C4D5E6F701122334462 /* SSEParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F70112233445A /* SSEParser.swift */; };
+		2A2B3C4D5E6F701122334471 /* ChatStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2B3C4D5E6F70112233445B /* ChatStream.swift */; };
+		2A2B3C4D5E6F701122334472 /* ChatStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A2B3C4D5E6F70112233445B /* ChatStream.swift */; };
+		3A2B3C4D5E6F701122334481 /* FeatureFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2B3C4D5E6F70112233445C /* FeatureFlags.swift */; };
+		3A2B3C4D5E6F701122334482 /* FeatureFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2B3C4D5E6F70112233445C /* FeatureFlags.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -290,6 +296,9 @@
 		FB79D70DEC5A71FF3E1D5D75 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		FBE0562A481826D772D4A85F /* InvocationsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvocationsListView.swift; sourceTree = "<group>"; };
 		FCF120F8D716BA3DD6CD6C08 /* TaskEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskEditSheet.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F70112233445A /* SSEParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSEParser.swift; sourceTree = "<group>"; };
+		2A2B3C4D5E6F70112233445B /* ChatStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStream.swift; sourceTree = "<group>"; };
+		3A2B3C4D5E6F70112233445C /* FeatureFlags.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlags.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -349,6 +358,9 @@
 			isa = PBXGroup;
 			children = (
 				6D2985EADFC1BB30478399B4 /* APIClient.swift */,
+				2A2B3C4D5E6F70112233445B /* ChatStream.swift */,
+				3A2B3C4D5E6F70112233445C /* FeatureFlags.swift */,
+				1A2B3C4D5E6F70112233445A /* SSEParser.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -838,6 +850,9 @@
 				1BA0020A2F9C520900B87A44 /* TimeSlotView.swift in Sources */,
 				1BA0020B2F9C520900B87A44 /* View+ErrorAlert.swift in Sources */,
 				1BA0020C2F9C520900B87A44 /* YearScheduleView.swift in Sources */,
+				1A2B3C4D5E6F701122334461 /* SSEParser.swift in Sources */,
+				2A2B3C4D5E6F701122334471 /* ChatStream.swift in Sources */,
+				3A2B3C4D5E6F701122334481 /* FeatureFlags.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -926,6 +941,9 @@
 				61DCA6DA7E6573BA8EDBE159 /* TimeSlotView.swift in Sources */,
 				B29CE6C04A6868099D65BD1F /* View+ErrorAlert.swift in Sources */,
 				C5AD02680D8AC6EA04D54A31 /* YearScheduleView.swift in Sources */,
+				1A2B3C4D5E6F701122334462 /* SSEParser.swift in Sources */,
+				2A2B3C4D5E6F701122334472 /* ChatStream.swift in Sources */,
+				3A2B3C4D5E6F701122334482 /* FeatureFlags.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

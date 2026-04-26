@@ -27,6 +27,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Intella connects to your local Mission Control API server.</string>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

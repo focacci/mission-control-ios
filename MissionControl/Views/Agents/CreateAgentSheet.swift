@@ -9,7 +9,6 @@ struct CreateAgentSheet: View {
     @State private var systemPrompt = ""
 
     private static let modelOptions: [String] = [
-        "github-copilot/claude-opus-4.6",
         "github-copilot/claude-sonnet-4",
         "github-copilot/gpt-5.4",
         "github-copilot/gpt-4o",
