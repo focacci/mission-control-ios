@@ -10,9 +10,9 @@ struct AgentAssignment: Codable, Identifiable, Hashable {
     let initiativeId: String?
     let taskId: String?
     var title: String
-    var instructions: String
+    var description: String?
     var agentId: String?
-    /// pending | in-progress | done | blocked
+    /// pending | scheduled | in-progress | done | blocked
     var status: String
     var completedAt: String?
     var sortOrder: Int
@@ -25,7 +25,8 @@ struct AgentAssignment: Codable, Identifiable, Hashable {
     var statusIcon: String {
         switch status {
         case "pending":     return "circle.dotted"
-        case "in-progress": return "circle.circle.fill"
+        case "scheduled":   return "clock.fill"
+        case "in-progress": return "circle.dotted.circle.fill"
         case "done":        return "checkmark.circle.fill"
         case "blocked":     return "pause.circle.fill"
         default:            return "circle.dotted"
@@ -35,9 +36,10 @@ struct AgentAssignment: Codable, Identifiable, Hashable {
     var statusColor: Color {
         switch status {
         case "pending":     return .secondary
+        case "scheduled":   return .orange
         case "in-progress": return .green
         case "done":        return .blue
-        case "blocked":     return .orange
+        case "blocked":     return .red
         default:            return .secondary
         }
     }
@@ -49,8 +51,9 @@ struct AgentAssignment: Codable, Identifiable, Hashable {
         }
     }
 
+    var isInProgress: Bool { status == "in-progress" }
     var isDone: Bool { status == "done" }
-    var canStart: Bool { status == "pending" || status == "blocked" }
+    var canStart: Bool { status == "pending" || status == "scheduled" || status == "blocked" }
     var canComplete: Bool { status == "in-progress" }
     var canBlock: Bool { status == "in-progress" }
     var canReopen: Bool { status == "done" || status == "blocked" }
@@ -64,4 +67,29 @@ struct AgentAssignmentSlotRef: Codable, Identifiable, Hashable {
     let time: String
     let datetime: String
     let dayOfWeek: String
+}
+
+/// Reusable status icon view that animates the in-progress glyph clockwise.
+struct AgentAssignmentStatusIcon: View {
+    let assignment: AgentAssignment
+    var font: Font = .body
+
+    @State private var rotation: Double = 0
+
+    var body: some View {
+        Image(systemName: assignment.statusIcon)
+            .font(font)
+            .foregroundStyle(assignment.statusColor)
+            .rotationEffect(.degrees(assignment.isInProgress ? rotation : 0))
+            .onAppear { startIfNeeded() }
+            .onChange(of: assignment.status) { _, _ in startIfNeeded() }
+    }
+
+    private func startIfNeeded() {
+        guard assignment.isInProgress else { return }
+        rotation = 0
+        withAnimation(.linear(duration: 2).repeatForever(autoreverses: false)) {
+            rotation = 360
+        }
+    }
 }

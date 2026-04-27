@@ -9,7 +9,7 @@ struct TaskDetailView: View {
     @State private var newRequirement = ""
     @State private var showingAddAssignment = false
     @State private var newAssignmentTitle = ""
-    @State private var newAssignmentInstructions = ""
+    @State private var newAssignmentDescription = ""
     @State private var showingDeleteConfirm = false
     @Environment(\.dismiss) private var dismiss
 
@@ -160,13 +160,14 @@ struct TaskDetailView: View {
         .sheet(isPresented: $showingAddAssignment) {
             AddAgentAssignmentSheet(
                 title: $newAssignmentTitle,
-                instructions: $newAssignmentInstructions
+                description: $newAssignmentDescription
             ) {
                 let title = newAssignmentTitle
-                let instructions = newAssignmentInstructions
+                let description = newAssignmentDescription
                 newAssignmentTitle = ""
-                newAssignmentInstructions = ""
-                Task { await viewModel.addAgentAssignment(title: title, instructions: instructions) }
+                newAssignmentDescription = ""
+                let normalized = description.isEmpty ? nil : description
+                Task { await viewModel.addAgentAssignment(title: title, description: normalized) }
             }
         }
     }
@@ -176,7 +177,7 @@ struct TaskDetailView: View {
 
 struct AddAgentAssignmentSheet: View {
     @Binding var title: String
-    @Binding var instructions: String
+    @Binding var description: String
     let onSave: () -> Void
     @Environment(\.dismiss) private var dismiss
 
@@ -187,12 +188,12 @@ struct AddAgentAssignmentSheet: View {
                     TextField("Short title", text: $title)
                 }
                 Section {
-                    TextEditor(text: $instructions)
+                    TextEditor(text: $description)
                         .frame(minHeight: 140)
                 } header: {
-                    Text("Instructions")
+                    Text("Description")
                 } footer: {
-                    Text("What the agent should do when the assignment's slot runs.")
+                    Text("Optional context for the agent when this assignment's slot runs.")
                 }
             }
             .navigationTitle("New Agent Assignment")

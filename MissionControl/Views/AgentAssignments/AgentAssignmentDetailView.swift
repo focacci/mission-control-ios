@@ -31,17 +31,18 @@ final class AgentAssignmentDetailViewModel {
     func updateTitle(_ new: String) async {
         let trimmed = new.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, trimmed != assignment.title else { return }
-        await patch(body: UpdateAgentAssignmentBody(title: trimmed, instructions: nil, agentId: nil, sortOrder: nil))
+        await patch(body: UpdateAgentAssignmentBody(title: trimmed, description: nil, agentId: nil, sortOrder: nil))
     }
 
-    func updateInstructions(_ new: String) async {
-        guard new != assignment.instructions else { return }
-        await patch(body: UpdateAgentAssignmentBody(title: nil, instructions: new, agentId: nil, sortOrder: nil))
+    func updateDescription(_ new: String) async {
+        let normalized = new.isEmpty ? nil : new
+        guard normalized != assignment.description else { return }
+        await patch(body: UpdateAgentAssignmentBody(title: nil, description: normalized, agentId: nil, sortOrder: nil))
     }
 
     func setAgent(_ agentId: String?) async {
         guard agentId != assignment.agentId else { return }
-        await patch(body: UpdateAgentAssignmentBody(title: nil, instructions: nil, agentId: agentId, sortOrder: nil))
+        await patch(body: UpdateAgentAssignmentBody(title: nil, description: nil, agentId: agentId, sortOrder: nil))
     }
 
     func start() async {
@@ -88,17 +89,17 @@ final class AgentAssignmentDetailViewModel {
 struct AgentAssignmentDetailView: View {
     @State var viewModel: AgentAssignmentDetailViewModel
     @State private var editedTitle: String
-    @State private var editedInstructions: String
+    @State private var editedDescription: String
     @FocusState private var field: Field?
 
-    enum Field { case title, instructions }
+    enum Field { case title, description }
 
     let onChange: ((AgentAssignment) -> Void)?
 
     init(assignment: AgentAssignment, onChange: ((AgentAssignment) -> Void)? = nil) {
         _viewModel = State(initialValue: AgentAssignmentDetailViewModel(assignment: assignment))
         _editedTitle = State(initialValue: assignment.title)
-        _editedInstructions = State(initialValue: assignment.instructions)
+        _editedDescription = State(initialValue: assignment.description ?? "")
         self.onChange = onChange
     }
 
@@ -120,13 +121,13 @@ struct AgentAssignmentDetailView: View {
             }
 
             Section {
-                TextEditor(text: $editedInstructions)
+                TextEditor(text: $editedDescription)
                     .frame(minHeight: 140)
-                    .focused($field, equals: .instructions)
+                    .focused($field, equals: .description)
             } header: {
-                Text("Instructions")
+                Text("Description")
             } footer: {
-                Text("What you want the agent to do when this assignment's slot runs.")
+                Text("Optional context for the agent when this assignment's slot runs.")
             }
 
             Section("Agent") {
@@ -150,8 +151,7 @@ struct AgentAssignmentDetailView: View {
             Section("Status") {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(spacing: 10) {
-                        Image(systemName: viewModel.assignment.statusIcon)
-                            .foregroundStyle(viewModel.assignment.statusColor)
+                        AgentAssignmentStatusIcon(assignment: viewModel.assignment)
                         Text(viewModel.assignment.statusLabel)
                             .foregroundStyle(.primary)
                         Spacer()
@@ -244,9 +244,9 @@ struct AgentAssignmentDetailView: View {
                     await viewModel.updateTitle(editedTitle)
                     onChange?(viewModel.assignment)
                 }
-            } else if old == .instructions {
+            } else if old == .description {
                 Task {
-                    await viewModel.updateInstructions(editedInstructions)
+                    await viewModel.updateDescription(editedDescription)
                     onChange?(viewModel.assignment)
                 }
             }

@@ -233,14 +233,13 @@ struct ScheduleTaskSheet: View {
                                     selectedAssignment = selectedAssignment?.id == aa.id ? nil : aa
                                 } label: {
                                     HStack(spacing: 10) {
-                                        Image(systemName: aa.statusIcon)
-                                            .foregroundStyle(aa.statusColor)
+                                        AgentAssignmentStatusIcon(assignment: aa)
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(aa.title)
                                                 .font(.subheadline)
                                                 .foregroundStyle(selectedAssignment?.id == aa.id ? Color.accentColor : .primary)
-                                            if !aa.instructions.isEmpty {
-                                                Text(aa.instructions)
+                                            if let desc = aa.description, !desc.isEmpty {
+                                                Text(desc)
                                                     .font(.caption)
                                                     .foregroundStyle(.secondary)
                                                     .lineLimit(1)

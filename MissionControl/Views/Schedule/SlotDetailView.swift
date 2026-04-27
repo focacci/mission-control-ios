@@ -32,8 +32,7 @@ struct SlotDetailView: View {
                 Section("Assigned Agent Assignment") {
                     NavigationLink(value: aa) {
                         HStack(spacing: 10) {
-                            Image(systemName: aa.statusIcon)
-                                .foregroundStyle(aa.statusColor)
+                            AgentAssignmentStatusIcon(assignment: aa)
                             Text(aa.title)
                         }
                     }

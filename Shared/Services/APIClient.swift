@@ -533,13 +533,13 @@ struct AssignAgentAssignmentBody: Encodable {
 
 struct CreateAgentAssignmentBody: Encodable {
     let title: String
-    let instructions: String
+    let description: String?
     let agentId: String?
 }
 
 struct UpdateAgentAssignmentBody: Encodable {
     let title: String?
-    let instructions: String?
+    let description: String?
     let agentId: String?
     let sortOrder: Int?
 }

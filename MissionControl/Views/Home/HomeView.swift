@@ -270,8 +270,8 @@ private struct NextUpRow: View {
     let onDone: (ScheduleSlot) -> Void
 
     private var breadcrumb: String? {
-        guard let aa = slot.agentAssignment, !aa.instructions.isEmpty else { return nil }
-        return aa.instructions
+        guard let desc = slot.agentAssignment?.description, !desc.isEmpty else { return nil }
+        return desc
     }
 
     var body: some View {

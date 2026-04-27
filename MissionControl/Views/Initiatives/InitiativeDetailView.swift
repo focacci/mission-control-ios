@@ -7,7 +7,7 @@ struct InitiativeDetailView: View {
     @State private var showingAddTask = false
     @State private var showingAddAssignment = false
     @State private var newAssignmentTitle = ""
-    @State private var newAssignmentInstructions = ""
+    @State private var newAssignmentDescription = ""
     @State private var showingDeleteConfirm = false
     @Environment(\.dismiss) private var dismiss
 
@@ -121,13 +121,14 @@ struct InitiativeDetailView: View {
                 .sheet(isPresented: $showingAddAssignment) {
                     AddAgentAssignmentSheet(
                         title: $newAssignmentTitle,
-                        instructions: $newAssignmentInstructions
+                        description: $newAssignmentDescription
                     ) {
                         let title = newAssignmentTitle
-                        let instructions = newAssignmentInstructions
+                        let description = newAssignmentDescription
                         newAssignmentTitle = ""
-                        newAssignmentInstructions = ""
-                        Task { await viewModel.addAgentAssignment(title: title, instructions: instructions) }
+                        newAssignmentDescription = ""
+                        let normalized = description.isEmpty ? nil : description
+                        Task { await viewModel.addAgentAssignment(title: title, description: normalized) }
                     }
                 }
                 .alert("Delete Initiative?", isPresented: $showingDeleteConfirm) {

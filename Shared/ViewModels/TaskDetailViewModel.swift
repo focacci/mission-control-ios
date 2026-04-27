@@ -106,12 +106,12 @@ final class TaskDetailViewModel {
 
     // MARK: - Agent Assignments
 
-    func addAgentAssignment(title: String, instructions: String) async {
+    func addAgentAssignment(title: String, description: String?) async {
         guard let taskId = task?.id else { return }
         do {
             let aa = try await APIClient.shared.createAgentAssignment(
                 taskId: taskId,
-                body: CreateAgentAssignmentBody(title: title, instructions: instructions, agentId: nil)
+                body: CreateAgentAssignmentBody(title: title, description: description, agentId: nil)
             )
             if let t = task {
                 var aas = t.agentAssignments ?? []

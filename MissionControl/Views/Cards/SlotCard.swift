@@ -16,10 +16,8 @@ struct SlotCard: View {
     }
 
     private var breadcrumb: String? {
-        // Breadcrumb context (goal › initiative) isn't carried on the assignment
-        // payload yet; show instructions preview instead when available.
-        guard let aa = slot.agentAssignment, !aa.instructions.isEmpty else { return nil }
-        return aa.instructions
+        guard let desc = slot.agentAssignment?.description, !desc.isEmpty else { return nil }
+        return desc
     }
 
     var body: some View {

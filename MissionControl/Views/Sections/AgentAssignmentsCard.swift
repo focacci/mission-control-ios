@@ -48,9 +48,7 @@ private struct AgentAssignmentRow: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: assignment.statusIcon)
-                .foregroundStyle(assignment.statusColor)
-                .font(.title3)
+            AgentAssignmentStatusIcon(assignment: assignment, font: .title3)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(assignment.title)

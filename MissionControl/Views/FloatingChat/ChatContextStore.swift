@@ -378,7 +378,7 @@ final class ChatContextStore {
         case .requirement(_, let title):
             return "You're on the **\(title)** requirement. I can refine its wording, draft tests that would prove it's satisfied, or help you check it off once it is."
         case .agentAssignment(_, let title):
-            return "You're looking at the **\(title)** agent assignment. I can tighten the instructions, scope what the agent should produce, or suggest where to slot it on the calendar."
+            return "You're looking at the **\(title)** agent assignment. I can tighten the description, scope what the agent should produce, or suggest where to slot it on the calendar."
         case .timeSlot(_, let time, let day):
             return "You're focused on the **\(day) \(time)** time slot. I can suggest a task to assign, attach contexts the agent should consult, or draft an extra prompt for this run."
         case .schedule(let d, let m):

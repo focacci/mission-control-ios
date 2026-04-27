@@ -102,13 +102,12 @@ struct TimeSlotView: View {
             if let aa = slot.agentAssignment {
                 NavigationLink(value: aa) {
                     HStack(spacing: 10) {
-                        Image(systemName: aa.statusIcon)
-                            .foregroundStyle(aa.statusColor)
+                        AgentAssignmentStatusIcon(assignment: aa)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(aa.title)
                                 .font(.body)
-                            if !aa.instructions.isEmpty {
-                                Text(aa.instructions)
+                            if let desc = aa.description, !desc.isEmpty {
+                                Text(desc)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .lineLimit(2)

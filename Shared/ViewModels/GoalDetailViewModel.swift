@@ -79,13 +79,13 @@ final class GoalDetailViewModel {
 
     // MARK: - Agent Assignments
 
-    func addAgentAssignment(title: String, instructions: String) async {
+    func addAgentAssignment(title: String, description: String?) async {
         guard let goalId = goal?.id else { return }
         isSaving = true
         do {
             let aa = try await APIClient.shared.createAgentAssignment(
                 goalId: goalId,
-                body: CreateAgentAssignmentBody(title: title, instructions: instructions, agentId: nil)
+                body: CreateAgentAssignmentBody(title: title, description: description, agentId: nil)
             )
             if let g = goal {
                 var aas = g.agentAssignments ?? []
