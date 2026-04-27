@@ -78,7 +78,7 @@ struct TaskDetailView: View {
                     .padding()
                     .containerRelativeFrame(.horizontal)
                 }
-                .refreshable { await viewModel.load(id: taskId) }
+                .conditionalRefreshable { await viewModel.load(id: taskId) }
                 .chatContextToolbar()
                 .navigationDestination(for: Requirement.self) { req in
                     RequirementDetailView(

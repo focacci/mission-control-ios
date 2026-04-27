@@ -81,7 +81,7 @@ struct GoalDetailView: View {
                     .padding()
                     .containerRelativeFrame(.horizontal)
                 }
-                .refreshable { await viewModel.load(id: goalId) }
+                .conditionalRefreshable { await viewModel.load(id: goalId) }
                 .chatContextToolbar()
                 .navigationDestination(for: AgentAssignment.self) { aa in
                     AgentAssignmentDetailView(assignment: aa) { _ in

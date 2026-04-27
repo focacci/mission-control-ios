@@ -109,7 +109,7 @@ struct InitiativeDetailView: View {
                     .padding()
                     .containerRelativeFrame(.horizontal)
                 }
-                .refreshable { await viewModel.load(id: initiativeId) }
+                .conditionalRefreshable { await viewModel.load(id: initiativeId) }
                 .chatContextToolbar()
                 .navigationDestination(for: AgentAssignment.self) { aa in
                     AgentAssignmentDetailView(assignment: aa) { _ in

@@ -442,25 +442,72 @@ final class ChatContextStore {
 
 // MARK: - View Modifier
 
+private struct ChatContextFrozenKey: EnvironmentKey {
+    static let defaultValue: Bool = false
+}
+
+private struct PullToRefreshDisabledKey: EnvironmentKey {
+    static let defaultValue: Bool = false
+}
+
+extension EnvironmentValues {
+    /// When true, `chatContext(_:)` modifiers within this subtree will not
+    /// update the surrounding `ChatContextStore.pageContext`. Used by modal
+    /// sheets that surface a related view without taking over chat grounding.
+    var chatContextFrozen: Bool {
+        get { self[ChatContextFrozenKey.self] }
+        set { self[ChatContextFrozenKey.self] = newValue }
+    }
+
+    /// When true, detail views should skip applying `.refreshable` so that a
+    /// downward swipe at the top dismisses the enclosing sheet instead of
+    /// triggering a reload.
+    var pullToRefreshDisabled: Bool {
+        get { self[PullToRefreshDisabledKey.self] }
+        set { self[PullToRefreshDisabledKey.self] = newValue }
+    }
+}
+
 extension View {
     /// Binds the current view to a chat context. Safe to pass `nil` while data
     /// is loading — the context is applied on appear and whenever `kind` changes.
     func chatContext(_ kind: ChatContextKind?) -> some View {
         modifier(ChatContextModifier(kind: kind))
     }
+
+    /// Applies `.refreshable` unless the surrounding environment has disabled
+    /// pull-to-refresh (e.g. inside a sheet that should dismiss on downward
+    /// swipe instead of reloading).
+    func conditionalRefreshable(_ action: @escaping @Sendable () async -> Void) -> some View {
+        modifier(ConditionalRefreshableModifier(action: action))
+    }
+}
+
+private struct ConditionalRefreshableModifier: ViewModifier {
+    @Environment(\.pullToRefreshDisabled) private var disabled
+    let action: @Sendable () async -> Void
+
+    func body(content: Content) -> some View {
+        if disabled {
+            content
+        } else {
+            content.refreshable { await action() }
+        }
+    }
 }
 
 private struct ChatContextModifier: ViewModifier {
     @Environment(ChatContextStore.self) private var store
+    @Environment(\.chatContextFrozen) private var frozen
     let kind: ChatContextKind?
 
     func body(content: Content) -> some View {
         content
             .onAppear {
-                if let kind { store.pageContext = kind }
+                if !frozen, let kind { store.pageContext = kind }
             }
             .onChange(of: kind) { _, newKind in
-                if let newKind { store.pageContext = newKind }
+                if !frozen, let newKind { store.pageContext = newKind }
             }
     }
 }

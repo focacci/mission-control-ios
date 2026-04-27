@@ -57,6 +57,8 @@ struct ParentReferenceRow<Destination: View>: View {
     let name: String
     @ViewBuilder let destination: () -> Destination
 
+    @State private var showingSheet = false
+
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
@@ -64,8 +66,8 @@ struct ParentReferenceRow<Destination: View>: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 20)
 
-            NavigationLink {
-                destination()
+            Button {
+                showingSheet = true
             } label: {
                 Text("\(emoji) \(name)")
                     .font(.subheadline)
@@ -79,6 +81,16 @@ struct ParentReferenceRow<Destination: View>: View {
             .buttonStyle(.plain)
 
             Spacer(minLength: 0)
+        }
+        .sheet(isPresented: $showingSheet) {
+            NavigationStack {
+                destination()
+                    .environment(\.chatContextFrozen, true)
+                    .environment(\.pullToRefreshDisabled, true)
+                    .toolbar(.hidden, for: .navigationBar)
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
         }
     }
 }
