@@ -444,6 +444,10 @@ final class APIClient {
     func invocation(id: String) async throws -> InvocationDetail {
         try await fetch("/api/invocations/\(id)")
     }
+
+    func cancelInvocation(id: String) async throws {
+        try await sendNoBody("/api/invocations/\(id)/cancel", method: "POST")
+    }
 }
 
 // MARK: - Request Bodies

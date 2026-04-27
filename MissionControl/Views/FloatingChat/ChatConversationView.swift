@@ -294,6 +294,7 @@ struct ChatConversationView: View {
     @State private var showingHistory = false
     @State private var isStartingNewChat = false
     @State private var historyError: String?
+    @State private var activeTurnTask: Task<Void, Never>? = nil
     @FocusState private var isInputFocused: Bool
 
     /// When `true`, requests route to the workspace's default agent regardless
@@ -520,15 +521,18 @@ struct ChatConversationView: View {
                 .focused($isInputFocused)
                 .submitLabel(.send)
 
-            Button(action: sendMessage) {
-                Image(systemName: "arrow.up")
+            Button {
+                if isAwaitingResponse { stopMessage() } else { sendMessage() }
+            } label: {
+                Image(systemName: isAwaitingResponse ? "stop.fill" : "arrow.up")
                     .font(.system(size: 17, weight: .bold))
-                    .foregroundStyle(canSend ? Color.white : Color.secondary)
+                    .foregroundStyle(buttonIsActive ? Color.white : Color.secondary)
                     .frame(width: 44, height: 44)
-                    .modifier(LiquidGlassSendButtonBackground(isEnabled: canSend))
+                    .modifier(LiquidGlassSendButtonBackground(isEnabled: buttonIsActive))
             }
-            .disabled(!canSend)
+            .disabled(!buttonIsActive)
             .animation(.easeInOut(duration: 0.15), value: state.inputText.isEmpty)
+            .animation(.easeInOut(duration: 0.15), value: isAwaitingResponse)
         }
         .padding(.horizontal, 16)
         .padding(.top, 12)
@@ -543,9 +547,24 @@ struct ChatConversationView: View {
         )
     }
 
+    private var activeSendingTurn: ChatTurn? {
+        state.turns.last(where: { $0.isSending })
+    }
+
+    private var isAwaitingResponse: Bool {
+        activeSendingTurn != nil
+    }
+
     private var canSend: Bool {
         !state.inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && !chatService.isLoading
+            && !isAwaitingResponse
+    }
+
+    /// The button is interactable (and renders in its filled style) whenever
+    /// it has something to do — either send a fresh message or stop the
+    /// in-flight turn.
+    private var buttonIsActive: Bool {
+        canSend || isAwaitingResponse
     }
 
     // MARK: - Send flow
@@ -558,7 +577,34 @@ struct ChatConversationView: View {
         let turn = ChatTurn.user(text)
         state.turns.append(turn)
 
-        Task { await runTurn(turnId: turn.id, text: text) }
+        activeTurnTask = Task {
+            await runTurn(turnId: turn.id, text: text)
+            activeTurnTask = nil
+        }
+    }
+
+    /// Stop the in-flight turn. Cancels the local Task (which aborts the
+    /// URLSession request for both the buffered and streaming paths) and,
+    /// if we already know the invocation id, asks the server to abort the
+    /// gateway run so it doesn't keep burning tokens after we've moved on.
+    private func stopMessage() {
+        guard let turn = activeSendingTurn else { return }
+        let turnId = turn.id
+        let invocationId = turn.invocationId
+
+        activeTurnTask?.cancel()
+        activeTurnTask = nil
+
+        if let invocationId {
+            Task { try? await APIClient.shared.cancelInvocation(id: invocationId) }
+        }
+
+        updateTurn(turnId) { t in
+            t.isSending = false
+            if t.errorMessage == nil {
+                t.errorMessage = "Cancelled"
+            }
+        }
     }
 
     private func runTurn(turnId: UUID, text: String) async {
