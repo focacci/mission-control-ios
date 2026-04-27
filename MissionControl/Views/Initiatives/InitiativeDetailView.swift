@@ -5,6 +5,9 @@ struct InitiativeDetailView: View {
     @State private var viewModel = InitiativeDetailViewModel()
     @State private var showingEdit = false
     @State private var showingAddTask = false
+    @State private var showingAddAssignment = false
+    @State private var newAssignmentTitle = ""
+    @State private var newAssignmentInstructions = ""
     @State private var blockingTaskId: String?
     @State private var blockReason = ""
     @State private var showingBlockSheet = false
@@ -90,6 +93,13 @@ struct InitiativeDetailView: View {
                             }
                         }
 
+                        AgentAssignmentsCard(
+                            assignments: initiative.agentAssignments ?? [],
+                            isSaving: viewModel.isSaving,
+                            onDelete: { id in Task { await viewModel.deleteAgentAssignment(id: id) } },
+                            onAdd: { showingAddAssignment = true }
+                        )
+
                         // Past chats scoped to this initiative
                         ContextChatHistorySection(
                             contextType: "initiative",
@@ -101,6 +111,11 @@ struct InitiativeDetailView: View {
                 }
                 .refreshable { await viewModel.load(id: initiativeId) }
                 .chatContextToolbar()
+                .navigationDestination(for: AgentAssignment.self) { aa in
+                    AgentAssignmentDetailView(assignment: aa) { _ in
+                        Task { await viewModel.load(id: initiativeId) }
+                    }
+                }
                 .toolbar {
                     ToolbarItemGroup(placement: .primaryAction) {
                         Menu {
@@ -127,6 +142,18 @@ struct InitiativeDetailView: View {
                 .sheet(isPresented: $showingAddTask) {
                     AddTaskSheet { name, objective, emoji in
                         Task { await viewModel.createTask(name: name, objective: objective, emoji: emoji) }
+                    }
+                }
+                .sheet(isPresented: $showingAddAssignment) {
+                    AddAgentAssignmentSheet(
+                        title: $newAssignmentTitle,
+                        instructions: $newAssignmentInstructions
+                    ) {
+                        let title = newAssignmentTitle
+                        let instructions = newAssignmentInstructions
+                        newAssignmentTitle = ""
+                        newAssignmentInstructions = ""
+                        Task { await viewModel.addAgentAssignment(title: title, instructions: instructions) }
                     }
                 }
                 .sheet(isPresented: $showingBlockSheet) {

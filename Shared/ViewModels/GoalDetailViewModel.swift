@@ -24,11 +24,13 @@ final class GoalDetailViewModel {
         do {
             let updated = try await APIClient.shared.updateGoal(id: id, body: body)
             let currentInitiatives = goal?.initiatives
+            let currentAAs = goal?.agentAssignments
             goal = Goal(
                 id: updated.id, emoji: updated.emoji, name: updated.name,
                 focus: updated.focus,
                 focusIcon: updated.focusIcon, timeline: updated.timeline,
-                story: updated.story, initiatives: currentInitiatives
+                story: updated.story, initiatives: currentInitiatives,
+                agentAssignments: currentAAs
             )
         } catch {
             self.error = error.localizedDescription
@@ -51,11 +53,7 @@ final class GoalDetailViewModel {
             try await APIClient.shared.deleteInitiative(id: id)
             if let g = goal {
                 let remaining = (g.initiatives ?? []).filter { $0.id != id }
-                goal = Goal(
-                    id: g.id, emoji: g.emoji, name: g.name,
-                    focus: g.focus, focusIcon: g.focusIcon, timeline: g.timeline,
-                    story: g.story, initiatives: remaining
-                )
+                goal = rebuildGoal(g, initiatives: remaining)
             }
         } catch {
             self.error = error.localizedDescription
@@ -72,14 +70,57 @@ final class GoalDetailViewModel {
             if let g = goal {
                 var existing = g.initiatives ?? []
                 existing.append(ini)
-                goal = Goal(
-                    id: g.id, emoji: g.emoji, name: g.name,
-                    focus: g.focus, focusIcon: g.focusIcon, timeline: g.timeline,
-                    story: g.story, initiatives: existing
-                )
+                goal = rebuildGoal(g, initiatives: existing)
             }
         } catch {
             self.error = error.localizedDescription
         }
+    }
+
+    // MARK: - Agent Assignments
+
+    func addAgentAssignment(title: String, instructions: String) async {
+        guard let goalId = goal?.id else { return }
+        isSaving = true
+        do {
+            let aa = try await APIClient.shared.createAgentAssignment(
+                goalId: goalId,
+                body: CreateAgentAssignmentBody(title: title, instructions: instructions, agentId: nil)
+            )
+            if let g = goal {
+                var aas = g.agentAssignments ?? []
+                aas.append(aa)
+                goal = rebuildGoal(g, agentAssignments: aas)
+            }
+        } catch {
+            self.error = error.localizedDescription
+        }
+        isSaving = false
+    }
+
+    func deleteAgentAssignment(id: String) async {
+        do {
+            try await APIClient.shared.deleteAgentAssignment(id: id)
+            if let g = goal {
+                let remaining = (g.agentAssignments ?? []).filter { $0.id != id }
+                goal = rebuildGoal(g, agentAssignments: remaining)
+            }
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    private func rebuildGoal(
+        _ g: Goal,
+        initiatives: [Initiative]? = nil,
+        agentAssignments: [AgentAssignment]? = nil
+    ) -> Goal {
+        Goal(
+            id: g.id, emoji: g.emoji, name: g.name,
+            focus: g.focus, focusIcon: g.focusIcon, timeline: g.timeline,
+            story: g.story,
+            initiatives: initiatives ?? g.initiatives,
+            agentAssignments: agentAssignments ?? g.agentAssignments
+        )
     }
 }

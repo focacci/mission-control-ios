@@ -9,6 +9,7 @@ struct Goal: Codable, Identifiable, Hashable {
     let timeline: String?
     let story: String?
     let initiatives: [Initiative]?
+    let agentAssignments: [AgentAssignment]?
 
     var focusColor: Color {
         switch focus {

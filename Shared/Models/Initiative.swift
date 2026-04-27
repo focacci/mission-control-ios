@@ -9,6 +9,7 @@ struct Initiative: Codable, Identifiable, Hashable {
     let mission: String?
     let goal: GoalRef?
     let tasks: [MCTask]?
+    let agentAssignments: [AgentAssignment]?
 
     var statusColor: Color {
         switch status {

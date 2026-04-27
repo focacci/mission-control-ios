@@ -5,6 +5,9 @@ struct GoalDetailView: View {
     @State private var viewModel = GoalDetailViewModel()
     @State private var showingEdit = false
     @State private var showingAddInitiative = false
+    @State private var showingAddAssignment = false
+    @State private var newAssignmentTitle = ""
+    @State private var newAssignmentInstructions = ""
     @State private var showingDeleteConfirm = false
     @Environment(\.dismiss) private var dismiss
 
@@ -62,6 +65,13 @@ struct GoalDetailView: View {
                             }
                         }
 
+                        AgentAssignmentsCard(
+                            assignments: goal.agentAssignments ?? [],
+                            isSaving: viewModel.isSaving,
+                            onDelete: { id in Task { await viewModel.deleteAgentAssignment(id: id) } },
+                            onAdd: { showingAddAssignment = true }
+                        )
+
                         // Past chats scoped to this goal
                         ContextChatHistorySection(
                             contextType: "goal",
@@ -73,6 +83,11 @@ struct GoalDetailView: View {
                 }
                 .refreshable { await viewModel.load(id: goalId) }
                 .chatContextToolbar()
+                .navigationDestination(for: AgentAssignment.self) { aa in
+                    AgentAssignmentDetailView(assignment: aa) { _ in
+                        Task { await viewModel.load(id: goalId) }
+                    }
+                }
                 .toolbar {
                     ToolbarItemGroup(placement: .primaryAction) {
                         Menu {
@@ -99,6 +114,18 @@ struct GoalDetailView: View {
                 .sheet(isPresented: $showingAddInitiative) {
                     AddInitiativeSheet { emoji, name, mission in
                         Task { await viewModel.createInitiative(emoji: emoji, name: name, mission: mission) }
+                    }
+                }
+                .sheet(isPresented: $showingAddAssignment) {
+                    AddAgentAssignmentSheet(
+                        title: $newAssignmentTitle,
+                        instructions: $newAssignmentInstructions
+                    ) {
+                        let title = newAssignmentTitle
+                        let instructions = newAssignmentInstructions
+                        newAssignmentTitle = ""
+                        newAssignmentInstructions = ""
+                        Task { await viewModel.addAgentAssignment(title: title, instructions: instructions) }
                     }
                 }
                 .alert("Delete Goal?", isPresented: $showingDeleteConfirm) {

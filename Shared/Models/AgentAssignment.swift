@@ -1,11 +1,14 @@
 import SwiftUI
 
-/// Discrete unit of work an agent can do on the user's behalf to help them
-/// complete a Task. Agent Assignments are what get scheduled into time slots;
-/// the parent Task itself is human-driven and is not scheduled directly.
+/// Discrete unit of work an agent can do on the user's behalf. Each assignment
+/// is parented to **exactly one** of a Goal, Initiative, or Task — the other
+/// two id columns are `nil`. Agent Assignments are what get scheduled into
+/// time slots; the parent itself is never scheduled directly.
 struct AgentAssignment: Codable, Identifiable, Hashable {
     let id: String
-    let taskId: String
+    let goalId: String?
+    let initiativeId: String?
+    let taskId: String?
     var title: String
     var instructions: String
     var agentId: String?

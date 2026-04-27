@@ -7,6 +7,7 @@ final class InitiativeDetailViewModel {
     var tasks: [MCTask] = []
     var isLoading = false
     var error: String?
+    var isSaving = false
 
     var inProgressTasks: [MCTask] { tasks.filter { $0.status == "in-progress" } }
     var activeTasks: [MCTask] { tasks.filter { $0.status == "pending" || $0.status == "assigned" } }
@@ -93,9 +94,54 @@ final class InitiativeDetailViewModel {
         }
     }
 
+    // MARK: - Agent Assignments
+
+    func addAgentAssignment(title: String, instructions: String) async {
+        guard let initiativeId = initiative?.id else { return }
+        isSaving = true
+        do {
+            let aa = try await APIClient.shared.createAgentAssignment(
+                initiativeId: initiativeId,
+                body: CreateAgentAssignmentBody(title: title, instructions: instructions, agentId: nil)
+            )
+            if let i = initiative {
+                var aas = i.agentAssignments ?? []
+                aas.append(aa)
+                initiative = rebuildInitiative(i, agentAssignments: aas)
+            }
+        } catch {
+            self.error = error.localizedDescription
+        }
+        isSaving = false
+    }
+
+    func deleteAgentAssignment(id: String) async {
+        do {
+            try await APIClient.shared.deleteAgentAssignment(id: id)
+            if let i = initiative {
+                let remaining = (i.agentAssignments ?? []).filter { $0.id != id }
+                initiative = rebuildInitiative(i, agentAssignments: remaining)
+            }
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
     private func replaceTask(_ updated: MCTask) {
         if let idx = tasks.firstIndex(where: { $0.id == updated.id }) {
             tasks[idx] = updated
         }
+    }
+
+    private func rebuildInitiative(
+        _ i: Initiative,
+        agentAssignments: [AgentAssignment]? = nil
+    ) -> Initiative {
+        Initiative(
+            id: i.id, emoji: i.emoji, name: i.name,
+            goalId: i.goalId, status: i.status, mission: i.mission,
+            goal: i.goal, tasks: i.tasks,
+            agentAssignments: agentAssignments ?? i.agentAssignments
+        )
     }
 }

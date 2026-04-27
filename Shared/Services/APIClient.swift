@@ -270,12 +270,28 @@ final class APIClient {
         try await fetch("/api/tasks/\(taskId)/agent-assignments")
     }
 
+    func agentAssignments(goalId: String) async throws -> [AgentAssignment] {
+        try await fetch("/api/goals/\(goalId)/agent-assignments")
+    }
+
+    func agentAssignments(initiativeId: String) async throws -> [AgentAssignment] {
+        try await fetch("/api/initiatives/\(initiativeId)/agent-assignments")
+    }
+
     func agentAssignment(id: String) async throws -> AgentAssignment {
         try await fetch("/api/agent-assignments/\(id)")
     }
 
     func createAgentAssignment(taskId: String, body: CreateAgentAssignmentBody) async throws -> AgentAssignment {
         try await send("/api/tasks/\(taskId)/agent-assignments", method: "POST", body: body)
+    }
+
+    func createAgentAssignment(goalId: String, body: CreateAgentAssignmentBody) async throws -> AgentAssignment {
+        try await send("/api/goals/\(goalId)/agent-assignments", method: "POST", body: body)
+    }
+
+    func createAgentAssignment(initiativeId: String, body: CreateAgentAssignmentBody) async throws -> AgentAssignment {
+        try await send("/api/initiatives/\(initiativeId)/agent-assignments", method: "POST", body: body)
     }
 
     func updateAgentAssignment(id: String, body: UpdateAgentAssignmentBody) async throws -> AgentAssignment {
