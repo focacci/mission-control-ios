@@ -86,5 +86,8 @@ struct SlotDetailView: View {
         .navigationDestination(for: AgentAssignment.self) { aa in
             AgentAssignmentDetailView(assignment: aa)
         }
+        .navigationDestination(for: AgentOutput.self) { output in
+            AgentOutputDetailView(output: output)
+        }
     }
 }

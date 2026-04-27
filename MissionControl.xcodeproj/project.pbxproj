@@ -25,6 +25,13 @@
 		1BA001C22F9C520900B87A44 /* AgentChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4713DF6F70D359DA6407692E /* AgentChatView.swift */; };
 		1BA001C32F9C520900B87A44 /* AgentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37F1755C7AAEC9D26078FA4 /* AgentDetailView.swift */; };
 		1BA001C42F9C520900B87A44 /* AgentInvocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE9061180BC8423ADC61F41 /* AgentInvocation.swift */; };
+		A60710000000000000000001 /* AgentOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60710000000000000000000 /* AgentOutput.swift */; };
+		A60710000000000000000002 /* AgentOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60710000000000000000000 /* AgentOutput.swift */; };
+		A60710000000000000000003 /* AgentOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60710000000000000000000 /* AgentOutput.swift */; };
+		A60711000000000000000001 /* AgentOutputDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60711000000000000000000 /* AgentOutputDetailView.swift */; };
+		A60711000000000000000002 /* AgentOutputDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60711000000000000000000 /* AgentOutputDetailView.swift */; };
+		A60712000000000000000001 /* AgentOutputRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60712000000000000000000 /* AgentOutputRow.swift */; };
+		A60712000000000000000002 /* AgentOutputRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A60712000000000000000000 /* AgentOutputRow.swift */; };
 		1BA001C52F9C520900B87A44 /* AgentsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B130C1D36811FA485A56165 /* AgentsListView.swift */; };
 		1BA001C62F9C520900B87A44 /* AgentsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EE6EAFE31516194D72340D3 /* AgentsViewModel.swift */; };
 		1BA001C72F9C520900B87A44 /* BoardData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F8AE533D1CBDA389517E60F /* BoardData.swift */; };
@@ -236,6 +243,9 @@
 		4CA5325368F51381FEEA4716 /* TaskDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailHeader.swift; sourceTree = "<group>"; };
 		4CBCCE83A0C142DF62F424E3 /* ChatContextPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatContextPanel.swift; sourceTree = "<group>"; };
 		4CE9061180BC8423ADC61F41 /* AgentInvocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentInvocation.swift; sourceTree = "<group>"; };
+		A60710000000000000000000 /* AgentOutput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentOutput.swift; sourceTree = "<group>"; };
+		A60711000000000000000000 /* AgentOutputDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentOutputDetailView.swift; sourceTree = "<group>"; };
+		A60712000000000000000000 /* AgentOutputRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentOutputRow.swift; sourceTree = "<group>"; };
 		513EBEA9872A4F80D2B6EF4B /* CompleteTaskSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompleteTaskSheet.swift; sourceTree = "<group>"; };
 		517A1C942EC1FAB24F183895 /* ServerHealth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerHealth.swift; sourceTree = "<group>"; };
 		51BDF64FA51A80664DBB0465 /* PlansViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlansViewModel.swift; sourceTree = "<group>"; };
@@ -571,6 +581,8 @@
 			isa = PBXGroup;
 			children = (
 				B694C7B9BD7DF9233B864429 /* AgentAssignmentDetailView.swift */,
+				A60711000000000000000000 /* AgentOutputDetailView.swift */,
+				A60712000000000000000000 /* AgentOutputRow.swift */,
 			);
 			path = AgentAssignments;
 			sourceTree = "<group>";
@@ -612,6 +624,7 @@
 				8030109314A96ACEE4E6C129 /* Agent.swift */,
 				590FE9BEA30F0E9CBC537F39 /* AgentAssignment.swift */,
 				4CE9061180BC8423ADC61F41 /* AgentInvocation.swift */,
+				A60710000000000000000000 /* AgentOutput.swift */,
 				5F8AE533D1CBDA389517E60F /* BoardData.swift */,
 				56FE9B08913A098C3C764476 /* ChatSession.swift */,
 				49D04724739E13A9765ACD16 /* Goal.swift */,
@@ -778,6 +791,9 @@
 				1BA001C22F9C520900B87A44 /* AgentChatView.swift in Sources */,
 				1BA001C32F9C520900B87A44 /* AgentDetailView.swift in Sources */,
 				1BA001C42F9C520900B87A44 /* AgentInvocation.swift in Sources */,
+				A60710000000000000000001 /* AgentOutput.swift in Sources */,
+				A60711000000000000000001 /* AgentOutputDetailView.swift in Sources */,
+				A60712000000000000000001 /* AgentOutputRow.swift in Sources */,
 				1BA001C52F9C520900B87A44 /* AgentsListView.swift in Sources */,
 				1BA001C62F9C520900B87A44 /* AgentsViewModel.swift in Sources */,
 				1BA001C72F9C520900B87A44 /* BoardData.swift in Sources */,
@@ -869,6 +885,9 @@
 				699547A948F2412CAD7224B2 /* AgentChatView.swift in Sources */,
 				B5C911A736B1D63C9D199A74 /* AgentDetailView.swift in Sources */,
 				1EFA112559079BFBE8B638AA /* AgentInvocation.swift in Sources */,
+				A60710000000000000000002 /* AgentOutput.swift in Sources */,
+				A60711000000000000000002 /* AgentOutputDetailView.swift in Sources */,
+				A60712000000000000000002 /* AgentOutputRow.swift in Sources */,
 				02537008C8EA7A88A205E633 /* AgentsListView.swift in Sources */,
 				F8DAA4D3B3988DDBC7C8C1AE /* AgentsViewModel.swift in Sources */,
 				3BA3B71A5AFAE6DE02B5BFC6 /* BoardData.swift in Sources */,
@@ -955,6 +974,7 @@
 				F2FBFB96EF797A00F73DFD1E /* Agent.swift in Sources */,
 				D721D9FA02768712417AFF0A /* AgentAssignment.swift in Sources */,
 				DCD5C7E3C2054E9F90034681 /* AgentInvocation.swift in Sources */,
+				A60710000000000000000003 /* AgentOutput.swift in Sources */,
 				2012EB4473E06F4E5635F4AE /* AgentsViewModel.swift in Sources */,
 				116C29A190703945B955AE20 /* BoardData.swift in Sources */,
 				C7E226DA915A5501F8E76C32 /* ChatSession.swift in Sources */,

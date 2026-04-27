@@ -314,6 +314,36 @@ final class APIClient {
         try await sendNoBody("/api/agent-assignments/\(id)", method: "DELETE")
     }
 
+    // MARK: - Agent Outputs
+
+    func agentOutputs(forAssignment id: String) async throws -> [AgentOutput] {
+        try await fetch("/api/agent-assignments/\(id)/outputs")
+    }
+
+    func agentOutput(id: String) async throws -> AgentOutputDetail {
+        try await fetch("/api/agent-outputs/\(id)")
+    }
+
+    func createAgentOutput(forAssignment id: String, body: CreateAgentOutputBody) async throws -> AgentOutput {
+        try await send("/api/agent-assignments/\(id)/outputs", method: "POST", body: body)
+    }
+
+    func appendAgentOutputStep(outputId: String, body: AppendAgentOutputStepBody) async throws -> AgentOutputStep {
+        try await send("/api/agent-outputs/\(outputId)/steps", method: "POST", body: body)
+    }
+
+    func completeAgentOutput(id: String, body: CompleteAgentOutputBody) async throws -> AgentOutput {
+        try await send("/api/agent-outputs/\(id)/complete", method: "POST", body: body)
+    }
+
+    func failAgentOutput(id: String, body: FailAgentOutputBody) async throws -> AgentOutput {
+        try await send("/api/agent-outputs/\(id)/fail", method: "POST", body: body)
+    }
+
+    func deleteAgentOutput(id: String) async throws {
+        try await sendNoBody("/api/agent-outputs/\(id)", method: "DELETE")
+    }
+
     // MARK: - Slot Outputs
 
     func addSlotOutput(slotId: String, body: SlotOutputBody) async throws -> SlotOutput {
@@ -548,6 +578,73 @@ struct SlotOutputBody: Encodable {
     let label: String
     let url: String?
     let kind: String
+}
+
+struct CreateAgentOutputBody: Encodable {
+    let input: String
+    let agentId: String?
+    let model: String?
+}
+
+/// Discriminated by `kind`. Mirrors `AppendAgentOutputStepSchema` on the API:
+/// - `.thinking(content)` → `{ kind: "thinking", content }`
+/// - `.text(content)`     → `{ kind: "text", content }`
+/// - `.toolCall(...)`     → `{ kind: "tool_call", toolName, toolInput, toolOutput?, isError?, durationMs? }`
+enum AppendAgentOutputStepBody: Encodable {
+    case thinking(content: String)
+    case text(content: String)
+    case toolCall(
+        toolName: String,
+        toolInput: AnyEncodable,
+        toolOutput: String? = nil,
+        isError: Bool? = nil,
+        durationMs: Int? = nil
+    )
+
+    private enum CodingKeys: String, CodingKey {
+        case kind, content, toolName, toolInput, toolOutput, isError, durationMs
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .thinking(let content):
+            try c.encode("thinking", forKey: .kind)
+            try c.encode(content, forKey: .content)
+        case .text(let content):
+            try c.encode("text", forKey: .kind)
+            try c.encode(content, forKey: .content)
+        case .toolCall(let toolName, let toolInput, let toolOutput, let isError, let durationMs):
+            try c.encode("tool_call", forKey: .kind)
+            try c.encode(toolName, forKey: .toolName)
+            try c.encode(toolInput, forKey: .toolInput)
+            try c.encodeIfPresent(toolOutput, forKey: .toolOutput)
+            try c.encodeIfPresent(isError, forKey: .isError)
+            try c.encodeIfPresent(durationMs, forKey: .durationMs)
+        }
+    }
+}
+
+/// Lightweight type-erasing wrapper so callers can pass any `Encodable` value
+/// (typed dictionary, struct, primitive) as a step's `toolInput`.
+struct AnyEncodable: Encodable {
+    private let _encode: (Encoder) throws -> Void
+    init<T: Encodable>(_ value: T) {
+        self._encode = value.encode(to:)
+    }
+    func encode(to encoder: Encoder) throws { try _encode(encoder) }
+}
+
+struct CompleteAgentOutputBody: Encodable {
+    let response: String
+    let tokensIn: Int?
+    let tokensOut: Int?
+}
+
+struct FailAgentOutputBody: Encodable {
+    let error: String
+    /// "error" (default) or "cancelled"
+    let status: String?
 }
 
 struct CreateAgentBody: Encodable {

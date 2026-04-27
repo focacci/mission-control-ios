@@ -51,6 +51,9 @@ struct TimeSlotView: View {
         .navigationDestination(for: AgentAssignment.self) { aa in
             AgentAssignmentDetailView(assignment: aa)
         }
+        .navigationDestination(for: AgentOutput.self) { output in
+            AgentOutputDetailView(output: output)
+        }
         .sheet(isPresented: $showingContextPicker) {
             ContextSourcePicker(
                 pinned: chatContext.pinnedContexts,

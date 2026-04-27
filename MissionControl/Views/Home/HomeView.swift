@@ -99,6 +99,9 @@ struct HomeView: View {
                     AgentAssignmentDetailView(assignment: aa)
                 }
             }
+            .navigationDestination(for: AgentOutput.self) { output in
+                AgentOutputDetailView(output: output)
+            }
         }
     }
 

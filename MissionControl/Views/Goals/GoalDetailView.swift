@@ -88,6 +88,9 @@ struct GoalDetailView: View {
                         Task { await viewModel.load(id: goalId) }
                     }
                 }
+                .navigationDestination(for: AgentOutput.self) { output in
+                    AgentOutputDetailView(output: output)
+                }
                 .toolbar {
                     ToolbarItemGroup(placement: .primaryAction) {
                         Menu {

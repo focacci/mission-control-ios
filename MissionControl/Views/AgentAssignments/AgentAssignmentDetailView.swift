@@ -5,6 +5,7 @@ import Observation
 final class AgentAssignmentDetailViewModel {
     var assignment: AgentAssignment
     var agents: [Agent] = []
+    var outputs: [AgentOutput] = []
     var isSaving = false
     var error: String?
 
@@ -20,9 +21,18 @@ final class AgentAssignmentDetailViewModel {
         }
     }
 
+    func loadOutputs() async {
+        do {
+            outputs = try await APIClient.shared.agentOutputs(forAssignment: assignment.id)
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
     func refresh() async {
         do {
             assignment = try await APIClient.shared.agentAssignment(id: assignment.id)
+            await loadOutputs()
         } catch {
             self.error = error.localizedDescription
         }
@@ -231,12 +241,28 @@ struct AgentAssignmentDetailView: View {
                 contextType: "agent_assignment",
                 contextId: viewModel.assignment.id
             )
+
+            Section("Agent Outputs") {
+                if viewModel.outputs.isEmpty {
+                    Text("No agent outputs yet.")
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(viewModel.outputs) { output in
+                        NavigationLink(value: output) {
+                            AgentOutputRow(output: output)
+                        }
+                    }
+                }
+            }
         }
         .navigationTitle("Agent Assignment")
         .navigationBarTitleDisplayMode(.inline)
         .chatContext(context)
         .chatContextToolbar()
-        .task { await viewModel.loadAgents() }
+        .task {
+            await viewModel.loadAgents()
+            await viewModel.loadOutputs()
+        }
         .refreshable { await viewModel.refresh() }
         .onChange(of: field) { old, _ in
             if old == .title {
