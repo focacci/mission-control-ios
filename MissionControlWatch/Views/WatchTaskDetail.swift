@@ -62,15 +62,24 @@ struct WatchTaskDetail: View {
                     }
 
                     // Action
-                    if task.canStart {
+                    if !task.isDone {
                         Button {
-                            Task { await startTask(id: task.id) }
+                            Task { await completeTask(id: task.id) }
                         } label: {
-                            Label("Start", systemImage: "play.fill")
+                            Label("Done", systemImage: "checkmark")
                                 .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.borderedProminent)
-                        .tint(.blue)
+                        .tint(.green)
+                        .disabled(isSaving)
+                    } else {
+                        Button {
+                            Task { await reopenTask(id: task.id) }
+                        } label: {
+                            Label("Reopen", systemImage: "arrow.uturn.backward")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
                         .disabled(isSaving)
                     }
                 }
@@ -98,10 +107,20 @@ struct WatchTaskDetail: View {
         isLoading = false
     }
 
-    private func startTask(id: String) async {
+    private func completeTask(id: String) async {
         isSaving = true
         do {
-            task = try await APIClient.shared.startTask(id: id)
+            task = try await APIClient.shared.completeTask(id: id, body: CompleteTaskBody(summary: "Completed from watch"))
+        } catch {
+            self.error = error.localizedDescription
+        }
+        isSaving = false
+    }
+
+    private func reopenTask(id: String) async {
+        isSaving = true
+        do {
+            task = try await APIClient.shared.reopenTask(id: id)
         } catch {
             self.error = error.localizedDescription
         }

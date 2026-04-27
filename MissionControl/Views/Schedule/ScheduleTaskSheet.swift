@@ -334,7 +334,7 @@ struct ScheduleTaskSheet: View {
         do {
             tasks = try await APIClient.shared.tasks(
                 initiativeId: initiativeId,
-                statuses: ["pending", "in-progress", "blocked"]
+                statuses: ["pending"]
             )
         } catch {
             self.error = error.localizedDescription
@@ -347,7 +347,7 @@ struct ScheduleTaskSheet: View {
         assignments = []
         do {
             let all = try await APIClient.shared.agentAssignments(taskId: taskId)
-            assignments = all.filter { !$0.completed }
+            assignments = all.filter { !$0.isDone }
         } catch {
             self.error = error.localizedDescription
         }

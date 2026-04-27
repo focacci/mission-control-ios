@@ -5,8 +5,6 @@ struct TaskDetailView: View {
     @State private var viewModel = TaskDetailViewModel()
     @State private var showingEdit = false
     @State private var showingComplete = false
-    @State private var showingBlock = false
-    @State private var blockReason = ""
     @State private var showingAddRequirement = false
     @State private var newRequirement = ""
     @State private var showingAddAssignment = false
@@ -35,15 +33,12 @@ struct TaskDetailView: View {
                                     .padding(.vertical, 6)
                                     .background(task.statusColor.opacity(0.15), in: Capsule())
 
-                                if !task.isTerminal {
-                                    TaskActionBar(
-                                        task: task,
-                                        isSaving: viewModel.isSaving,
-                                        onStart:    { Task { await viewModel.startTask() } },
-                                        onComplete: { showingComplete = true },
-                                        onBlock:    { showingBlock = true }
-                                    )
-                                }
+                                TaskActionBar(
+                                    task: task,
+                                    isSaving: viewModel.isSaving,
+                                    onComplete: { showingComplete = true },
+                                    onReopen: { Task { await viewModel.reopenTask() } }
+                                )
                             }
                         }
 
@@ -153,13 +148,6 @@ struct TaskDetailView: View {
                 Task { await viewModel.completeTask(summary: summary) }
             }
         }
-        .sheet(isPresented: $showingBlock) {
-            BlockReasonSheet(reason: $blockReason) {
-                let reason = blockReason
-                blockReason = ""
-                Task { await viewModel.blockTask(reason: reason) }
-            }
-        }
         .alert("Add Requirement", isPresented: $showingAddRequirement) {
             TextField("Description", text: $newRequirement)
             Button("Add") {
@@ -179,39 +167,6 @@ struct TaskDetailView: View {
                 newAssignmentTitle = ""
                 newAssignmentInstructions = ""
                 Task { await viewModel.addAgentAssignment(title: title, instructions: instructions) }
-            }
-        }
-    }
-}
-
-// MARK: - Block Reason Sheet
-
-struct BlockReasonSheet: View {
-    @Binding var reason: String
-    let onBlock: () -> Void
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section("Block Reason") {
-                    TextEditor(text: $reason)
-                        .frame(minHeight: 80)
-                }
-            }
-            .navigationTitle("Block Task")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Block") {
-                        onBlock()
-                        dismiss()
-                    }
-                    .disabled(reason.isEmpty)
-                }
             }
         }
     }

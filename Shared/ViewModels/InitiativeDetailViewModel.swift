@@ -9,10 +9,8 @@ final class InitiativeDetailViewModel {
     var error: String?
     var isSaving = false
 
-    var inProgressTasks: [MCTask] { tasks.filter { $0.status == "in-progress" } }
-    var activeTasks: [MCTask] { tasks.filter { $0.status == "pending" || $0.status == "assigned" } }
-    var doneTasks: [MCTask] { tasks.filter { $0.status == "done" || $0.status == "cancelled" } }
-    var blockedTasks: [MCTask] { tasks.filter { $0.status == "blocked" } }
+    var pendingTasks: [MCTask] { tasks.filter { $0.status == "pending" } }
+    var doneTasks: [MCTask] { tasks.filter { $0.status == "done" } }
 
     func load(id: String) async {
         isLoading = true
@@ -26,27 +24,9 @@ final class InitiativeDetailViewModel {
         isLoading = false
     }
 
-    func startTask(id: String) async {
+    func reopenTask(id: String) async {
         do {
-            let updated = try await APIClient.shared.startTask(id: id)
-            replaceTask(updated)
-        } catch {
-            self.error = error.localizedDescription
-        }
-    }
-
-    func blockTask(id: String, reason: String) async {
-        do {
-            let updated = try await APIClient.shared.blockTask(id: id, reason: reason)
-            replaceTask(updated)
-        } catch {
-            self.error = error.localizedDescription
-        }
-    }
-
-    func cancelTask(id: String) async {
-        do {
-            let updated = try await APIClient.shared.cancelTask(id: id)
+            let updated = try await APIClient.shared.reopenTask(id: id)
             replaceTask(updated)
         } catch {
             self.error = error.localizedDescription

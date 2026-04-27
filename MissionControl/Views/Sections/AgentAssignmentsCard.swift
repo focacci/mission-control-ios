@@ -55,8 +55,8 @@ private struct AgentAssignmentRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(assignment.title)
                     .font(.body)
-                    .foregroundStyle(assignment.completed ? .secondary : .primary)
-                    .strikethrough(assignment.completed)
+                    .foregroundStyle(assignment.isDone ? .secondary : .primary)
+                    .strikethrough(assignment.isDone)
                     .multilineTextAlignment(.leading)
 
                 if slotCount > 0 {

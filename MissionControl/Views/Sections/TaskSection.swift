@@ -4,7 +4,6 @@ struct TaskSection: View {
     let title: String
     let tasks: [MCTask]
     let viewModel: InitiativeDetailViewModel
-    let onBlock: ((String) -> Void)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -20,30 +19,20 @@ struct TaskSection: View {
                         TaskCard(task: task)
                     }
                     .buttonStyle(.plain)
-                    .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                        if task.canStart {
-                            Button {
-                                Task { await viewModel.startTask(id: task.id) }
-                            } label: {
-                                Label("Start", systemImage: "play.fill")
-                            }
-                            .tint(.blue)
-                        }
-                    }
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button(role: .destructive) {
-                            Task { await viewModel.cancelTask(id: task.id) }
-                        } label: {
-                            Label("Cancel", systemImage: "xmark")
+                        if task.isDone {
+                            Button {
+                                Task { await viewModel.reopenTask(id: task.id) }
+                            } label: {
+                                Label("Reopen", systemImage: "arrow.uturn.backward")
+                            }
+                            .tint(.gray)
                         }
 
-                        if let onBlock, task.canBlock {
-                            Button {
-                                onBlock(task.id)
-                            } label: {
-                                Label("Block", systemImage: "exclamationmark.circle")
-                            }
-                            .tint(.orange)
+                        Button(role: .destructive) {
+                            Task { await viewModel.deleteTask(id: task.id) }
+                        } label: {
+                            Label("Delete", systemImage: "trash")
                         }
                     }
                 }

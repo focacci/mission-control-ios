@@ -8,9 +8,6 @@ struct InitiativeDetailView: View {
     @State private var showingAddAssignment = false
     @State private var newAssignmentTitle = ""
     @State private var newAssignmentInstructions = ""
-    @State private var blockingTaskId: String?
-    @State private var blockReason = ""
-    @State private var showingBlockSheet = false
     @State private var showingDeleteConfirm = false
     @Environment(\.dismiss) private var dismiss
 
@@ -44,42 +41,19 @@ struct InitiativeDetailView: View {
                             }
                             .padding(.horizontal, 4)
 
-                            if !viewModel.inProgressTasks.isEmpty {
+                            if !viewModel.pendingTasks.isEmpty {
                                 TaskSection(
-                                    title: "In Progress",
-                                    tasks: viewModel.inProgressTasks,
-                                    viewModel: viewModel,
-                                    onBlock: { id in
-                                        blockingTaskId = id
-                                        showingBlockSheet = true
-                                    }
-                                )
-                            }
-
-                            if !viewModel.blockedTasks.isEmpty {
-                                TaskSection(
-                                    title: "Blocked",
-                                    tasks: viewModel.blockedTasks,
-                                    viewModel: viewModel,
-                                    onBlock: nil
-                                )
-                            }
-
-                            if !viewModel.activeTasks.isEmpty {
-                                TaskSection(
-                                    title: "Pending / Assigned",
-                                    tasks: viewModel.activeTasks,
-                                    viewModel: viewModel,
-                                    onBlock: nil
+                                    title: "Pending",
+                                    tasks: viewModel.pendingTasks,
+                                    viewModel: viewModel
                                 )
                             }
 
                             if !viewModel.doneTasks.isEmpty {
                                 TaskSection(
-                                    title: "Completed",
+                                    title: "Done",
                                     tasks: viewModel.doneTasks,
-                                    viewModel: viewModel,
-                                    onBlock: nil
+                                    viewModel: viewModel
                                 )
                             }
 
@@ -156,15 +130,6 @@ struct InitiativeDetailView: View {
                         Task { await viewModel.addAgentAssignment(title: title, instructions: instructions) }
                     }
                 }
-                .sheet(isPresented: $showingBlockSheet) {
-                    BlockTaskSheet(reason: $blockReason) {
-                        if let id = blockingTaskId {
-                            Task { await viewModel.blockTask(id: id, reason: blockReason) }
-                        }
-                        blockReason = ""
-                        blockingTaskId = nil
-                    }
-                }
                 .alert("Delete Initiative?", isPresented: $showingDeleteConfirm) {
                     Button("Cancel", role: .cancel) {}
                     Button("Delete", role: .destructive) {
@@ -191,39 +156,6 @@ struct InitiativeDetailView: View {
         }
         .task { await viewModel.load(id: initiativeId) }
         .chatContext(context)
-    }
-}
-
-// MARK: - Block Task Sheet
-
-struct BlockTaskSheet: View {
-    @Binding var reason: String
-    let onBlock: () -> Void
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section("Block Reason") {
-                    TextEditor(text: $reason)
-                        .frame(minHeight: 80)
-                }
-            }
-            .navigationTitle("Block Task")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Block") {
-                        onBlock()
-                        dismiss()
-                    }
-                    .disabled(reason.isEmpty)
-                }
-            }
-        }
     }
 }
 

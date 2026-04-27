@@ -12,7 +12,8 @@ struct AgentAssignment: Codable, Identifiable, Hashable {
     var title: String
     var instructions: String
     var agentId: String?
-    var completed: Bool
+    /// pending | in-progress | done | blocked
+    var status: String
     var completedAt: String?
     var sortOrder: Int
     var createdAt: String
@@ -22,16 +23,37 @@ struct AgentAssignment: Codable, Identifiable, Hashable {
     var slots: [AgentAssignmentSlotRef]?
 
     var statusIcon: String {
-        completed ? "checkmark.circle.fill" : "circle.dotted"
+        switch status {
+        case "pending":     return "circle.dotted"
+        case "in-progress": return "circle.circle.fill"
+        case "done":        return "checkmark.circle.fill"
+        case "blocked":     return "pause.circle.fill"
+        default:            return "circle.dotted"
+        }
     }
 
     var statusColor: Color {
-        completed ? .green : .secondary
+        switch status {
+        case "pending":     return .secondary
+        case "in-progress": return .green
+        case "done":        return .blue
+        case "blocked":     return .orange
+        default:            return .secondary
+        }
     }
 
     var statusLabel: String {
-        completed ? "Completed" : "Pending"
+        switch status {
+        case "in-progress": return "In Progress"
+        default: return status.prefix(1).uppercased() + status.dropFirst()
+        }
     }
+
+    var isDone: Bool { status == "done" }
+    var canStart: Bool { status == "pending" || status == "blocked" }
+    var canComplete: Bool { status == "in-progress" }
+    var canBlock: Bool { status == "in-progress" }
+    var canReopen: Bool { status == "done" || status == "blocked" }
 }
 
 /// Lightweight reference to a slot the agent assignment occupies — included

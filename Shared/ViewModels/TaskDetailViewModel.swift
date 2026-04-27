@@ -19,17 +19,6 @@ final class TaskDetailViewModel {
         isLoading = false
     }
 
-    func startTask() async {
-        guard let id = task?.id else { return }
-        isSaving = true
-        do {
-            task = try await APIClient.shared.startTask(id: id)
-        } catch {
-            self.error = error.localizedDescription
-        }
-        isSaving = false
-    }
-
     func completeTask(summary: String) async {
         guard let id = task?.id else { return }
         isSaving = true
@@ -41,11 +30,11 @@ final class TaskDetailViewModel {
         isSaving = false
     }
 
-    func blockTask(reason: String) async {
+    func reopenTask() async {
         guard let id = task?.id else { return }
         isSaving = true
         do {
-            task = try await APIClient.shared.blockTask(id: id, reason: reason)
+            task = try await APIClient.shared.reopenTask(id: id)
         } catch {
             self.error = error.localizedDescription
         }
@@ -70,17 +59,6 @@ final class TaskDetailViewModel {
             self.error = error.localizedDescription
             return false
         }
-    }
-
-    func cancelTask() async {
-        guard let id = task?.id else { return }
-        isSaving = true
-        do {
-            task = try await APIClient.shared.cancelTask(id: id)
-        } catch {
-            self.error = error.localizedDescription
-        }
-        isSaving = false
     }
 
     // MARK: - Requirements

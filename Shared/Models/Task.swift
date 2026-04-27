@@ -5,7 +5,7 @@ struct MCTask: Codable, Identifiable, Hashable {
     let id: String
     let name: String
     let initiativeId: String?
-    let status: String         // pending | in-progress | done | blocked | cancelled
+    let status: String         // pending | done
     let objective: String?
     let summary: String?
     var requirements: [Requirement]?
@@ -14,33 +14,18 @@ struct MCTask: Codable, Identifiable, Hashable {
     let goal: GoalRef?
 
     var statusColor: Color {
-        switch status {
-        case "pending":     return .gray
-        case "in-progress": return .green
-        case "done":        return .blue
-        case "blocked":     return .orange
-        case "cancelled":   return .red
-        default:            return .gray
-        }
+        status == "done" ? .blue : .gray
     }
 
     var statusIcon: String {
-        switch status {
-        case "pending":     return "circle.dotted"
-        case "in-progress": return "circle.circle.fill"
-        case "done":        return "checkmark.circle.fill"
-        case "blocked":     return "pause.circle.fill"
-        case "cancelled":   return "xmark.circle.fill"
-        default:            return "circle.dotted"
-        }
+        status == "done" ? "checkmark.circle.fill" : "circle.dotted"
     }
 
     var statusLabel: String {
-        switch status {
-        case "in-progress": return "In Progress"
-        default: return status.prefix(1).uppercased() + status.dropFirst()
-        }
+        status == "done" ? "Done" : "Pending"
     }
+
+    var isDone: Bool { status == "done" }
 
     var requirementProgress: String {
         guard let reqs = requirements, !reqs.isEmpty else { return "" }
@@ -50,17 +35,9 @@ struct MCTask: Codable, Identifiable, Hashable {
 
     var agentAssignmentProgress: String {
         guard let aas = agentAssignments, !aas.isEmpty else { return "" }
-        let done = aas.filter(\.completed).count
+        let done = aas.filter(\.isDone).count
         return "\(done)/\(aas.count)"
     }
-
-    var canStart: Bool {
-        status == "pending" || status == "blocked"
-    }
-
-    var canComplete: Bool { status == "in-progress" }
-    var canBlock: Bool    { status == "in-progress" }
-    var isTerminal: Bool  { status == "done" || status == "cancelled" }
 }
 
 struct Requirement: Codable, Identifiable, Hashable {

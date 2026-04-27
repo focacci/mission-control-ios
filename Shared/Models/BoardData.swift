@@ -3,10 +3,7 @@ import Foundation
 struct BoardStats: Codable {
     let total: Int
     let pending: Int
-    let inProgress: Int
     let done: Int
-    let blocked: Int
-    let cancelled: Int
 }
 
 struct BoardWeekSummary: Codable {

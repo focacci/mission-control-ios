@@ -44,18 +44,30 @@ final class AgentAssignmentDetailViewModel {
         await patch(body: UpdateAgentAssignmentBody(title: nil, instructions: nil, agentId: agentId, sortOrder: nil))
     }
 
-    func toggleComplete() async {
+    func start() async {
+        await runStatusChange { try await APIClient.shared.startAgentAssignment(id: $0) }
+    }
+
+    func complete() async {
+        await runStatusChange { try await APIClient.shared.completeAgentAssignment(id: $0) }
+    }
+
+    func block() async {
+        await runStatusChange { try await APIClient.shared.blockAgentAssignment(id: $0) }
+    }
+
+    func reopen() async {
+        await runStatusChange { try await APIClient.shared.reopenAgentAssignment(id: $0) }
+    }
+
+    func unassign() async {
+        await runStatusChange { try await APIClient.shared.unassignAgentAssignment(id: $0) }
+    }
+
+    private func runStatusChange(_ op: (String) async throws -> AgentAssignment) async {
         isSaving = true
         do {
-            if assignment.completed {
-                // Uncomplete not supported server-side yet; fall back to PATCH.
-                assignment = try await APIClient.shared.updateAgentAssignment(
-                    id: assignment.id,
-                    body: UpdateAgentAssignmentBody(title: nil, instructions: nil, agentId: nil, sortOrder: nil)
-                )
-            } else {
-                assignment = try await APIClient.shared.completeAgentAssignment(id: assignment.id)
-            }
+            assignment = try await op(assignment.id)
         } catch {
             self.error = error.localizedDescription
         }
@@ -136,20 +148,66 @@ struct AgentAssignmentDetailView: View {
             }
 
             Section("Status") {
-                HStack(spacing: 10) {
-                    Image(systemName: viewModel.assignment.statusIcon)
-                        .foregroundStyle(viewModel.assignment.statusColor)
-                    Text(viewModel.assignment.statusLabel)
-                        .foregroundStyle(.primary)
-                    Spacer()
-                    if !viewModel.assignment.completed {
-                        Button("Mark Complete") {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 10) {
+                        Image(systemName: viewModel.assignment.statusIcon)
+                            .foregroundStyle(viewModel.assignment.statusColor)
+                        Text(viewModel.assignment.statusLabel)
+                            .foregroundStyle(.primary)
+                        Spacer()
+                    }
+
+                    HStack(spacing: 8) {
+                        if viewModel.assignment.canStart {
+                            Button("Start") {
+                                Task {
+                                    await viewModel.start()
+                                    onChange?(viewModel.assignment)
+                                }
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(viewModel.isSaving)
+                        }
+                        if viewModel.assignment.canComplete {
+                            Button("Complete") {
+                                Task {
+                                    await viewModel.complete()
+                                    onChange?(viewModel.assignment)
+                                }
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(.green)
+                            .disabled(viewModel.isSaving)
+                        }
+                        if viewModel.assignment.canBlock {
+                            Button("Block") {
+                                Task {
+                                    await viewModel.block()
+                                    onChange?(viewModel.assignment)
+                                }
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(.red)
+                            .disabled(viewModel.isSaving)
+                        }
+                        if viewModel.assignment.canReopen {
+                            Button("Reopen") {
+                                Task {
+                                    await viewModel.reopen()
+                                    onChange?(viewModel.assignment)
+                                }
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(viewModel.isSaving)
+                        }
+                        Button("Unassign") {
                             Task {
-                                await viewModel.toggleComplete()
+                                await viewModel.unassign()
                                 onChange?(viewModel.assignment)
                             }
                         }
                         .buttonStyle(.bordered)
+                        .tint(.gray)
                         .disabled(viewModel.isSaving)
                     }
                 }

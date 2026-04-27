@@ -57,7 +57,7 @@ struct WatchTaskList: View {
         isLoading = true
         error = nil
         do {
-            tasks = try await APIClient.shared.tasks(statuses: ["in-progress"])
+            tasks = try await APIClient.shared.tasks(statuses: ["pending"])
         } catch {
             self.error = error.localizedDescription
         }

@@ -201,20 +201,12 @@ final class APIClient {
         try await send("/api/tasks/\(id)", method: "PATCH", body: body)
     }
 
-    func startTask(id: String) async throws -> MCTask {
-        try await send("/api/tasks/\(id)/start", method: "POST")
-    }
-
     func completeTask(id: String, body: CompleteTaskBody) async throws -> MCTask {
         try await send("/api/tasks/\(id)/done", method: "POST", body: body)
     }
 
-    func blockTask(id: String, reason: String) async throws -> MCTask {
-        try await send("/api/tasks/\(id)/block", method: "POST", body: ["reason": reason])
-    }
-
-    func cancelTask(id: String) async throws -> MCTask {
-        try await send("/api/tasks/\(id)/cancel", method: "POST")
+    func reopenTask(id: String) async throws -> MCTask {
+        try await send("/api/tasks/\(id)/reopen", method: "POST")
     }
 
     func deleteTask(id: String) async throws {
@@ -298,8 +290,24 @@ final class APIClient {
         try await send("/api/agent-assignments/\(id)", method: "PATCH", body: body)
     }
 
+    func startAgentAssignment(id: String) async throws -> AgentAssignment {
+        try await send("/api/agent-assignments/\(id)/start", method: "POST")
+    }
+
     func completeAgentAssignment(id: String) async throws -> AgentAssignment {
         try await send("/api/agent-assignments/\(id)/complete", method: "POST")
+    }
+
+    func blockAgentAssignment(id: String) async throws -> AgentAssignment {
+        try await send("/api/agent-assignments/\(id)/block", method: "POST")
+    }
+
+    func reopenAgentAssignment(id: String) async throws -> AgentAssignment {
+        try await send("/api/agent-assignments/\(id)/reopen", method: "POST")
+    }
+
+    func unassignAgentAssignment(id: String) async throws -> AgentAssignment {
+        try await send("/api/agent-assignments/\(id)/unassign", method: "POST")
     }
 
     func deleteAgentAssignment(id: String) async throws {

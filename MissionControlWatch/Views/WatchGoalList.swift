@@ -65,7 +65,7 @@ struct WatchGoalDetail: View {
     private var activeTasks: Int {
         (goalDetail?.initiatives ?? goal.initiatives ?? [])
             .flatMap { $0.tasks ?? [] }
-            .filter { $0.status == "in-progress" }
+            .filter { !$0.isDone }
             .count
     }
 
