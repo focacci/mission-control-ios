@@ -622,7 +622,6 @@ struct ChatConversationView: View {
                 .padding(.vertical, 12)
                 .modifier(LiquidGlassInputBackground())
                 .focused($isInputFocused)
-                .submitLabel(.send)
 
             Button {
                 if isAwaitingResponse { stopMessage() } else { sendMessage() }
