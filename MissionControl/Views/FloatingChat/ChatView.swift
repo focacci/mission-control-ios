@@ -1,13 +1,15 @@
 import SwiftUI
 
 /// Ephemeral floating chat sheet. Opens from the global bubble button. The
-/// leading toolbar carries the lock toggle, an agent picker, and a context
-/// picker that each expand into a drop-down panel below the toolbar. For the
-/// dedicated agent chat page, see `AgentChatView`.
+/// leading toolbar carries the lock toggle. The principal slot groups the
+/// context pill (selected + pinned counts, expands a panel below the toolbar)
+/// alongside two smaller quick-action buttons that add the current page
+/// context or clear all selected contexts — kept together because they all
+/// operate on the same underlying selection. For the dedicated agent chat
+/// page, see `AgentChatView`.
 struct ChatView: View {
     @Environment(ChatContextStore.self) private var chatContext
     @State private var isContextPanelExpanded: Bool = false
-    @State private var isAgentPanelExpanded: Bool = false
 
     var body: some View {
         ChatConversationView(
@@ -18,38 +20,12 @@ struct ChatView: View {
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .top, spacing: 0) { topPanel }
         .toolbar { toolbarContent }
-        .onChange(of: isAgentPanelExpanded) { _, newValue in
-            if newValue && isContextPanelExpanded {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isContextPanelExpanded = false
-                }
-            }
-        }
-        .onChange(of: isContextPanelExpanded) { _, newValue in
-            if newValue && isAgentPanelExpanded {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isAgentPanelExpanded = false
-                }
-            }
-        }
-        .task {
-            // Mock agent connection until real transport lands. Show connecting
-            // for ~3 seconds then flip to connected.
-            chatContext.agentConnectionState = .connecting
-            try? await Task.sleep(for: .seconds(3))
-            if !Task.isCancelled {
-                chatContext.agentConnectionState = .connected
-            }
-        }
     }
 
     @ViewBuilder
     private var topPanel: some View {
         if isContextPanelExpanded {
             ChatContextPanel(isExpanded: $isContextPanelExpanded)
-                .transition(.move(edge: .top).combined(with: .opacity))
-        } else if isAgentPanelExpanded {
-            ChatAgentPanel(isExpanded: $isAgentPanelExpanded)
                 .transition(.move(edge: .top).combined(with: .opacity))
         }
     }
@@ -60,10 +36,47 @@ struct ChatView: View {
             ChatLockToolbarButton()
         }
         ToolbarItem(placement: .principal) {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 ChatContextPickerToolbarButton(isExpanded: $isContextPanelExpanded)
-                ChatAgentPickerToolbarButton(isExpanded: $isAgentPanelExpanded)
+                addCurrentContextButton
+                clearContextsButton
             }
         }
+    }
+
+    private var addCurrentContextButton: some View {
+        let alreadySelected = chatContext.isSelected(chatContext.pageContext)
+        return Button {
+            guard !alreadySelected else { return }
+            withAnimation(.easeInOut(duration: 0.2)) {
+                chatContext.toggleSelected(chatContext.pageContext)
+            }
+        } label: {
+            Image(systemName: "plus")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(alreadySelected ? Color.secondary.opacity(0.5) : Color.secondary)
+                .frame(width: 30, height: 30)
+                .background(Circle().fill(Color.secondary.opacity(0.12)))
+        }
+        .disabled(alreadySelected)
+        .accessibilityLabel("Add current page to chat context")
+    }
+
+    private var clearContextsButton: some View {
+        let empty = chatContext.selectedContexts.isEmpty
+        return Button {
+            guard !empty else { return }
+            withAnimation(.easeInOut(duration: 0.2)) {
+                chatContext.selectedContexts = []
+            }
+        } label: {
+            Image(systemName: "xmark")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(empty ? Color.secondary.opacity(0.5) : Color.secondary)
+                .frame(width: 30, height: 30)
+                .background(Circle().fill(Color.secondary.opacity(0.12)))
+        }
+        .disabled(empty)
+        .accessibilityLabel("Remove all selected contexts")
     }
 }
