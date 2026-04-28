@@ -11,7 +11,7 @@ struct ContentView: View {
         TabView(selection: $selectedTab) {
             HomeView()
                 .floatingChatButton(isPresented: $chatContextStore.showingChat)
-                .tabItem { Label("Home", systemImage: "house") }
+                .tabItem { Label("Feed", systemImage: "newspaper") }
                 .tag(0)
 
             PlansView()

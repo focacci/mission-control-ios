@@ -8,6 +8,24 @@ final class HomeViewModel {
     var isLoading = false
     var error: String?
 
+    /// In-flight autonomous runs (slot_start / brief / manual). Polled every
+    /// 10s while the Feed is foregrounded so the "Agent working now" card
+    /// reflects current state without a manual refresh.
+    var runningInvocations: [AgentInvocation] = []
+
+    /// Failed/timed-out autonomous runs from the last 24h, surfaced so the
+    /// user notices instead of them silently rotting in the invocations table.
+    var errorInvocations: [AgentInvocation] = []
+
+    /// Last few completed autonomous runs — drives the "Agent finished" cards.
+    /// Excludes `userChat` triggers (those are chat replies the user already saw).
+    var recentCompleteInvocations: [AgentInvocation] = []
+
+    /// Lookup table for resolving `AgentInvocation.agentId` → display name/emoji
+    /// in the Feed cards. Populated once on `load()`; agents change rarely so
+    /// no refresh needed during the polling loop.
+    var agentsById: [String: Agent] = [:]
+
     // Offset in days from today's week (0 = current week)
     var weekOffset: Int = 0
 
@@ -32,17 +50,90 @@ final class HomeViewModel {
         return todaySlots.filter { $0.type == .agentAssignment && $0.date == today && $0.agentAssignmentId != nil }
     }
 
+    /// Next 1–2 agent-assignment slots scheduled for today that haven't run
+    /// yet — drives the "Agent queued" Feed cards (Lane A3).
+    var queuedAgentSlots: [ScheduleSlot] {
+        let now = Self.currentHHMM()
+        return todayAgentAssignmentSlots
+            .filter { $0.status != .done && $0.status != .skipped && $0.time >= now }
+            .sorted { $0.time < $1.time }
+            .prefix(2)
+            .map { $0 }
+    }
+
+    func agentName(for id: String) -> String {
+        agentsById[id]?.displayName ?? "Agent"
+    }
+
+    func agentEmoji(for id: String) -> String {
+        agentsById[id]?.displayEmoji ?? "🤖"
+    }
+
     func load() async {
         isLoading = true
         error = nil
         do {
             async let slotsTask = APIClient.shared.scheduleToday()
             async let boardTask = APIClient.shared.board()
-            (todaySlots, board) = try await (slotsTask, boardTask)
+            async let agentsTask = APIClient.shared.agents()
+            async let runningTask = APIClient.shared.invocations(status: "running", limit: 10)
+            async let errorTask = APIClient.shared.invocations(status: "error", limit: 10)
+            async let completeTask = APIClient.shared.invocations(status: "complete", limit: 10)
+
+            let (slots, board, agents, running, errors, complete) = try await (
+                slotsTask, boardTask, agentsTask, runningTask, errorTask, completeTask
+            )
+            self.todaySlots = slots
+            self.board = board
+            self.agentsById = Dictionary(uniqueKeysWithValues: agents.map { ($0.id, $0) })
+            self.runningInvocations = filterAutonomous(running)
+            self.errorInvocations = filterRecentErrors(errors)
+            self.recentCompleteInvocations = filterAutonomous(complete).prefix(3).map { $0 }
         } catch {
             self.error = error.localizedDescription
         }
         isLoading = false
+    }
+
+    /// Lightweight refresh used by the Feed's polling loop. Re-fetches only
+    /// the invocation lanes that change minute-to-minute — slots, board, and
+    /// agents are stable enough to refresh on `load()` only.
+    func refreshLive() async {
+        do {
+            async let runningTask = APIClient.shared.invocations(status: "running", limit: 10)
+            async let errorTask = APIClient.shared.invocations(status: "error", limit: 10)
+            async let completeTask = APIClient.shared.invocations(status: "complete", limit: 10)
+            let (running, errors, complete) = try await (runningTask, errorTask, completeTask)
+            self.runningInvocations = filterAutonomous(running)
+            self.errorInvocations = filterRecentErrors(errors)
+            self.recentCompleteInvocations = filterAutonomous(complete).prefix(3).map { $0 }
+        } catch {
+            // Swallow polling errors — the next tick will retry. Surfacing
+            // these would flap the error banner every 10s on a flaky network.
+        }
+    }
+
+    private func filterAutonomous(_ invocations: [AgentInvocation]) -> [AgentInvocation] {
+        invocations.filter { $0.trigger != .userChat }
+    }
+
+    private func filterRecentErrors(_ invocations: [AgentInvocation]) -> [AgentInvocation] {
+        let cutoff = Date().addingTimeInterval(-24 * 60 * 60)
+        let parser = ISO8601DateFormatter()
+        parser.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return filterAutonomous(invocations).filter { inv in
+            guard let endedAt = inv.endedAt,
+                  let date = parser.date(from: endedAt) ?? ISO8601DateFormatter().date(from: endedAt)
+            else { return true }
+            return date > cutoff
+        }
+    }
+
+    private static func currentHHMM() -> String {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm"
+        f.timeZone = TimeZone(identifier: "America/New_York")
+        return f.string(from: Date())
     }
 
     func doneSlot(_ slot: ScheduleSlot) async {

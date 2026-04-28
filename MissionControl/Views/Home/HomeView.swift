@@ -38,16 +38,63 @@ struct HomeView: View {
         }
     }
 
+    private var shouldShowNoteNudge: Bool {
+        let hour = Calendar.current.component(.hour, from: Date())
+        return hour >= 14 && dailyNote.text.isEmpty
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 14) {
+                    // Lane A — Agent activity. Each card only renders when
+                    // it has data, so an idle agent yields an empty lane and
+                    // the brief takes the top of the feed.
+                    ForEach(viewModel.runningInvocations) { inv in
+                        AgentWorkingCard(
+                            invocation: inv,
+                            agentName: viewModel.agentName(for: inv.agentId),
+                            agentEmoji: viewModel.agentEmoji(for: inv.agentId)
+                        )
+                    }
+                    ForEach(viewModel.errorInvocations) { inv in
+                        AgentErrorCard(
+                            invocation: inv,
+                            agentName: viewModel.agentName(for: inv.agentId),
+                            agentEmoji: viewModel.agentEmoji(for: inv.agentId)
+                        )
+                    }
+                    ForEach(viewModel.recentCompleteInvocations) { inv in
+                        AgentFinishedCard(
+                            invocation: inv,
+                            agentName: viewModel.agentName(for: inv.agentId),
+                            agentEmoji: viewModel.agentEmoji(for: inv.agentId)
+                        )
+                    }
+                    ForEach(viewModel.queuedAgentSlots) { slot in
+                        AgentQueuedCard(slot: slot)
+                    }
+
+                    // C1 — Brief, demoted from headline to one card among many.
                     BriefHeroCard(
                         brief: currentBrief,
                         otherBriefs: DailyBrief.allCases.filter { $0 != currentBrief },
                         onTapPrimary: { selectedBrief = currentBrief },
                         onTapOther: { selectedBrief = $0 }
                     )
+
+                    // D1 — Today's liturgy. Taps into the existing rosary
+                    // sheet (no Faith deep-link exists yet).
+                    LiturgyCard(
+                        mystery: RosaryMystery.forDate(Date()),
+                        progress: rosaryState.checkedMysteries.count,
+                        onTap: { showingRosary = true }
+                    )
+
+                    // E1 — Note nudge, only after 2 PM and only when blank.
+                    if shouldShowNoteNudge {
+                        NoteNudgeCard(onTap: { showingNoteEditor = true })
+                    }
 
                     NextUpCard(
                         slot: nextSlot,
@@ -57,6 +104,8 @@ struct HomeView: View {
                         onDone: { slot in Task { await viewModel.doneSlot(slot) } }
                     )
 
+                    // E2 — Status strip pinned at the bottom as the day's
+                    // running summary instead of the headline.
                     StatusStrip(
                         rosaryMystery: RosaryMystery.forDate(Date()),
                         rosaryState: rosaryState,
@@ -73,7 +122,13 @@ struct HomeView: View {
             .chatContextToolbar()
             .refreshable { await viewModel.load() }
             .errorAlert(message: $viewModel.error)
-            .task { await viewModel.load() }
+            .task {
+                await viewModel.load()
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(10))
+                    await viewModel.refreshLive()
+                }
+            }
             .sheet(isPresented: $showingNoteEditor) {
                 DailyNoteEditorView(note: dailyNote)
             }
@@ -101,6 +156,9 @@ struct HomeView: View {
             }
             .navigationDestination(for: AgentOutput.self) { output in
                 AgentOutputDetailView(output: output)
+            }
+            .navigationDestination(for: AgentInvocation.self) { inv in
+                InvocationDetailView(invocationId: inv.id)
             }
         }
     }
@@ -480,6 +538,321 @@ struct DailyNoteEditorView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Feed: Agent Activity Cards (Lane A)
+
+private enum FeedRelativeTime {
+    static func string(from iso: String?) -> String {
+        guard let iso else { return "" }
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let date = f.date(from: iso) ?? ISO8601DateFormatter().date(from: iso)
+        guard let date else { return "" }
+        let rel = RelativeDateTimeFormatter()
+        rel.unitsStyle = .short
+        return rel.localizedString(for: date, relativeTo: Date())
+    }
+}
+
+private struct FeedActorChip: View {
+    enum Actor { case agent, you, world }
+    let actor: Actor
+
+    var body: some View {
+        Text(label)
+            .font(.system(size: 9, weight: .semibold))
+            .foregroundStyle(color)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.15), in: Capsule())
+    }
+
+    private var label: String {
+        switch actor {
+        case .agent: return "AGENT"
+        case .you:   return "YOU"
+        case .world: return "WORLD"
+        }
+    }
+    private var color: Color {
+        switch actor {
+        case .agent: return .purple
+        case .you:   return .blue
+        case .world: return .secondary
+        }
+    }
+}
+
+/// A2 — Agent working now. Shown for any in-flight autonomous invocation.
+private struct AgentWorkingCard: View {
+    let invocation: AgentInvocation
+    let agentName: String
+    let agentEmoji: String
+
+    var body: some View {
+        NavigationLink(value: invocation) {
+            HStack(alignment: .top, spacing: 12) {
+                ProgressView()
+                    .controlSize(.small)
+                    .padding(.top, 4)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Text("\(agentEmoji) \(agentName)")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        FeedActorChip(actor: .agent)
+                        Spacer()
+                    }
+                    Text("Working — \(invocation.trigger.displayName.lowercased())")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("Started \(FeedRelativeTime.string(from: invocation.startedAt))")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                LinearGradient(
+                    colors: [Color.blue.opacity(0.18), Color.blue.opacity(0.04)],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                ),
+                in: RoundedRectangle(cornerRadius: 14)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(Color.blue.opacity(0.25), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// A4 — Agent error. Failed/timed-out runs in the last 24h. Tap → invocation
+/// detail so the user can read the error and decide whether to retry.
+private struct AgentErrorCard: View {
+    let invocation: AgentInvocation
+    let agentName: String
+    let agentEmoji: String
+
+    private var errorClass: String {
+        switch invocation.status {
+        case .timeout: return "Timed out"
+        case .cancelled: return "Cancelled"
+        default:
+            if let err = invocation.error?.split(separator: ":").first {
+                return String(err)
+            }
+            return "Failed"
+        }
+    }
+
+    var body: some View {
+        NavigationLink(value: invocation) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.red)
+                    .font(.title3)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Text("\(agentEmoji) \(agentName)")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        FeedActorChip(actor: .agent)
+                        Spacer()
+                        Text(FeedRelativeTime.string(from: invocation.endedAt))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    Text(errorClass)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                    if let err = invocation.error, !err.isEmpty {
+                        Text(err)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(Color.red.opacity(0.3), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// A1 — Agent finished. Last few completed autonomous runs.
+private struct AgentFinishedCard: View {
+    let invocation: AgentInvocation
+    let agentName: String
+    let agentEmoji: String
+
+    private var totalTokens: Int { invocation.tokensIn + invocation.tokensOut }
+
+    var body: some View {
+        NavigationLink(value: invocation) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+                    .font(.title3)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Text("\(agentEmoji) \(agentName)")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        FeedActorChip(actor: .agent)
+                        Spacer()
+                        Text(FeedRelativeTime.string(from: invocation.endedAt))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    Text("Finished — \(invocation.trigger.displayName.lowercased())")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    HStack(spacing: 10) {
+                        Label("\(totalTokens) tokens", systemImage: "circle.hexagongrid")
+                        Label(invocation.model, systemImage: "cpu")
+                    }
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// A3 — Agent queued. Next 1–2 agent-assignment slots that haven't run yet.
+private struct AgentQueuedCard: View {
+    let slot: ScheduleSlot
+
+    private var title: String {
+        slot.agentAssignment?.title ?? "Agent Assignment"
+    }
+
+    var body: some View {
+        NavigationLink(value: slot) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "clock.badge")
+                    .foregroundStyle(.purple)
+                    .font(.title3)
+
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        Text("Queued for \(slot.time)")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        FeedActorChip(actor: .agent)
+                        Spacer()
+                    }
+                    Text(title)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(Color.purple.opacity(0.2), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Feed: World + Human Cards (Lanes D, E)
+
+/// D1 — Today's liturgy. Compact card showing today's Rosary mystery and the
+/// user's progress through it. Taps into the existing rosary sheet.
+private struct LiturgyCard: View {
+    let mystery: RosaryMystery
+    let progress: Int
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 12) {
+                Image(systemName: "cross.fill")
+                    .foregroundStyle(.indigo)
+                    .font(.title3)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text("\(mystery.rawValue) Mysteries")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.primary)
+                        FeedActorChip(actor: .world)
+                    }
+                    Text(progress == 5 ? "Complete" : "\(progress) of 5 prayed")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// E1 — Note nudge. Surfaces after 2 PM if today's daily note is still empty.
+private struct NoteNudgeCard: View {
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 12) {
+                Image(systemName: "square.and.pencil")
+                    .foregroundStyle(.blue)
+                    .font(.title3)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text("Today's note")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.primary)
+                        FeedActorChip(actor: .you)
+                    }
+                    Text("You haven't written one yet — capture a quick reflection.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
     }
 }
 

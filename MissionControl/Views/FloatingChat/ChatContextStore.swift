@@ -299,7 +299,7 @@ final class ChatContextStore {
     func icon(for kind: ChatContextKind) -> String {
         switch kind {
         case .app:          return "cpu"
-        case .home:         return "house"
+        case .home:         return "newspaper"
         case .agents:       return "person.2.wave.2"
         case .agent:        return "person.wave.2"
         case .agentChat:    return "bubble.left.and.text.bubble.right"
@@ -332,7 +332,7 @@ final class ChatContextStore {
     func typeName(for kind: ChatContextKind) -> String {
         switch kind {
         case .app:          return "App"
-        case .home:         return "Home"
+        case .home:         return "Feed"
         case .agents:       return "Agents"
         case .agent:        return "Agent Details"
         case .agentChat:    return "Agent Chat"
