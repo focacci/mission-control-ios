@@ -41,11 +41,25 @@ struct ChatTurn: Identifiable {
 enum TurnSegment: Identifiable {
     case text(id: UUID, content: String)
     case toolCall(id: String, call: ToolCallLog)
+    case card(id: UUID, kind: CardKind, entityId: String)
 
     var id: String {
         switch self {
-        case .text(let id, _):      return "t-\(id.uuidString)"
-        case .toolCall(let id, _):  return "c-\(id)"
+        case .text(let id, _):       return "t-\(id.uuidString)"
+        case .toolCall(let id, _):   return "c-\(id)"
+        case .card(let id, _, _):    return "k-\(id.uuidString)"
+        }
+    }
+}
+
+extension ChatTurn {
+    /// Card refs emitted by this turn, in render order. Used by
+    /// `ChatConversationView` to bulk-hydrate via `EntityCache` so the inline
+    /// cards don't each round-trip on first display.
+    var cardRefs: [(CardKind, String)] {
+        segments.compactMap {
+            if case .card(_, let kind, let id) = $0 { return (kind, id) }
+            return nil
         }
     }
 }
@@ -163,9 +177,11 @@ final class ChatService: ObservableObject {
 enum ChatTurnBuilder {
     /// Translate one assistant `chat_messages` row into `TurnSegment`s.
     /// `parts` is authoritative when present; `content` is the legacy
-    /// single-text fallback (server-derived `partsToText`). Non-text part
-    /// kinds are intentionally dropped here — their renderers land in
-    /// later build-order steps alongside new `TurnSegment` cases.
+    /// single-text fallback (server-derived `partsToText`). Non-rendered
+    /// part kinds (`prompt`, `quick_replies`, `navigate`, `attachment`,
+    /// `live_activity_ref`) are intentionally dropped here — their
+    /// renderers land in later build-order steps alongside new
+    /// `TurnSegment` cases.
     static func segments(forAssistant message: ChatTranscriptMessage) -> [TurnSegment] {
         if message.parts.isEmpty {
             if message.content.isEmpty { return [] }
@@ -173,8 +189,13 @@ enum ChatTurnBuilder {
         }
         var out: [TurnSegment] = []
         for part in message.parts {
-            if case .text(let s) = part, !s.isEmpty {
+            switch part {
+            case .text(let s) where !s.isEmpty:
                 out.append(.text(id: UUID(), content: s))
+            case .card(let kind, let entityId):
+                out.append(.card(id: UUID(), kind: kind, entityId: entityId))
+            default:
+                break
             }
         }
         return out
@@ -306,6 +327,7 @@ struct ChatConversationView: View {
     @StateObject private var chatService = ChatService()
 
     @State private var localState = ChatConversationState()
+    @State private var entityCache = EntityCache()
     @State private var showingHistory = false
     @State private var isStartingNewChat = false
     @State private var historyError: String?
@@ -453,6 +475,15 @@ struct ChatConversationView: View {
         state.inputText = ""
         state.sessionId = session.id
 
+        // Bulk-hydrate every card ref across the loaded transcript in one
+        // round-trip. InlineCardView falls back to per-ref hydration for
+        // anything that slips through (e.g. cards added by enrich), so this
+        // is just a latency optimization — kicked fire-and-forget.
+        let allRefs = turns.flatMap(\.cardRefs)
+        if !allRefs.isEmpty {
+            Task { await entityCache.hydrate(allRefs) }
+        }
+
         // Enrich each turn with tool calls + tokens in the background. One
         // fetch per invocation; fire-and-forget so the list renders first.
         for turn in turns {
@@ -489,7 +520,7 @@ struct ChatConversationView: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 20) {
                     ForEach(state.turns) { turn in
-                        TurnView(turn: turn)
+                        TurnView(turn: turn, entityCache: entityCache)
                             .id(turn.id)
                     }
                 }
@@ -698,8 +729,13 @@ struct ChatConversationView: View {
         updateTurn(turnId) { $0.isEnriching = true }
         do {
             let detail = try await APIClient.shared.invocation(id: invocationId)
+            var refs: [(CardKind, String)] = []
             updateTurn(turnId) { t in
                 t = ChatTurnBuilder.enrich(t, with: detail)
+                refs = t.cardRefs
+            }
+            if !refs.isEmpty {
+                await entityCache.hydrate(refs)
             }
         } catch {
             updateTurn(turnId) { $0.isEnriching = false }
@@ -718,6 +754,7 @@ struct ChatConversationView: View {
 
 struct TurnView: View {
     let turn: ChatTurn
+    let entityCache: EntityCache
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -733,7 +770,7 @@ struct TurnView: View {
             }
 
             ForEach(turn.segments) { segment in
-                MessageSegmentView(segment: segment)
+                MessageSegmentView(segment: segment, entityCache: entityCache)
             }
 
             if let err = turn.errorMessage {

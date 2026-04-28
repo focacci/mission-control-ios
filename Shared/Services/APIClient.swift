@@ -478,6 +478,18 @@ final class APIClient {
         try await sendNoBody("/api/chat/sessions/\(id)", method: "DELETE")
     }
 
+    // MARK: - Cards
+
+    /// Bulk-resolve `card` parts emitted by the agent into full entity rows.
+    /// Mirrors `POST /api/cards/hydrate` (see `cards.routes.ts`). One call per
+    /// turn; the renderer reads results out of `EntityCache`.
+    func hydrateCards(refs: [(CardKind, String)]) async throws -> HydrateCardsResponse {
+        let body = HydrateCardsBody(
+            cards: refs.map { CardRefBody(cardType: $0.0.rawValue, entityId: $0.1) }
+        )
+        return try await send("/api/cards/hydrate", method: "POST", body: body)
+    }
+
     // MARK: - Invocations
 
     func invocations(
@@ -662,4 +674,38 @@ struct CreateSessionBody: Encodable {
     let contextType: String?
     let contextId: String?
     let title: String?
+}
+
+// MARK: - Card Hydration
+
+struct CardRefBody: Encodable {
+    let cardType: String
+    let entityId: String
+}
+
+struct HydrateCardsBody: Encodable {
+    let cards: [CardRefBody]
+}
+
+/// Response for `POST /api/cards/hydrate`. Buckets are keyed by `CardKind`
+/// raw string; only kinds present in the request appear in the response, and
+/// unknown ids inside a kind are silently dropped server-side.
+struct HydrateCardsResponse: Codable {
+    let task: [MCTask]?
+    let goal: [Goal]?
+    let initiative: [Initiative]?
+    let agentAssignment: [AgentAssignment]?
+    let slot: [ScheduleSlot]?
+    let scheduleDay: [ScheduleDayBucket]?
+
+    enum CodingKeys: String, CodingKey {
+        case task, goal, initiative, slot
+        case agentAssignment = "agent_assignment"
+        case scheduleDay = "schedule_day"
+    }
+}
+
+struct ScheduleDayBucket: Codable, Hashable {
+    let date: String
+    let slots: [ScheduleSlot]
 }

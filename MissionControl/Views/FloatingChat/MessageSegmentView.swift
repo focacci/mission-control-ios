@@ -1,15 +1,16 @@
 import SwiftUI
 
 /// Single dispatcher for one strip of an agent turn. Owns the mapping from
-/// `TurnSegment` cases to per-kind views so `TurnView` stays a flat
-/// `ForEach(segments) { MessageSegmentView(segment:) }`.
+/// `TurnSegment` cases to per-kind renderers so `TurnView` stays a flat
+/// `ForEach(segments) { MessageSegmentView(segment:entityCache:) }`.
 ///
-/// Only the two segment kinds that ship today are handled here — `.text` and
-/// `.toolCall`. New cases (`.card`, `.quickReplies`, `.navigate`,
-/// `.attachment`) land in later build-order steps and slot in as additional
-/// switch arms without touching callers.
+/// Three segment kinds ship today: `.text`, `.toolCall`, and `.card`. New
+/// cases (`.quickReplies`, `.navigate`, `.attachment`) land in later
+/// build-order steps and slot in as additional switch arms without touching
+/// callers.
 struct MessageSegmentView: View {
     let segment: TurnSegment
+    let entityCache: EntityCache
 
     var body: some View {
         switch segment {
@@ -17,6 +18,8 @@ struct MessageSegmentView: View {
             AgentTextBubble(content: content, isError: false)
         case .toolCall(_, let call):
             ToolStepRow(call: call)
+        case .card(_, let kind, let entityId):
+            InlineCardView(kind: kind, entityId: entityId, cache: entityCache)
         }
     }
 }
