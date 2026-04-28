@@ -48,6 +48,7 @@
 		1BA001D22F9C520900B87A44 /* ChatLockToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB15A4165242E5C5D8CC9686 /* ChatLockToolbarButton.swift */; };
 		1BA001D32F9C520900B87A44 /* ChatSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56FE9B08913A098C3C764476 /* ChatSession.swift */; };
 		EEEEEEEE000000000000000B /* MessagePart.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEEEEEE000000000000000A /* MessagePart.swift */; };
+		EEEEEEEE000000000000000F /* MessageSegmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEEEEEE000000000000000E /* MessageSegmentView.swift */; };
 		1BA001D42F9C520900B87A44 /* ChatTranscriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C2AD8C673B9C9B570ED26E1 /* ChatTranscriptView.swift */; };
 		1BA001D52F9C520900B87A44 /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C556F6188837FF7EFE0FA4E8 /* ChatView.swift */; };
 		1BA001D62F9C520900B87A44 /* CompleteTaskSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 513EBEA9872A4F80D2B6EF4B /* CompleteTaskSheet.swift */; };
@@ -167,6 +168,7 @@
 		AC4AAD7D0F6CFE1F74FA99CD /* MissionControlWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C188665B80A8B294010B439D /* MissionControlWatchApp.swift */; };
 		AD5EC95A0BF92F983A6667A0 /* ChatSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56FE9B08913A098C3C764476 /* ChatSession.swift */; };
 		EEEEEEEE000000000000000C /* MessagePart.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEEEEEE000000000000000A /* MessagePart.swift */; };
+		EEEEEEEE0000000000000010 /* MessageSegmentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEEEEEE000000000000000E /* MessageSegmentView.swift */; };
 		AE8534C4D468649DD2B40BB6 /* ChatContextToolbarButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A8603F68EF347D2D6073BA /* ChatContextToolbarButton.swift */; };
 		B29CE6C04A6868099D65BD1F /* View+ErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E703CF245AF6F5A4A9BD47 /* View+ErrorAlert.swift */; };
 		B3CE9B7086490729EA73722C /* RequirementsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C42111B2F12FADC127BCAD07 /* RequirementsCard.swift */; };
@@ -256,6 +258,7 @@
 		5653D06464E98241C8607906 /* ChatConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatConversationView.swift; sourceTree = "<group>"; };
 		56FE9B08913A098C3C764476 /* ChatSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatSession.swift; sourceTree = "<group>"; };
 		EEEEEEEE000000000000000A /* MessagePart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePart.swift; sourceTree = "<group>"; };
+		EEEEEEEE000000000000000E /* MessageSegmentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageSegmentView.swift; sourceTree = "<group>"; };
 		590FE9BEA30F0E9CBC537F39 /* AgentAssignment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentAssignment.swift; sourceTree = "<group>"; };
 		5BF63048ED44AD2B05213289 /* GoalCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalCard.swift; sourceTree = "<group>"; };
 		5BFE19D6CA9CC9B6BFD9F594 /* ContextGroupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextGroupsView.swift; sourceTree = "<group>"; };
@@ -560,6 +563,7 @@
 				C556F6188837FF7EFE0FA4E8 /* ChatView.swift */,
 				04AB2386BB8B7FD960E5EBCE /* ContextChatHistorySection.swift */,
 				2E75296C46CA0C8996DC4BAF /* FloatingChatButton.swift */,
+				EEEEEEEE000000000000000E /* MessageSegmentView.swift */,
 			);
 			path = FloatingChat;
 			sourceTree = "<group>";
@@ -844,6 +848,7 @@
 				1BA001EF2F9C520900B87A44 /* InvocationDetailView.swift in Sources */,
 				1BA001F02F9C520900B87A44 /* InvocationsListView.swift in Sources */,
 				EEEEEEEE000000000000000B /* MessagePart.swift in Sources */,
+				EEEEEEEE000000000000000F /* MessageSegmentView.swift in Sources */,
 				1BA001F12F9C520900B87A44 /* MissionControlApp.swift in Sources */,
 				1BA001F22F9C520900B87A44 /* MonthScheduleView.swift in Sources */,
 				1BA001F32F9C520900B87A44 /* PlansView.swift in Sources */,
@@ -939,6 +944,7 @@
 				51D9AA4F026CBBA0FF925898 /* InvocationDetailView.swift in Sources */,
 				0379971EB5B6F42A3E1B1917 /* InvocationsListView.swift in Sources */,
 				EEEEEEEE000000000000000C /* MessagePart.swift in Sources */,
+				EEEEEEEE0000000000000010 /* MessageSegmentView.swift in Sources */,
 				5330C852D09BB43E679EA616 /* MissionControlApp.swift in Sources */,
 				B93DD612D843B2A9DB03F08A /* MonthScheduleView.swift in Sources */,
 				FE5A1F4D940B78D99D81D209 /* PlansView.swift in Sources */,

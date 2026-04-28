@@ -733,12 +733,7 @@ struct TurnView: View {
             }
 
             ForEach(turn.segments) { segment in
-                switch segment {
-                case .text(_, let content):
-                    AgentTextBubble(content: content, isError: false)
-                case .toolCall(_, let call):
-                    ToolStepRow(call: call)
-                }
+                MessageSegmentView(segment: segment)
             }
 
             if let err = turn.errorMessage {
@@ -763,7 +758,7 @@ private struct UserBubble: View {
     }
 }
 
-private struct AgentTextBubble: View {
+struct AgentTextBubble: View {
     let content: String
     let isError: Bool
     var body: some View {
@@ -806,7 +801,7 @@ private struct ThinkingBubble: View {
 /// Collapsed inline tool step. Quiet by default — just the tool name + the
 /// server-provided one-line `summary`. Tap to expand and see the raw JSON
 /// input/output (same shape as the debug view).
-private struct ToolStepRow: View {
+struct ToolStepRow: View {
     let call: ToolCallLog
     @State private var isExpanded = false
 
