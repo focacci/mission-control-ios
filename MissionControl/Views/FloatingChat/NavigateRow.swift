@@ -53,7 +53,7 @@ struct NavigateRow: View {
 
     private func icon(for link: DeepLink) -> String {
         switch link {
-        case .task:             return "list.bullet.clipboard"
+        case .task:             return "checkmark.square"
         case .goal:             return "trophy"
         case .initiative:       return "flag.pattern.checkered"
         case .agentAssignment:  return "person.badge.clock"

@@ -16,7 +16,7 @@ struct ContentView: View {
 
             PlansView()
                 .floatingChatButton(isPresented: $chatContextStore.showingChat)
-                .tabItem { Label("Plans", systemImage: "list.bullet") }
+                .tabItem { Label("Plans", systemImage: "list.bullet.clipboard") }
                 .tag(2)
 
             ScheduleView()

@@ -8,7 +8,7 @@ struct RequirementsCard: View {
     let onAdd: () -> Void
 
     var body: some View {
-        SectionCard(title: "Requirements", icon: "checkmark.circle") {
+        SectionCard(title: "Requirements", icon: "checklist") {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(requirements) { req in
                     NavigationLink(value: req) {

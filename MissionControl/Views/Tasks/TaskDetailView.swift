@@ -24,7 +24,7 @@ struct TaskDetailView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         TaskDetailHeader(task: task)
 
-                        SectionCard(title: "Status", icon: "flag.fill") {
+                        SectionCard(title: "Status", icon: "flag") {
                             VStack(alignment: .leading, spacing: 12) {
                                 Label(task.statusLabel, systemImage: task.statusIcon)
                                     .font(.subheadline)
