@@ -19,6 +19,16 @@ struct AgentAssignmentsCard: View {
                             AgentAssignmentRow(assignment: aa)
                         }
                         .buttonStyle(.plain)
+                        .contextMenu {
+                            OpenChatAboutMenuItem(
+                                kind: .agentAssignment(id: aa.id, title: aa.title)
+                            )
+                            Button(role: .destructive) {
+                                onDelete(aa.id)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
                                 onDelete(aa.id)

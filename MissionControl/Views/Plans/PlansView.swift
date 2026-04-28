@@ -67,7 +67,15 @@ struct PlansView: View {
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                                .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                                    OpenChatAboutSwipeButton(
+                                        kind: .goal(id: goal.id, emoji: goal.emoji, name: goal.name)
+                                    )
+                                }
                                 .contextMenu {
+                                    OpenChatAboutMenuItem(
+                                        kind: .goal(id: goal.id, emoji: goal.emoji, name: goal.name)
+                                    )
                                     Button(role: .destructive) {
                                         Task { await viewModel.deleteGoal(id: goal.id) }
                                     } label: {
@@ -91,6 +99,9 @@ struct PlansView: View {
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 8)
                                         .contextMenu {
+                                            OpenChatAboutMenuItem(
+                                                kind: .initiative(id: initiative.id, emoji: initiative.emoji, name: initiative.name)
+                                            )
                                             Button(role: .destructive) {
                                                 Task { await viewModel.deleteInitiative(id: initiative.id) }
                                             } label: {
@@ -114,7 +125,15 @@ struct PlansView: View {
                                 .listRowBackground(Color.clear)
                                 .listRowSeparator(.hidden)
                                 .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                                .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                                    OpenChatAboutSwipeButton(
+                                        kind: .task(id: task.id, name: task.name)
+                                    )
+                                }
                                 .contextMenu {
+                                    OpenChatAboutMenuItem(
+                                        kind: .task(id: task.id, name: task.name)
+                                    )
                                     Button(role: .destructive) {
                                         Task { await viewModel.deleteTask(id: task.id) }
                                     } label: {

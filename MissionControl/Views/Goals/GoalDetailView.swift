@@ -48,6 +48,9 @@ struct GoalDetailView: View {
                                     }
                                     .buttonStyle(.plain)
                                     .contextMenu {
+                                        OpenChatAboutMenuItem(
+                                            kind: .initiative(id: initiative.id, emoji: initiative.emoji, name: initiative.name)
+                                        )
                                         Button(role: .destructive) {
                                             Task { await viewModel.deleteInitiative(id: initiative.id) }
                                         } label: {

@@ -147,6 +147,9 @@ private struct DayBriefsSection: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("\(brief.shortLabel) brief")
+                    .contextMenu {
+                        OpenChatAboutMenuItem(kind: .brief(kind: brief, date: day))
+                    }
                 }
             }
         }

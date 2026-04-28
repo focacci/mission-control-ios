@@ -19,6 +19,11 @@ struct TaskSection: View {
                         TaskCard(task: task)
                     }
                     .buttonStyle(.plain)
+                    .contextMenu {
+                        OpenChatAboutMenuItem(
+                            kind: .task(id: task.id, name: task.name)
+                        )
+                    }
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         if task.isDone {
                             Button {
