@@ -6,6 +6,14 @@ enum PlanSection: String, CaseIterable {
     case tasks = "Tasks"
 }
 
+/// ID-only destination types used by `DeepLinkRouter` pushes. The list-row
+/// destinations push fully-hydrated `Goal` / `Initiative` / `MCTask` values;
+/// chat deep links only carry an id, so they push these refs and let the
+/// detail view fetch the row by id like it already does.
+struct PlansGoalRef: Hashable { let id: String }
+struct PlansInitiativeRef: Hashable { let id: String }
+struct PlansTaskRef: Hashable { let id: String }
+
 struct PlansView: View {
     @State private var viewModel = PlansViewModel()
     @State private var selectedSection: PlanSection = .goals
@@ -13,6 +21,7 @@ struct PlansView: View {
     @State private var showingAddInitiative = false
     @State private var showingAddTask = false
     @State private var path = NavigationPath()
+    @Environment(DeepLinkRouter.self) private var deepLinkRouter
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -157,6 +166,15 @@ struct PlansView: View {
             .navigationDestination(for: MCTask.self) { task in
                 TaskDetailView(taskId: task.id)
             }
+            .navigationDestination(for: PlansGoalRef.self) { ref in
+                GoalDetailView(goalId: ref.id)
+            }
+            .navigationDestination(for: PlansInitiativeRef.self) { ref in
+                InitiativeDetailView(initiativeId: ref.id)
+            }
+            .navigationDestination(for: PlansTaskRef.self) { ref in
+                TaskDetailView(taskId: ref.id)
+            }
             .sheet(isPresented: $showingAddGoal) {
                 AddGoalSheet { emoji, name, focus, timeline, story in
                     Task {
@@ -192,6 +210,35 @@ struct PlansView: View {
             }
             .task { await viewModel.load() }
             .chatContext(.plans(section: selectedSection.rawValue))
+            .onChange(of: deepLinkRouter.pending) { _, link in
+                consumePendingDeepLink(link)
+            }
+            .onAppear {
+                // Catches the case where the router fires while this tab is
+                // not the active one — the link sits pending until the tab
+                // reappears, then we pick it up here.
+                consumePendingDeepLink(deepLinkRouter.pending)
+            }
+        }
+    }
+
+    /// Append the matching detail to `path` when chat fires a deep link this
+    /// tab owns (task / goal / initiative). Anything else is left alone for
+    /// other listeners to claim.
+    private func consumePendingDeepLink(_ link: DeepLink?) {
+        guard let link else { return }
+        switch link {
+        case .goal(let id):
+            path.append(PlansGoalRef(id: id))
+            deepLinkRouter.consume()
+        case .initiative(let id):
+            path.append(PlansInitiativeRef(id: id))
+            deepLinkRouter.consume()
+        case .task(let id):
+            path.append(PlansTaskRef(id: id))
+            deepLinkRouter.consume()
+        default:
+            break
         }
     }
 }

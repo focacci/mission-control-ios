@@ -4,10 +4,10 @@ import SwiftUI
 /// `TurnSegment` cases to per-kind renderers so `TurnView` stays a flat
 /// `ForEach(segments) { MessageSegmentView(segment:entityCache:) }`.
 ///
-/// Three segment kinds ship today: `.text`, `.toolCall`, and `.card`. New
-/// cases (`.quickReplies`, `.navigate`, `.attachment`) land in later
-/// build-order steps and slot in as additional switch arms without touching
-/// callers.
+/// `.quickReplies` is intentionally a no-op here — chips render above the
+/// composer in `QuickReplyChipBar`, not inline in the bubble stack. The
+/// segment still travels in the turn so the chip bar can pluck the latest
+/// assistant turn's suggestions out of `ChatConversationState.turns`.
 struct MessageSegmentView: View {
     let segment: TurnSegment
     let entityCache: EntityCache
@@ -20,6 +20,12 @@ struct MessageSegmentView: View {
             ToolStepRow(call: call)
         case .card(_, let kind, let entityId):
             InlineCardView(kind: kind, entityId: entityId, cache: entityCache)
+        case .quickReplies:
+            EmptyView()
+        case .navigate(_, let route, let label):
+            NavigateRow(route: route, label: label)
+        case .attachment(_, let attachment):
+            AttachmentRow(attachment: attachment)
         }
     }
 }

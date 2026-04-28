@@ -38,16 +38,26 @@ struct ChatTurn: Identifiable {
 /// One strip of the agent's response. `.text` comes from a `chat_messages` row;
 /// `.toolCall` comes from a `tool_call_log` row (collapsed by default, expand
 /// on tap).
+///
+/// `.quickReplies` is intentionally part of the segment list (so the chip bar
+/// can surface only the *most recent* assistant turn's chips) but it does not
+/// render inline in the bubble stack — see `MessageSegmentView`.
 enum TurnSegment: Identifiable {
     case text(id: UUID, content: String)
     case toolCall(id: String, call: ToolCallLog)
     case card(id: UUID, kind: CardKind, entityId: String)
+    case quickReplies(id: UUID, suggestions: [QuickReply])
+    case navigate(id: UUID, route: String, label: String)
+    case attachment(id: UUID, value: Attachment)
 
     var id: String {
         switch self {
-        case .text(let id, _):       return "t-\(id.uuidString)"
-        case .toolCall(let id, _):   return "c-\(id)"
-        case .card(let id, _, _):    return "k-\(id.uuidString)"
+        case .text(let id, _):              return "t-\(id.uuidString)"
+        case .toolCall(let id, _):          return "c-\(id)"
+        case .card(let id, _, _):           return "k-\(id.uuidString)"
+        case .quickReplies(let id, _):      return "q-\(id.uuidString)"
+        case .navigate(let id, _, _):       return "n-\(id.uuidString)"
+        case .attachment(let id, _):        return "a-\(id.uuidString)"
         }
     }
 }
@@ -177,11 +187,9 @@ final class ChatService: ObservableObject {
 enum ChatTurnBuilder {
     /// Translate one assistant `chat_messages` row into `TurnSegment`s.
     /// `parts` is authoritative when present; `content` is the legacy
-    /// single-text fallback (server-derived `partsToText`). Non-rendered
-    /// part kinds (`prompt`, `quick_replies`, `navigate`, `attachment`,
-    /// `live_activity_ref`) are intentionally dropped here — their
-    /// renderers land in later build-order steps alongside new
-    /// `TurnSegment` cases.
+    /// single-text fallback (server-derived `partsToText`). `prompt`,
+    /// `prompt_reply`, and `live_activity_ref` parts are intentionally
+    /// dropped — their renderers land alongside Bucket 3 work.
     static func segments(forAssistant message: ChatTranscriptMessage) -> [TurnSegment] {
         if message.parts.isEmpty {
             if message.content.isEmpty { return [] }
@@ -194,6 +202,12 @@ enum ChatTurnBuilder {
                 out.append(.text(id: UUID(), content: s))
             case .card(let kind, let entityId):
                 out.append(.card(id: UUID(), kind: kind, entityId: entityId))
+            case .quickReplies(let suggestions) where !suggestions.isEmpty:
+                out.append(.quickReplies(id: UUID(), suggestions: suggestions))
+            case .navigate(let route, let label):
+                out.append(.navigate(id: UUID(), route: route, label: label))
+            case .attachment(let attachment):
+                out.append(.attachment(id: UUID(), value: attachment))
             default:
                 break
             }
@@ -542,6 +556,20 @@ struct ChatConversationView: View {
 
     @ViewBuilder
     private var inputBarContainer: some View {
+        VStack(spacing: 0) {
+            if let chips = activeQuickReplies, !chips.isEmpty {
+                QuickReplyChipBar(suggestions: chips) { reply in
+                    submitQuickReply(reply)
+                }
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+            inputBarChrome
+        }
+        .animation(.easeOut(duration: 0.15), value: activeQuickReplies?.map(\.id))
+    }
+
+    @ViewBuilder
+    private var inputBarChrome: some View {
         if #available(iOS 26.0, *) {
             GlassEffectContainer(spacing: 10) {
                 inputBar
@@ -552,6 +580,35 @@ struct ChatConversationView: View {
                 inputBar
             }
             .background(.bar)
+        }
+    }
+
+    /// Suggestions from the latest turn — chips persist until the user sends
+    /// the next message (which appends a new turn whose assistant content is
+    /// still empty), at which point they vanish. Hidden while a turn is
+    /// mid-flight so the user can't double-fire on stale options.
+    private var activeQuickReplies: [QuickReply]? {
+        guard !isAwaitingResponse else { return nil }
+        guard let last = state.turns.last else { return nil }
+        for seg in last.segments {
+            if case .quickReplies(_, let suggestions) = seg {
+                return suggestions
+            }
+        }
+        return nil
+    }
+
+    /// Synthetic user message dispatch for a chip tap. Per
+    /// IOS_MESSAGE_PARTS_PLAN §7, the chip's `label` is what the agent sees
+    /// and what shows as the user's bubble. Once `prompt_user` lands the
+    /// payload swaps to a typed `prompt_reply` part — UI stays the same.
+    private func submitQuickReply(_ reply: QuickReply) {
+        guard !isAwaitingResponse else { return }
+        let turn = ChatTurn.user(reply.label)
+        state.turns.append(turn)
+        activeTurnTask = Task {
+            await runTurn(turnId: turn.id, text: reply.label)
+            activeTurnTask = nil
         }
     }
 
