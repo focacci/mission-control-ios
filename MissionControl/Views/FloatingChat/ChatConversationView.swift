@@ -161,6 +161,25 @@ final class ChatService: ObservableObject {
 // MARK: - Turn construction helpers
 
 enum ChatTurnBuilder {
+    /// Translate one assistant `chat_messages` row into `TurnSegment`s.
+    /// `parts` is authoritative when present; `content` is the legacy
+    /// single-text fallback (server-derived `partsToText`). Non-text part
+    /// kinds are intentionally dropped here — their renderers land in
+    /// later build-order steps alongside new `TurnSegment` cases.
+    static func segments(forAssistant message: ChatTranscriptMessage) -> [TurnSegment] {
+        if message.parts.isEmpty {
+            if message.content.isEmpty { return [] }
+            return [.text(id: UUID(), content: message.content)]
+        }
+        var out: [TurnSegment] = []
+        for part in message.parts {
+            if case .text(let s) = part, !s.isEmpty {
+                out.append(.text(id: UUID(), content: s))
+            }
+        }
+        return out
+    }
+
     /// Group a flat transcript into turns: each user message starts a new turn;
     /// subsequent assistant messages attach to it and supply the `invocationId`.
     /// Preliminary segments are a text per assistant message — tool rows are
@@ -186,9 +205,7 @@ enum ChatTurnBuilder {
                 if current?.invocationId == nil {
                     current?.invocationId = msg.invocationId
                 }
-                if !msg.content.isEmpty {
-                    current?.segments.append(.text(id: UUID(), content: msg.content))
-                }
+                current?.segments.append(contentsOf: segments(forAssistant: msg))
             case .system:
                 continue
             }
@@ -219,9 +236,7 @@ enum ChatTurnBuilder {
         }
 
         for msg in assistantMessages {
-            if !msg.content.isEmpty {
-                segments.append(.text(id: UUID(), content: msg.content))
-            }
+            segments.append(contentsOf: ChatTurnBuilder.segments(forAssistant: msg))
             let tools = detail.toolCalls
                 .filter { $0.messageId == msg.id }
                 .sorted { $0.startedAt < $1.startedAt }

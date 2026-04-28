@@ -42,6 +42,19 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         TARGETED_DEVICE_FAMILY: "1,2"
 
+  MissionControlTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: MissionControlTests
+    dependencies:
+      - target: MissionControl
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.focacci.MissionControlTests
+        GENERATE_INFOPLIST_FILE: "YES"
+
   MissionControlWatch Watch App:
     type: application
     platform: watchOS
