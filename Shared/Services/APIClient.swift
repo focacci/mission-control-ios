@@ -538,11 +538,18 @@ final class APIClient {
     }
 
     /// Phase-2 endpoint. Returns the updated `Brief` with `status =
-    /// acknowledged` and `acknowledgedAt` set. Phase 1 callers invoke this
-    /// best-effort; the route doesn't exist server-side yet, so a 404/501
-    /// is expected and swallowed by the caller.
+    /// acknowledged` and `acknowledgedAt` set. The route auto-finalizes any
+    /// still-`drafting` brief whose `revealAt` has passed before recording the
+    /// acknowledgement, so the user never sees a half-frozen brief.
     func acknowledgeBrief(id: String) async throws -> Brief {
         try await send("/api/briefs/\(id)/acknowledge", method: "POST")
+    }
+
+    /// Manual finalize — freezes the brief at its current evidence and
+    /// transitions `drafting → ready`. Phase 2 ships without LLM synthesis,
+    /// so this is mainly a debug affordance for hand-authored briefs.
+    func finalizeBrief(id: String) async throws -> Brief {
+        try await send("/api/briefs/\(id)/finalize", method: "POST")
     }
 }
 

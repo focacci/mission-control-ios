@@ -46,10 +46,9 @@ final class BriefsViewModel {
         BriefAvailability.from(brief: brief(for: kind, date: date))
     }
 
-    /// Best-effort acknowledge. The Phase-2 route may not exist yet; if the
-    /// call fails we still update local state to `.acknowledged` so the UI
-    /// doesn't show a stuck "unread" badge during Phase 1 testing with
-    /// hand-authored briefs.
+    /// Acknowledge a `ready` brief. Falls back to optimistic local-only
+    /// acknowledgement if the API call fails, so the unread badge clears even
+    /// when the user is offline.
     func acknowledge(brief: Brief) async {
         guard brief.status == .ready else { return }
         if let updated = try? await APIClient.shared.acknowledgeBrief(id: brief.id) {

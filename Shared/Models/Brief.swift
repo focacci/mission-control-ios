@@ -55,12 +55,14 @@ enum BriefKind: String, Codable, CaseIterable, Hashable {
 
 // MARK: - Status
 
-/// Backend states. Phase 1 only emits `pending | generating | ready | error`.
-/// `drafting` and `acknowledged` are forward-compat for Phase 2/3 — decoding
-/// any unknown raw value falls back to `.unknown` so a server change can't
-/// crash the client.
+/// Backend states. Phase 2 emits `pending | drafting | ready | acknowledged | error`.
+/// `generating` is preserved as a legacy alias so older rows from before the
+/// migration still decode cleanly. Any unknown raw value falls back to
+/// `.unknown` so a future server change can't crash the client.
 enum BriefStatus: String, Codable, Hashable {
     case pending
+    /// Legacy Phase-1 status — server-side migration rewrites these to
+    /// `drafting`, but pre-migration in-flight responses may still use this.
     case generating
     case drafting
     case ready
@@ -127,37 +129,72 @@ struct BriefSections: Codable, Hashable {
     let worldSignal: [BriefWorldSignalItem]
 }
 
+/// One completed agent_output that fell inside the brief's window. Mirrors
+/// the API discriminated union; `kind` is decoded for completeness even
+/// though we already know it from the array we're in.
 struct BriefAgentWorkItem: Codable, Hashable, Identifiable {
+    let kind: String?
     let agentOutputId: String
+    let agentAssignmentId: String?
+    let agentId: String?
+    let agentName: String?
+    let agentEmoji: String?
     let title: String
-    let oneLineSummary: String
-    let tokens: Int?
+    let oneLineSummary: String?
+    let tokensIn: Int?
+    let tokensOut: Int?
     let durationMs: Int?
+    let endedAt: String?
     var id: String { agentOutputId }
+
+    /// Combined token count for compact UI rendering.
+    var totalTokens: Int? {
+        let i = tokensIn ?? 0
+        let o = tokensOut ?? 0
+        let total = i + o
+        return total > 0 ? total : nil
+    }
 }
 
 struct BriefQuestionItem: Codable, Hashable, Identifiable {
-    let id: String
-    let question: String
-    let context: String?
+    let kind: String?
+    let questionId: String
+    let prompt: String
+    let source: String?
+    let agentOutputId: String?
+    let invocationId: String?
+    let chatMessageId: String?
+    let raisedAt: String?
+    var id: String { questionId }
 }
 
 struct BriefAccomplishmentItem: Codable, Hashable, Identifiable {
-    let id: String
-    let label: String
+    let kind: String?
+    let source: String
+    let refId: String
+    let title: String
     let detail: String?
+    let occurredAt: String?
+    var id: String { "\(source):\(refId)" }
 }
 
 struct BriefProfileGapItem: Codable, Hashable, Identifiable {
-    let id: String
-    let question: String
+    let kind: String?
+    let profileSectionId: String
     let profileEntryId: String?
+    let prompt: String
+    let raisedAt: String?
+    var id: String { profileEntryId ?? profileSectionId }
 }
 
 struct BriefWorldSignalItem: Codable, Hashable, Identifiable {
-    let id: String
-    let label: String
+    let kind: String?
+    let provider: String
+    let headline: String
     let detail: String?
+    let url: String?
+    let occurredAt: String?
+    var id: String { "\(provider):\(headline)" }
 }
 
 struct BriefReferences: Codable, Hashable {

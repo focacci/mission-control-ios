@@ -113,7 +113,11 @@ struct BriefFullScreenView: View {
             VStack(alignment: .leading, spacing: 10) {
                 sectionLabel("Agent outputs", icon: "cpu")
                 ForEach(body.sections.agentWork) { item in
-                    BriefBulletRow(text: item.title, detail: item.oneLineSummary, color: kind.color)
+                    BriefBulletRow(
+                        text: agentWorkTitle(item),
+                        detail: item.oneLineSummary,
+                        color: kind.color
+                    )
                 }
             }
         }
@@ -122,7 +126,7 @@ struct BriefFullScreenView: View {
             VStack(alignment: .leading, spacing: 10) {
                 sectionLabel("Open questions", icon: "questionmark.bubble")
                 ForEach(body.sections.openQuestions) { item in
-                    BriefBulletRow(text: item.question, detail: item.context, color: kind.color)
+                    BriefBulletRow(text: item.prompt, detail: nil, color: kind.color)
                 }
             }
         }
@@ -131,7 +135,7 @@ struct BriefFullScreenView: View {
             VStack(alignment: .leading, spacing: 10) {
                 sectionLabel("You did", icon: "checkmark.seal")
                 ForEach(body.sections.userAccomplishments) { item in
-                    BriefBulletRow(text: item.label, detail: item.detail, color: kind.color)
+                    BriefBulletRow(text: item.title, detail: item.detail, color: kind.color)
                 }
             }
         }
@@ -140,7 +144,7 @@ struct BriefFullScreenView: View {
             VStack(alignment: .leading, spacing: 10) {
                 sectionLabel("Help me know you", icon: "person.text.rectangle")
                 ForEach(body.sections.profileGaps) { item in
-                    BriefBulletRow(text: item.question, detail: nil, color: kind.color)
+                    BriefBulletRow(text: item.prompt, detail: nil, color: kind.color)
                 }
             }
         }
@@ -149,10 +153,17 @@ struct BriefFullScreenView: View {
             VStack(alignment: .leading, spacing: 10) {
                 sectionLabel("World", icon: "globe")
                 ForEach(body.sections.worldSignal) { item in
-                    BriefBulletRow(text: item.label, detail: item.detail, color: kind.color)
+                    BriefBulletRow(text: item.headline, detail: item.detail, color: kind.color)
                 }
             }
         }
+    }
+
+    private func agentWorkTitle(_ item: BriefAgentWorkItem) -> String {
+        if let emoji = item.agentEmoji, !emoji.isEmpty {
+            return "\(emoji) \(item.title)"
+        }
+        return item.title
     }
 
     private func plainTextBody(_ body: String) -> some View {
