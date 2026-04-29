@@ -17,6 +17,11 @@ struct FeatureListView: View {
                         entryRow(entry)
                     }
                 }
+                Section("Agent") {
+                    ForEach(FeatureListEntry.agentCases) { entry in
+                        entryRow(entry)
+                    }
+                }
                 Section("System") {
                     ForEach(FeatureListEntry.systemCases) { entry in
                         entryRow(entry)
@@ -50,6 +55,8 @@ enum FeatureListEntry: String, CaseIterable, Identifiable, Hashable {
     case profile
     case faith
     case health
+    case agentAssignments
+    case agentOutputs
     case contextGroups
     case briefings
     case settings
@@ -57,39 +64,46 @@ enum FeatureListEntry: String, CaseIterable, Identifiable, Hashable {
     var id: String { rawValue }
 
     static let featureCases: [FeatureListEntry] = [.faith, .health]
+    static let agentCases: [FeatureListEntry] = [.agentAssignments, .agentOutputs]
     static let systemCases: [FeatureListEntry] = [.contextGroups, .briefings, .profile, .settings]
 
     var title: String {
         switch self {
-        case .profile:       return "Profile"
-        case .faith:         return "Faith"
-        case .health:        return "Health"
-        case .contextGroups: return "Context Groups"
-        case .briefings:     return "Briefings"
-        case .settings:      return "Settings"
+        case .profile:           return "Profile"
+        case .faith:             return "Faith"
+        case .health:            return "Health"
+        case .agentAssignments:  return "Agent Assignments"
+        case .agentOutputs:      return "Agent Outputs"
+        case .contextGroups:     return "Context Groups"
+        case .briefings:         return "Briefings"
+        case .settings:          return "Settings"
         }
     }
 
     var icon: String {
         switch self {
-        case .profile:       return "person.text.rectangle.fill"
-        case .faith:         return "cross.fill"
-        case .health:        return "heart.fill"
-        case .contextGroups: return "point.3.filled.connected.trianglepath.dotted"
-        case .briefings:     return "briefcase.fill"
-        case .settings:      return "gearshape.fill"
+        case .profile:           return "person.text.rectangle.fill"
+        case .faith:             return "cross.fill"
+        case .health:            return "heart.fill"
+        case .agentAssignments:  return "person.badge.clock.fill"
+        case .agentOutputs:      return "text.page.fill"
+        case .contextGroups:     return "point.3.filled.connected.trianglepath.dotted"
+        case .briefings:         return "briefcase.fill"
+        case .settings:          return "gearshape.fill"
         }
     }
 
     @ViewBuilder
     var destination: some View {
         switch self {
-        case .profile:       ProfileView()
-        case .faith:         FaithView()
-        case .health:        HealthView()
-        case .contextGroups: ContextGroupsView()
-        case .briefings:     BriefsView()
-        case .settings:      SettingsView()
+        case .profile:           ProfileView()
+        case .faith:             FaithView()
+        case .health:            HealthView()
+        case .agentAssignments:  AgentAssignmentsListView()
+        case .agentOutputs:      AgentOutputsListView()
+        case .contextGroups:     ContextGroupsView()
+        case .briefings:         BriefsView()
+        case .settings:          SettingsView()
         }
     }
 }

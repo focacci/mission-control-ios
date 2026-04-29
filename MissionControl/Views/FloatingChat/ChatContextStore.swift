@@ -18,10 +18,16 @@ enum ChatContextKind: Equatable, Hashable {
     /// unit of work. Grounds the chat on the instructions the agent will
     /// follow when its slot fires.
     case agentAssignment(id: String, title: String)
+    /// Aggregate list of all Agent Assignments across every parent. Grounds
+    /// the chat on the user's full agent-delegation backlog.
+    case agentAssignments
     /// One autonomous run of an Agent Assignment — the structured "what the
     /// agent did" record (input + ordered steps + final response). Grounds the
     /// chat on this specific run.
     case agentOutput(id: String, title: String)
+    /// Aggregate list of all Agent Outputs across every assignment. Grounds
+    /// the chat on the full history of autonomous runs.
+    case agentOutputs
     case schedule(date: Date, mode: ScheduleViewMode)
     /// A specific slot on the agent calendar — the focused page for assigning
     /// a task plus extra context (linked contexts, context groups, prompt
@@ -75,7 +81,9 @@ enum ChatContextKind: Equatable, Hashable {
         case .task:         return "task"
         case .requirement:  return "requirement"
         case .agentAssignment: return "agent_assignment"
+        case .agentAssignments: return "agent_assignments"
         case .agentOutput:  return "agent_output"
+        case .agentOutputs: return "agent_outputs"
         case .schedule:     return "schedule"
         case .timeSlot:     return "time_slot"
         case .health:       return "health"
@@ -272,7 +280,9 @@ final class ChatContextStore {
         case .task(_, let n):         return n
         case .requirement(_, let t):  return t
         case .agentAssignment(_, let t): return t
+        case .agentAssignments:          return "List"
         case .agentOutput(_, let t):     return t
+        case .agentOutputs:              return "List"
         case .schedule(let d, let m):
             let f = DateFormatter()
             switch m {
@@ -309,7 +319,9 @@ final class ChatContextStore {
         case .task:         return "checkmark.square"
         case .requirement:  return "checkmark.square"
         case .agentAssignment: return "person.badge.clock"
+        case .agentAssignments: return "person.badge.clock"
         case .agentOutput:  return "doc.text.magnifyingglass"
+        case .agentOutputs: return "text.page"
         case .schedule:     return "calendar"
         case .timeSlot:     return "calendar.day.timeline.leading"
         case .health:       return "heart"
@@ -342,7 +354,9 @@ final class ChatContextStore {
         case .task:         return "Task"
         case .requirement:  return "Requirement"
         case .agentAssignment: return "Agent Assignment"
+        case .agentAssignments: return "Agent Assignments"
         case .agentOutput:  return "Agent Output"
+        case .agentOutputs: return "Agent Outputs"
         case .schedule(_, let m):
             switch m {
             case .day:   return "Schedule - Day"
@@ -388,8 +402,12 @@ final class ChatContextStore {
             return "You're on the **\(title)** requirement. I can refine its wording, draft tests that would prove it's satisfied, or help you check it off once it is."
         case .agentAssignment(_, let title):
             return "You're looking at the **\(title)** agent assignment. I can tighten the description, scope what the agent should produce, or suggest where to slot it on the calendar."
+        case .agentAssignments:
+            return "You're browsing every agent assignment. I can help you triage what's pending, surface what's blocked, or suggest what to schedule next."
         case .agentOutput(_, let title):
             return "You're reviewing the **\(title)** agent output. I can summarize what the agent did, dig into a specific tool call, or critique the run."
+        case .agentOutputs:
+            return "You're browsing every agent output. I can summarize recent runs, flag failures, or surface patterns across the agent's work."
         case .timeSlot(_, let time, let day):
             return "You're focused on the **\(day) \(time)** time slot. I can suggest a task to assign, attach contexts the agent should consult, or draft an extra prompt for this run."
         case .schedule(let d, let m):

@@ -274,6 +274,11 @@ final class APIClient {
         try await fetch("/api/agent-assignments/\(id)")
     }
 
+    /// Aggregate list of every agent assignment, newest first by `updatedAt`.
+    func allAgentAssignments() async throws -> [AgentAssignment] {
+        try await fetch("/api/agent-assignments")
+    }
+
     func createAgentAssignment(taskId: String, body: CreateAgentAssignmentBody) async throws -> AgentAssignment {
         try await send("/api/tasks/\(taskId)/agent-assignments", method: "POST", body: body)
     }
@@ -318,6 +323,11 @@ final class APIClient {
 
     func agentOutputs(forAssignment id: String) async throws -> [AgentOutput] {
         try await fetch("/api/agent-assignments/\(id)/outputs")
+    }
+
+    /// Aggregate list of every agent output, newest first by `startedAt`.
+    func allAgentOutputs() async throws -> [AgentOutput] {
+        try await fetch("/api/agent-outputs")
     }
 
     func agentOutput(id: String) async throws -> AgentOutputDetail {

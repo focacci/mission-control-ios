@@ -67,6 +67,8 @@
 		75E87D15AD1F50552AEC20D4 /* InitiativeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AD53C713E8989E976B0CA26 /* InitiativeDetailView.swift */; };
 		770BFAF2CDE6C124D67B7CD6 /* ContextChatHistorySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04AB2386BB8B7FD960E5EBCE /* ContextChatHistorySection.swift */; };
 		79518D4DED5FD8F84011F93B /* AgentOutputRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C35386CCA26D5D6228E94FEB /* AgentOutputRow.swift */; };
+		8E5AA77E03C71076D7FC15B4 /* AgentAssignmentsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07FADED702542D209E63F14F /* AgentAssignmentsListView.swift */; };
+		6F7B36A5159DD39252A91ADF /* AgentOutputsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5878F7CE72CA81EC154AD81B /* AgentOutputsListView.swift */; };
 		7BC0F3F5E01AB8A8E45499B2 /* AttachmentRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351B2A882B8D17C8C9A39D9F /* AttachmentRow.swift */; };
 		7C937F758F17F3895BBABB10 /* ChatAgentPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 302DEACB46640E298F2D00C3 /* ChatAgentPanel.swift */; };
 		7D413A9E7ECF181F2F1D2E1D /* RequirementDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6BBDB430379DAA12151D58 /* RequirementDetailView.swift */; };
@@ -233,6 +235,8 @@
 		A4ACF310B8BE56BAB0CB9C29 /* MessagePart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagePart.swift; sourceTree = "<group>"; };
 		B5B1D1DDFD73BEEC8D7CA352 /* MissionControlWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MissionControlWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B694C7B9BD7DF9233B864429 /* AgentAssignmentDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentAssignmentDetailView.swift; sourceTree = "<group>"; };
+		07FADED702542D209E63F14F /* AgentAssignmentsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentAssignmentsListView.swift; sourceTree = "<group>"; };
+		5878F7CE72CA81EC154AD81B /* AgentOutputsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentOutputsListView.swift; sourceTree = "<group>"; };
 		B907B9C061ED212157D3FFF7 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
 		BB15A4165242E5C5D8CC9686 /* ChatLockToolbarButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLockToolbarButton.swift; sourceTree = "<group>"; };
 		BBDF2115CC37E29E184F1D05 /* ChatTranscriptMessageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTranscriptMessageTests.swift; sourceTree = "<group>"; };
@@ -554,7 +558,9 @@
 			isa = PBXGroup;
 			children = (
 				B694C7B9BD7DF9233B864429 /* AgentAssignmentDetailView.swift */,
+				07FADED702542D209E63F14F /* AgentAssignmentsListView.swift */,
 				9775EC59C867618A2F6925E8 /* AgentOutputDetailView.swift */,
+				5878F7CE72CA81EC154AD81B /* AgentOutputsListView.swift */,
 				C35386CCA26D5D6228E94FEB /* AgentOutputRow.swift */,
 			);
 			path = AgentAssignments;
@@ -762,6 +768,7 @@
 				9AD6C74B5EDD85ADC0961104 /* Agent.swift in Sources */,
 				4FA97249DC919AF3F9E51B96 /* AgentAssignment.swift in Sources */,
 				AAE2352F4D7EDD2F51342140 /* AgentAssignmentDetailView.swift in Sources */,
+				8E5AA77E03C71076D7FC15B4 /* AgentAssignmentsListView.swift in Sources */,
 				4D4CF3790829A8EF2D760E75 /* AgentAssignmentsCard.swift in Sources */,
 				805160C1C27F97C287068926 /* AgentCard.swift in Sources */,
 				699547A948F2412CAD7224B2 /* AgentChatView.swift in Sources */,
@@ -770,6 +777,7 @@
 				64EA656DFC93964903CF8900 /* AgentOutput.swift in Sources */,
 				C042C8F7230E0B3BE51AA2C7 /* AgentOutputDetailView.swift in Sources */,
 				79518D4DED5FD8F84011F93B /* AgentOutputRow.swift in Sources */,
+				6F7B36A5159DD39252A91ADF /* AgentOutputsListView.swift in Sources */,
 				02537008C8EA7A88A205E633 /* AgentsListView.swift in Sources */,
 				F8DAA4D3B3988DDBC7C8C1AE /* AgentsViewModel.swift in Sources */,
 				7BC0F3F5E01AB8A8E45499B2 /* AttachmentRow.swift in Sources */,
