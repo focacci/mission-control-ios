@@ -26,6 +26,11 @@ final class HomeViewModel {
     /// no refresh needed during the polling loop.
     var agentsById: [String: Agent] = [:]
 
+    /// Today's brief rows by kind, keyed for the hero card. Missing entries
+    /// stay `nil` so the card renders an empty state without falling back to
+    /// mock copy.
+    var todaysBriefs: [BriefKind: Brief] = [:]
+
     // Offset in days from today's week (0 = current week)
     var weekOffset: Int = 0
 
@@ -72,6 +77,7 @@ final class HomeViewModel {
     func load() async {
         isLoading = true
         error = nil
+        let today = Date().isoDate
         do {
             async let slotsTask = APIClient.shared.scheduleToday()
             async let boardTask = APIClient.shared.board()
@@ -79,9 +85,10 @@ final class HomeViewModel {
             async let runningTask = APIClient.shared.invocations(status: "running", limit: 10)
             async let errorTask = APIClient.shared.invocations(status: "error", limit: 10)
             async let completeTask = APIClient.shared.invocations(status: "complete", limit: 10)
+            async let briefsTask = APIClient.shared.listBriefs(from: today, to: today)
 
-            let (slots, board, agents, running, errors, complete) = try await (
-                slotsTask, boardTask, agentsTask, runningTask, errorTask, completeTask
+            let (slots, board, agents, running, errors, complete, briefs) = try await (
+                slotsTask, boardTask, agentsTask, runningTask, errorTask, completeTask, briefsTask
             )
             self.todaySlots = slots
             self.board = board
@@ -89,6 +96,7 @@ final class HomeViewModel {
             self.runningInvocations = filterAutonomous(running)
             self.errorInvocations = filterRecentErrors(errors)
             self.recentCompleteInvocations = filterAutonomous(complete).prefix(3).map { $0 }
+            self.todaysBriefs = Dictionary(uniqueKeysWithValues: briefs.map { ($0.kind, $0) })
         } catch {
             self.error = error.localizedDescription
         }

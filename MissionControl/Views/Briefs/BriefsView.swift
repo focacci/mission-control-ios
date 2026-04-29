@@ -173,22 +173,52 @@ struct BriefFullScreenView: View {
         }
     }
 
-    /// Phase 1 fallback for stubs and unauthored rows: show the static enum
-    /// copy from the legacy `DailyBrief` so the UI doesn't go blank while the
-    /// agent runner is unimplemented.
+    /// Empty state for stubs, unauthored rows, and pre-reveal drafts. The
+    /// client never invents brief content — when there's nothing to show we
+    /// say so explicitly so the user can tell whether the agent is still
+    /// drafting or simply hasn't started yet.
     private var fallbackBody: some View {
-        let legacy = kind.dailyBrief
-        return Group {
-            VStack(alignment: .leading, spacing: 6) {
-                sectionLabel("Summary", icon: "text.alignleft")
-                Text(legacy.summary).font(.body)
-            }
-            VStack(alignment: .leading, spacing: 10) {
-                sectionLabel("Highlights", icon: "sparkles")
-                ForEach(legacy.highlights, id: \.self) { item in
-                    BriefBulletRow(text: item, detail: nil, color: kind.color)
-                }
-            }
+        let availability = BriefAvailability.from(brief: brief)
+        return VStack(alignment: .leading, spacing: 12) {
+            Image(systemName: emptyIcon(for: availability))
+                .font(.title2)
+                .foregroundStyle(kind.color.opacity(0.7))
+            Text(emptyTitle(for: availability))
+                .font(.headline)
+            Text(emptyDetail(for: availability))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 8)
+    }
+
+    private func emptyIcon(for availability: BriefAvailability) -> String {
+        switch availability {
+        case .error: return "exclamationmark.triangle"
+        case .ready, .acknowledged: return "doc.text"
+        default: return "hourglass"
+        }
+    }
+
+    private func emptyTitle(for availability: BriefAvailability) -> String {
+        switch availability {
+        case .missing:      return "Not started"
+        case .drafting:     return "Drafting"
+        case .ready, .acknowledged: return "No content yet"
+        case .error:        return "Generation failed"
+        }
+    }
+
+    private func emptyDetail(for availability: BriefAvailability) -> String {
+        switch availability {
+        case .missing:
+            return "The \(kind.shortLabel.lowercased()) brief hasn't started yet. Briefs are revealed at their scheduled times."
+        case .drafting:
+            return "The agent is collecting evidence for this brief. It will be revealed at the scheduled time."
+        case .ready, .acknowledged:
+            return "This brief was finalized without any captured evidence."
+        case .error:
+            return "Something went wrong finalizing this brief. You can regenerate it from the API."
         }
     }
 

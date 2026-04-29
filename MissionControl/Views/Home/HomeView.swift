@@ -6,9 +6,7 @@ struct HomeView: View {
     @State private var dailyNote = DailyNote()
     @State private var showingNoteEditor = false
     @State private var showingRosary = false
-    @State private var selectedBrief: DailyBrief?
     @State private var expandedBrief: BriefFullScreenContext?
-    @State private var pendingExpandBrief: DailyBrief?
     @State private var showingAllTasks = false
 
     private var todayISO: String { Date().isoDate }
@@ -77,10 +75,19 @@ struct HomeView: View {
 
                     // C1 — Brief, demoted from headline to one card among many.
                     BriefHeroCard(
-                        brief: currentBrief,
+                        kind: currentBrief,
+                        brief: viewModel.todaysBriefs[BriefKind(daily: currentBrief)],
                         otherBriefs: DailyBrief.allCases.filter { $0 != currentBrief },
-                        onTapPrimary: { selectedBrief = currentBrief },
-                        onTapOther: { selectedBrief = $0 }
+                        availability: { kind in
+                            BriefAvailability.from(brief: viewModel.todaysBriefs[BriefKind(daily: kind)])
+                        },
+                        onTap: { kind in
+                            expandedBrief = BriefFullScreenContext(
+                                date: Date(),
+                                kind: BriefKind(daily: kind),
+                                brief: viewModel.todaysBriefs[BriefKind(daily: kind)]
+                            )
+                        }
                     )
 
                     // D1 — Today's liturgy. Taps into the existing rosary
@@ -135,21 +142,6 @@ struct HomeView: View {
             .sheet(isPresented: $showingRosary) {
                 RosaryQuickSheet(mystery: RosaryMystery.forDate(Date()), state: rosaryState)
             }
-            .sheet(item: $selectedBrief, onDismiss: {
-                if let brief = pendingExpandBrief {
-                    pendingExpandBrief = nil
-                    expandedBrief = BriefFullScreenContext(
-                        date: Date(),
-                        kind: BriefKind(daily: brief),
-                        brief: nil
-                    )
-                }
-            }) { brief in
-                BriefDetailView(brief: brief, onExpand: {
-                    pendingExpandBrief = brief
-                    selectedBrief = nil
-                })
-            }
             .navigationDestination(item: $expandedBrief) { ctx in
                 BriefFullScreenView(
                     kind: ctx.kind,
@@ -183,19 +175,39 @@ struct HomeView: View {
 // MARK: - Brief Hero
 
 private struct BriefHeroCard: View {
-    let brief: DailyBrief
+    let kind: DailyBrief
+    let brief: Brief?
     let otherBriefs: [DailyBrief]
-    let onTapPrimary: () -> Void
-    let onTapOther: (DailyBrief) -> Void
+    let availability: (DailyBrief) -> BriefAvailability
+    let onTap: (DailyBrief) -> Void
+
+    private var primaryAvailability: BriefAvailability { availability(kind) }
+    private var primaryEnabled: Bool { primaryAvailability.isEnabled }
+
+    /// Primary text for the card. Pulls from the real brief body when present;
+    /// otherwise renders an empty-state line that names the lifecycle the
+    /// brief is currently in (no mock copy).
+    private var primaryText: String {
+        if let summary = brief?.decodedBody?.summary, !summary.isEmpty {
+            return summary
+        }
+        switch primaryAvailability {
+        case .missing:      return "Today's \(kind.shortLabel.lowercased()) brief hasn't started yet."
+        case .drafting:     return "The agent is still drafting today's \(kind.shortLabel.lowercased()) brief."
+        case .ready:        return "Brief ready — tap to read."
+        case .acknowledged: return "Brief read."
+        case .error:        return "Brief generation failed."
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
-                Image(systemName: brief.icon)
+                Image(systemName: kind.icon)
                     .font(.title2)
-                    .foregroundStyle(brief.color)
+                    .foregroundStyle(kind.color)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(brief.label)
+                    Text(kind.label)
                         .font(.headline)
                     Text(Date().formatted(.dateTime.weekday(.wide).month().day()))
                         .font(.caption)
@@ -204,38 +216,52 @@ private struct BriefHeroCard: View {
                 Spacer()
                 HStack(spacing: 6) {
                     ForEach(otherBriefs) { other in
-                        Button { onTapOther(other) } label: {
-                            Image(systemName: other.icon)
-                                .font(.footnote)
-                                .foregroundStyle(other.color)
-                                .frame(width: 28, height: 28)
-                                .background(Color.secondary.opacity(0.12), in: Circle())
+                        let other_availability = availability(other)
+                        Button {
+                            onTap(other)
+                        } label: {
+                            ZStack(alignment: .topTrailing) {
+                                Image(systemName: other.icon)
+                                    .font(.footnote)
+                                    .foregroundStyle(other.color)
+                                    .frame(width: 28, height: 28)
+                                    .background(Color.secondary.opacity(0.12), in: Circle())
+                                    .opacity(other_availability.isEnabled ? 1.0 : 0.4)
+                                if other_availability.hasUnreadBadge {
+                                    Circle().fill(Color.red).frame(width: 6, height: 6).offset(x: 1, y: -1)
+                                }
+                            }
                         }
                         .buttonStyle(.plain)
+                        .disabled(!other_availability.isEnabled)
                         .accessibilityLabel("\(other.shortLabel) brief")
                     }
                 }
             }
 
-            Button(action: onTapPrimary) {
+            Button { onTap(kind) } label: {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(brief.summary)
+                    Text(primaryText)
                         .font(.subheadline)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(primaryEnabled ? .primary : .secondary)
                         .multilineTextAlignment(.leading)
                         .lineLimit(4)
 
-                    VStack(alignment: .leading, spacing: 6) {
-                        ForEach(brief.highlights.prefix(2), id: \.self) { item in
-                            HStack(alignment: .top, spacing: 8) {
-                                Circle()
-                                    .fill(brief.color.opacity(0.7))
-                                    .frame(width: 4, height: 4)
-                                    .padding(.top, 7)
-                                Text(item)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .multilineTextAlignment(.leading)
+                    if let body = brief?.decodedBody {
+                        let agentCount = body.sections.agentWork.count
+                        let questionCount = body.sections.openQuestions.count
+                        let accomplishmentCount = body.sections.userAccomplishments.count
+                        if agentCount + questionCount + accomplishmentCount > 0 {
+                            HStack(spacing: 12) {
+                                if agentCount > 0 {
+                                    BriefHeroStat(icon: "cpu", count: agentCount, color: kind.color)
+                                }
+                                if accomplishmentCount > 0 {
+                                    BriefHeroStat(icon: "checkmark.seal", count: accomplishmentCount, color: kind.color)
+                                }
+                                if questionCount > 0 {
+                                    BriefHeroStat(icon: "questionmark.bubble", count: questionCount, color: kind.color)
+                                }
                             }
                         }
                     }
@@ -243,20 +269,38 @@ private struct BriefHeroCard: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .buttonStyle(.plain)
+            .disabled(!primaryEnabled)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             LinearGradient(
-                colors: [brief.color.opacity(0.18), brief.color.opacity(0.04)],
+                colors: [kind.color.opacity(0.18), kind.color.opacity(0.04)],
                 startPoint: .topLeading, endPoint: .bottomTrailing
             ),
             in: RoundedRectangle(cornerRadius: 16)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .strokeBorder(brief.color.opacity(0.25), lineWidth: 1)
+                .strokeBorder(kind.color.opacity(0.25), lineWidth: 1)
         )
+    }
+}
+
+private struct BriefHeroStat: View {
+    let icon: String
+    let count: Int
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.caption2)
+                .foregroundStyle(color.opacity(0.85))
+            Text("\(count)")
+                .font(.caption.monospacedDigit())
+                .foregroundStyle(.secondary)
+        }
     }
 }
 
@@ -867,6 +911,9 @@ private struct NoteNudgeCard: View {
 
 // MARK: - Briefs (data model + inline detail)
 
+/// Lightweight identifier for the three daily reveal slots. Display copy
+/// (`summary`, `highlights`, etc.) lives on the real `Brief` row fetched from
+/// the API — there is no client-side mock content.
 enum DailyBrief: String, Identifiable, CaseIterable {
     case morning, afternoon, evening
 
@@ -899,107 +946,5 @@ enum DailyBrief: String, Identifiable, CaseIterable {
         case .evening:   return .indigo
         }
     }
-    var summary: String {
-        switch self {
-        case .morning:
-            return "Good morning. You have 4 tasks scheduled, a 50-minute upper-body workout, and two games tonight. Weather is 62° and clear — good day for the zone 2 walk after lunch."
-        case .afternoon:
-            return "Halfway through the day. You've logged 2 of 4 meals and taken 3 of 5 supplements. Two tasks remaining before the 5pm deep-work block. Hydration is on track at 48 oz."
-        case .evening:
-            return "Day wrapping up. You completed 3 of 4 tasks, hit your workout, and logged all meals. One task rolled forward to tomorrow. Wind-down suggestion: finish by 10:15 for 7.5+ hours of sleep."
-        }
-    }
-    var highlights: [String] {
-        switch self {
-        case .morning:
-            return [
-                "4 tasks scheduled, 2 deep-work blocks",
-                "Upper Body Strength — 50 min (planned)",
-                "Celtics vs. Knicks at 7:30 PM",
-                "Rosary: Glorious Mysteries",
-            ]
-        case .afternoon:
-            return [
-                "Tasks: 2 done, 2 remaining",
-                "Meals logged: Breakfast, Lunch",
-                "Hydration: 6 of 8 cups",
-                "Deep-work block begins at 5:00 PM",
-            ]
-        case .evening:
-            return [
-                "Completed 3 of 4 tasks today",
-                "Workout: done (52 min logged)",
-                "Notes captured: 1 daily note",
-                "Tomorrow: lower body strength + 3 meetings",
-            ]
-        }
-    }
 }
 
-struct BriefDetailView: View {
-    let brief: DailyBrief
-    let onExpand: () -> Void
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 10) {
-                            Image(systemName: brief.icon)
-                                .font(.title)
-                                .foregroundStyle(brief.color)
-                            Text(brief.label)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                        }
-                        Text(Date().formatted(.dateTime.weekday(.wide).month().day()))
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    VStack(alignment: .leading, spacing: 6) {
-                        Label("Summary", systemImage: "text.alignleft")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.secondary)
-                        Text(brief.summary)
-                            .font(.body)
-                    }
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        Label("Highlights", systemImage: "sparkles")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.secondary)
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            ForEach(brief.highlights, id: \.self) { item in
-                                HStack(alignment: .top, spacing: 8) {
-                                    Circle()
-                                        .fill(brief.color.opacity(0.6))
-                                        .frame(width: 5, height: 5)
-                                        .padding(.top, 7)
-                                    Text(item)
-                                        .font(.body)
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(minLength: 40)
-                }
-                .padding(20)
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: onExpand) {
-                        Image(systemName: "arrow.down.left.and.arrow.up.right")
-                    }
-                }
-            }
-        }
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
-    }
-}

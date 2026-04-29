@@ -13,7 +13,7 @@ struct ScheduleView: View {
     @State private var slotToAssign: ScheduleSlot?
     @State private var path = NavigationPath()
     @State private var calendarKind: ScheduleCalendarKind = .agent
-    @State private var selectedBrief: DailyBrief?
+    @State private var selectedBrief: BriefFullScreenContext?
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -80,8 +80,15 @@ struct ScheduleView: View {
                     Task { await viewModel.load() }
                 }
             }
-            .sheet(item: $selectedBrief) { brief in
-                BriefDetailView(brief: brief, onExpand: { selectedBrief = nil })
+            .navigationDestination(item: $selectedBrief) { ctx in
+                BriefFullScreenView(
+                    kind: ctx.kind,
+                    date: ctx.date,
+                    brief: ctx.brief,
+                    onAcknowledge: { brief in
+                        Task { await briefsViewModel.acknowledge(brief: brief) }
+                    }
+                )
             }
             .task(id: viewModel.loadKey) { await viewModel.load() }
             .task { await briefsViewModel.load() }
@@ -100,7 +107,10 @@ struct ScheduleView: View {
                     path.append(slot)
                 },
                 onTapBrief: { brief in
-                    selectedBrief = brief
+                    let kind = BriefKind(daily: brief)
+                    let date = viewModel.focusDate
+                    let row = briefsViewModel.brief(for: kind, date: date)
+                    selectedBrief = BriefFullScreenContext(date: date, kind: kind, brief: row)
                 },
                 briefAvailability: { brief, date in
                     briefsViewModel.availability(for: BriefKind(daily: brief), date: date)
