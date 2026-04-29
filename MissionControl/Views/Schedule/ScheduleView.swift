@@ -8,6 +8,7 @@ enum ScheduleCalendarKind: String, CaseIterable, Identifiable {
 
 struct ScheduleView: View {
     @State private var viewModel = ScheduleViewModel()
+    @State private var briefsViewModel = BriefsViewModel()
     @State private var showingScheduleTask = false
     @State private var slotToAssign: ScheduleSlot?
     @State private var path = NavigationPath()
@@ -83,6 +84,7 @@ struct ScheduleView: View {
                 BriefDetailView(brief: brief, onExpand: { selectedBrief = nil })
             }
             .task(id: viewModel.loadKey) { await viewModel.load() }
+            .task { await briefsViewModel.load() }
             .chatContext(.schedule(date: viewModel.focusDate, mode: viewModel.mode))
         }
     }
@@ -99,6 +101,9 @@ struct ScheduleView: View {
                 },
                 onTapBrief: { brief in
                     selectedBrief = brief
+                },
+                briefAvailability: { brief, date in
+                    briefsViewModel.availability(for: BriefKind(daily: brief), date: date)
                 }
             )
         case .month:

@@ -138,7 +138,11 @@ struct HomeView: View {
             .sheet(item: $selectedBrief, onDismiss: {
                 if let brief = pendingExpandBrief {
                     pendingExpandBrief = nil
-                    expandedBrief = BriefFullScreenContext(date: Date(), brief: brief)
+                    expandedBrief = BriefFullScreenContext(
+                        date: Date(),
+                        kind: BriefKind(daily: brief),
+                        brief: nil
+                    )
                 }
             }) { brief in
                 BriefDetailView(brief: brief, onExpand: {
@@ -147,7 +151,12 @@ struct HomeView: View {
                 })
             }
             .navigationDestination(item: $expandedBrief) { ctx in
-                BriefFullScreenView(brief: ctx.brief, date: ctx.date)
+                BriefFullScreenView(
+                    kind: ctx.kind,
+                    date: ctx.date,
+                    brief: ctx.brief,
+                    onAcknowledge: { _ in }
+                )
             }
             .navigationDestination(for: ScheduleSlot.self) { slot in
                 if let aa = slot.agentAssignment {

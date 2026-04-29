@@ -17,6 +17,11 @@ struct DayScheduleView: View {
     @Binding var calendarKind: ScheduleCalendarKind
     let onSelectSlot: (ScheduleSlot) -> Void
     let onTapBrief: (DailyBrief) -> Void
+    /// Per §7.5: every UI surface that points at a specific brief consults
+    /// this so disabled state stays consistent. Defaults to `.missing` so
+    /// callers that haven't loaded brief rows still get a no-op tap rather
+    /// than dead-ending in a stub sheet.
+    var briefAvailability: (DailyBrief, Date) -> BriefAvailability = { _, _ in .missing }
 
     /// Maps a brief slot to its `DailyBrief` case by start time. Returns `nil`
     /// if the slot isn't a known brief slot.
@@ -147,11 +152,14 @@ struct DayScheduleView: View {
     @ViewBuilder
     private func slotRow(for slot: ScheduleSlot) -> some View {
         if let brief = Self.brief(for: slot) {
+            let slotDate = ISO8601DateFormatter.shared.date(from: slot.date) ?? viewModel.focusDate
+            let availability = briefAvailability(brief, slotDate)
             Button { onTapBrief(brief) } label: {
-                BriefRow(slot: slot, brief: brief)
+                BriefRow(slot: slot, brief: brief, availability: availability)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .disabled(!availability.isEnabled)
             .listRowBackground(Color.clear)
             .listRowSeparator(.hidden)
             .listRowInsets(EdgeInsets(top: 2, leading: 16, bottom: 2, trailing: 16))
@@ -269,6 +277,7 @@ private struct WeekBar: View {
 private struct BriefRow: View {
     let slot: ScheduleSlot
     let brief: DailyBrief
+    let availability: BriefAvailability
 
     var body: some View {
         HStack(spacing: 10) {
@@ -277,17 +286,24 @@ private struct BriefRow: View {
                 .foregroundStyle(brief.color.opacity(0.85))
                 .frame(width: 42, alignment: .leading)
 
-            Image(systemName: brief.icon)
+            Image(systemName: availability == .error ? "exclamationmark.triangle.fill" : brief.icon)
                 .font(.caption)
-                .foregroundStyle(brief.color)
+                .foregroundStyle(availability == .error ? .red : brief.color)
 
             Text(slot.typeLabel)
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(brief.color)
 
+            if availability.hasUnreadBadge {
+                Circle()
+                    .fill(Color.red)
+                    .frame(width: 6, height: 6)
+            }
+
             Spacer()
         }
         .padding(.vertical, 6)
+        .opacity(availability.isEnabled ? 1.0 : 0.5)
     }
 }
 

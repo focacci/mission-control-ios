@@ -524,6 +524,26 @@ final class APIClient {
     func cancelInvocation(id: String) async throws {
         try await sendNoBody("/api/invocations/\(id)/cancel", method: "POST")
     }
+
+    // MARK: - Briefs
+
+    /// Fetches every brief row whose `date` falls in `[from, to]`. Backend
+    /// orders by date desc, then `morning, afternoon, evening`.
+    func listBriefs(from: String, to: String) async throws -> [Brief] {
+        try await fetch("/api/briefs?from=\(from)&to=\(to)")
+    }
+
+    func brief(id: String) async throws -> Brief {
+        try await fetch("/api/briefs/\(id)")
+    }
+
+    /// Phase-2 endpoint. Returns the updated `Brief` with `status =
+    /// acknowledged` and `acknowledgedAt` set. Phase 1 callers invoke this
+    /// best-effort; the route doesn't exist server-side yet, so a 404/501
+    /// is expected and swallowed by the caller.
+    func acknowledgeBrief(id: String) async throws -> Brief {
+        try await send("/api/briefs/\(id)/acknowledge", method: "POST")
+    }
 }
 
 // MARK: - Request Bodies

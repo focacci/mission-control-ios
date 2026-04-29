@@ -21,6 +21,10 @@
 		1C4456DBD54DDF14ACE11C44 /* WatchTaskList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C156323685CC44B680A865D /* WatchTaskList.swift */; };
 		1D9EA653B32C3F77A0079999 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3BB569E8D2910A7991D5C55 /* Task.swift */; };
 		1EFA112559079BFBE8B638AA /* AgentInvocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE9061180BC8423ADC61F41 /* AgentInvocation.swift */; };
+		B71EF00100000000000000A1 /* Brief.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71EF00000000000000000A0 /* Brief.swift */; };
+		B71EF00200000000000000A2 /* Brief.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71EF00000000000000000A0 /* Brief.swift */; };
+		B71EF00300000000000000B1 /* BriefsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71EF00000000000000000B0 /* BriefsViewModel.swift */; };
+		B71EF00400000000000000B2 /* BriefsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71EF00000000000000000B0 /* BriefsViewModel.swift */; };
 		200ADC6B9FE6BE3302378781 /* TaskDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C00013EDEAE09D6A94EB486 /* TaskDetailViewModel.swift */; };
 		2012EB4473E06F4E5635F4AE /* AgentsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EE6EAFE31516194D72340D3 /* AgentsViewModel.swift */; };
 		2067F918656D220FBB89E169 /* InlineCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551D60B11E24B1EB5A76EFE1 /* InlineCardView.swift */; };
@@ -191,6 +195,8 @@
 		4CA5325368F51381FEEA4716 /* TaskDetailHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskDetailHeader.swift; sourceTree = "<group>"; };
 		4CBCCE83A0C142DF62F424E3 /* ChatContextPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatContextPanel.swift; sourceTree = "<group>"; };
 		4CE9061180BC8423ADC61F41 /* AgentInvocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentInvocation.swift; sourceTree = "<group>"; };
+		B71EF00000000000000000A0 /* Brief.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Brief.swift; sourceTree = "<group>"; };
+		B71EF00000000000000000B0 /* BriefsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BriefsViewModel.swift; sourceTree = "<group>"; };
 		513EBEA9872A4F80D2B6EF4B /* CompleteTaskSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompleteTaskSheet.swift; sourceTree = "<group>"; };
 		517A1C942EC1FAB24F183895 /* ServerHealth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerHealth.swift; sourceTree = "<group>"; };
 		51BDF64FA51A80664DBB0465 /* PlansViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlansViewModel.swift; sourceTree = "<group>"; };
@@ -305,6 +311,7 @@
 			isa = PBXGroup;
 			children = (
 				7EE6EAFE31516194D72340D3 /* AgentsViewModel.swift */,
+				B71EF00000000000000000B0 /* BriefsViewModel.swift */,
 				D77ABFCCEB5AFF2543E5C28C /* GoalDetailViewModel.swift */,
 				903FE8B2D3A1755B3C6A74D7 /* HomeViewModel.swift */,
 				3F6710A3AFC155620FCA56B4 /* InitiativeDetailViewModel.swift */,
@@ -605,6 +612,7 @@
 				4CE9061180BC8423ADC61F41 /* AgentInvocation.swift */,
 				9A3C2596448A64AD8148103C /* AgentOutput.swift */,
 				5F8AE533D1CBDA389517E60F /* BoardData.swift */,
+				B71EF00000000000000000A0 /* Brief.swift */,
 				56FE9B08913A098C3C764476 /* ChatSession.swift */,
 				E2ECD768852EC7F15BF79797 /* DeepLink.swift */,
 				49D04724739E13A9765ACD16 /* Goal.swift */,
@@ -774,6 +782,8 @@
 				699547A948F2412CAD7224B2 /* AgentChatView.swift in Sources */,
 				B5C911A736B1D63C9D199A74 /* AgentDetailView.swift in Sources */,
 				1EFA112559079BFBE8B638AA /* AgentInvocation.swift in Sources */,
+				B71EF00100000000000000A1 /* Brief.swift in Sources */,
+				B71EF00300000000000000B1 /* BriefsViewModel.swift in Sources */,
 				64EA656DFC93964903CF8900 /* AgentOutput.swift in Sources */,
 				C042C8F7230E0B3BE51AA2C7 /* AgentOutputDetailView.swift in Sources */,
 				79518D4DED5FD8F84011F93B /* AgentOutputRow.swift in Sources */,
@@ -875,6 +885,8 @@
 				F2FBFB96EF797A00F73DFD1E /* Agent.swift in Sources */,
 				D721D9FA02768712417AFF0A /* AgentAssignment.swift in Sources */,
 				DCD5C7E3C2054E9F90034681 /* AgentInvocation.swift in Sources */,
+				B71EF00200000000000000A2 /* Brief.swift in Sources */,
+				B71EF00400000000000000B2 /* BriefsViewModel.swift in Sources */,
 				6315BBFD3D9614B92C37EE97 /* AgentOutput.swift in Sources */,
 				2012EB4473E06F4E5635F4AE /* AgentsViewModel.swift in Sources */,
 				116C29A190703945B955AE20 /* BoardData.swift in Sources */,
