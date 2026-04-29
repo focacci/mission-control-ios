@@ -28,14 +28,6 @@ struct HomeView: View {
             ?? todaysSlots.first { $0.status != .done && $0.status != .skipped }
     }
 
-    private var currentBrief: DailyBrief {
-        switch Calendar.current.component(.hour, from: Date()) {
-        case ..<11:   return .morning
-        case 11..<17: return .afternoon
-        default:      return .evening
-        }
-    }
-
     private var shouldShowNoteNudge: Bool {
         let hour = Calendar.current.component(.hour, from: Date())
         return hour >= 14 && dailyNote.text.isEmpty
@@ -73,22 +65,19 @@ struct HomeView: View {
                         AgentQueuedCard(slot: slot)
                     }
 
-                    // C1 — Brief, demoted from headline to one card among many.
-                    BriefHeroCard(
-                        kind: currentBrief,
-                        brief: viewModel.todaysBriefs[BriefKind(daily: currentBrief)],
-                        otherBriefs: DailyBrief.allCases.filter { $0 != currentBrief },
-                        availability: { kind in
-                            BriefAvailability.from(brief: viewModel.todaysBriefs[BriefKind(daily: kind)])
-                        },
-                        onTap: { kind in
-                            expandedBrief = BriefFullScreenContext(
-                                date: Date(),
-                                kind: BriefKind(daily: kind),
-                                brief: viewModel.todaysBriefs[BriefKind(daily: kind)]
-                            )
-                        }
-                    )
+                    // C1 — One BriefCard per revealed brief. Pre-reveal briefs
+                    // are intentionally absent; the Feed never speculates about
+                    // a brief that hasn't been finalized.
+                    ForEach(viewModel.revealedBriefsToday) { brief in
+                        BriefCard(brief: brief, onTap: { openBrief(brief) })
+                    }
+
+                    // §7.4 — Missed-brief rollup. A single follow-up card per
+                    // unacknowledged brief from the prior 48h, rendered above
+                    // the day's other content so the user notices.
+                    ForEach(viewModel.missedBriefs) { brief in
+                        MissedBriefCard(brief: brief, onTap: { openBrief(brief) })
+                    }
 
                     // D1 — Today's liturgy. Taps into the existing rosary
                     // sheet (no Faith deep-link exists yet).
@@ -147,7 +136,9 @@ struct HomeView: View {
                     kind: ctx.kind,
                     date: ctx.date,
                     brief: ctx.brief,
-                    onAcknowledge: { _ in }
+                    onAcknowledge: { brief in
+                        Task { await viewModel.acknowledge(brief: brief) }
+                    }
                 )
             }
             .navigationDestination(for: ScheduleSlot.self) { slot in
@@ -164,6 +155,22 @@ struct HomeView: View {
         }
     }
 
+    private func openBrief(_ brief: Brief) {
+        guard let date = parseISODate(brief.date) else { return }
+        expandedBrief = BriefFullScreenContext(
+            date: date,
+            kind: brief.kind,
+            brief: brief
+        )
+    }
+
+    private func parseISODate(_ s: String) -> Date? {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.timeZone = TimeZone(identifier: "America/New_York")
+        return f.date(from: s)
+    }
+
     private static func currentHHMM() -> String {
         let f = DateFormatter()
         f.dateFormat = "HH:mm"
@@ -172,135 +179,207 @@ struct HomeView: View {
     }
 }
 
-// MARK: - Brief Hero
+// MARK: - Brief Feed Cards (Lane C)
 
-private struct BriefHeroCard: View {
-    let kind: DailyBrief
-    let brief: Brief?
-    let otherBriefs: [DailyBrief]
-    let availability: (DailyBrief) -> BriefAvailability
-    let onTap: (DailyBrief) -> Void
+/// C1 — Compressed Feed view of a single revealed brief. Shows the reveal
+/// label ("Morning Brief · 7:00a"), one-line summary, and a count strip for
+/// agent outputs / accomplishments / open questions. Per §7.3 the Feed never
+/// renders the full section list — that lives in the Briefs tab.
+private struct BriefCard: View {
+    let brief: Brief
+    let onTap: () -> Void
 
-    private var primaryAvailability: BriefAvailability { availability(kind) }
-    private var primaryEnabled: Bool { primaryAvailability.isEnabled }
+    private var availability: BriefAvailability { BriefAvailability.from(brief: brief) }
 
-    /// Primary text for the card. Pulls from the real brief body when present;
-    /// otherwise renders an empty-state line that names the lifecycle the
-    /// brief is currently in (no mock copy).
-    private var primaryText: String {
-        if let summary = brief?.decodedBody?.summary, !summary.isEmpty {
+    /// Falls back to a deterministic line when synthesis hasn't produced a
+    /// summary yet (e.g. `synthesisFailed = true` on `references`). The Feed
+    /// never invents copy — empty states are explicit.
+    private var summaryLine: String {
+        if let summary = brief.decodedBody?.summary, !summary.isEmpty {
             return summary
         }
-        switch primaryAvailability {
-        case .missing:      return "Today's \(kind.shortLabel.lowercased()) brief hasn't started yet."
-        case .drafting:     return "The agent is still drafting today's \(kind.shortLabel.lowercased()) brief."
-        case .ready:        return "Brief ready — tap to read."
-        case .acknowledged: return "Brief read."
-        case .error:        return "Brief generation failed."
+        if let title = brief.title, !title.isEmpty {
+            return title
         }
+        if availability == .error {
+            return "Brief generation failed."
+        }
+        return "No content yet."
+    }
+
+    private var revealLabel: String {
+        if let revealAt = brief.revealAt, let formatted = BriefCardTimeFormat.timeOfDay(revealAt) {
+            return "\(brief.kind.label) · \(formatted)"
+        }
+        return brief.kind.label
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                Image(systemName: kind.icon)
-                    .font(.title2)
-                    .foregroundStyle(kind.color)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(kind.label)
-                        .font(.headline)
-                    Text(Date().formatted(.dateTime.weekday(.wide).month().day()))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                HStack(spacing: 6) {
-                    ForEach(otherBriefs) { other in
-                        let other_availability = availability(other)
-                        Button {
-                            onTap(other)
-                        } label: {
-                            ZStack(alignment: .topTrailing) {
-                                Image(systemName: other.icon)
-                                    .font(.footnote)
-                                    .foregroundStyle(other.color)
-                                    .frame(width: 28, height: 28)
-                                    .background(Color.secondary.opacity(0.12), in: Circle())
-                                    .opacity(other_availability.isEnabled ? 1.0 : 0.4)
-                                if other_availability.hasUnreadBadge {
-                                    Circle().fill(Color.red).frame(width: 6, height: 6).offset(x: 1, y: -1)
-                                }
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(!other_availability.isEnabled)
-                        .accessibilityLabel("\(other.shortLabel) brief")
-                    }
-                }
-            }
-
-            Button { onTap(kind) } label: {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text(primaryText)
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: brief.kind.icon)
                         .font(.subheadline)
-                        .foregroundStyle(primaryEnabled ? .primary : .secondary)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(4)
+                        .foregroundStyle(brief.kind.color)
+                    Text(revealLabel)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+                    FeedActorChip(actor: .agent)
+                    Spacer()
+                    if availability.hasUnreadBadge {
+                        Circle().fill(Color.red).frame(width: 7, height: 7)
+                    }
+                }
 
-                    if let body = brief?.decodedBody {
-                        let agentCount = body.sections.agentWork.count
-                        let questionCount = body.sections.openQuestions.count
-                        let accomplishmentCount = body.sections.userAccomplishments.count
-                        if agentCount + questionCount + accomplishmentCount > 0 {
-                            HStack(spacing: 12) {
-                                if agentCount > 0 {
-                                    BriefHeroStat(icon: "cpu", count: agentCount, color: kind.color)
-                                }
-                                if accomplishmentCount > 0 {
-                                    BriefHeroStat(icon: "checkmark.seal", count: accomplishmentCount, color: kind.color)
-                                }
-                                if questionCount > 0 {
-                                    BriefHeroStat(icon: "questionmark.bubble", count: questionCount, color: kind.color)
-                                }
-                            }
+                Text(summaryLine)
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(3)
+
+                if let counts = BriefCardCounts.from(brief: brief) {
+                    HStack(spacing: 14) {
+                        if counts.agentWork > 0 {
+                            BriefCountChip(icon: "cpu", count: counts.agentWork)
+                        }
+                        if counts.openQuestions > 0 {
+                            BriefCountChip(icon: "questionmark.bubble", count: counts.openQuestions)
+                        }
+                        if counts.accomplishments > 0 {
+                            BriefCountChip(icon: "checkmark.seal", count: counts.accomplishments)
                         }
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .buttonStyle(.plain)
-            .disabled(!primaryEnabled)
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                LinearGradient(
+                    colors: [brief.kind.color.opacity(0.18), brief.kind.color.opacity(0.04)],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                ),
+                in: RoundedRectangle(cornerRadius: 14)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(brief.kind.color.opacity(0.25), lineWidth: 1)
+            )
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            LinearGradient(
-                colors: [kind.color.opacity(0.18), kind.color.opacity(0.04)],
-                startPoint: .topLeading, endPoint: .bottomTrailing
-            ),
-            in: RoundedRectangle(cornerRadius: 16)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .strokeBorder(kind.color.opacity(0.25), lineWidth: 1)
-        )
+        .buttonStyle(.plain)
     }
 }
 
-private struct BriefHeroStat: View {
+/// §7.4 — Missed-brief rollup. Single follow-up card pointing at an
+/// unacknowledged brief from the prior 48h. Tap → `BriefFullScreenView`,
+/// which acknowledges on appear.
+private struct MissedBriefCard: View {
+    let brief: Brief
+    let onTap: () -> Void
+
+    private var ageLabel: String {
+        let cal = Calendar.current
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.timeZone = TimeZone(identifier: "America/New_York")
+        if let date = f.date(from: brief.date) {
+            if cal.isDateInYesterday(date) { return "yesterday" }
+            return date.formatted(.dateTime.weekday(.wide))
+        }
+        return brief.date
+    }
+
+    private var summaryLine: String {
+        if let summary = brief.decodedBody?.summary, !summary.isEmpty {
+            return summary
+        }
+        return "Tap to read the rollup."
+    }
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 6) {
+                    Image(systemName: "tray.full")
+                        .font(.subheadline)
+                        .foregroundStyle(brief.kind.color)
+                    Text("You missed \(ageLabel)'s \(brief.kind.shortLabel.lowercased()) brief")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+                    FeedActorChip(actor: .agent)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+                Text(summaryLine)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(brief.kind.color.opacity(0.3), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct BriefCountChip: View {
     let icon: String
     let count: Int
-    let color: Color
 
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
                 .font(.caption2)
-                .foregroundStyle(color.opacity(0.85))
+                .foregroundStyle(.secondary)
             Text("\(count)")
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
         }
+    }
+}
+
+private struct BriefCardCounts {
+    let agentWork: Int
+    let openQuestions: Int
+    let accomplishments: Int
+
+    static func from(brief: Brief) -> BriefCardCounts? {
+        guard let body = brief.decodedBody else { return nil }
+        let counts = BriefCardCounts(
+            agentWork: body.sections.agentWork.count,
+            openQuestions: body.sections.openQuestions.count,
+            accomplishments: body.sections.userAccomplishments.count
+        )
+        if counts.agentWork + counts.openQuestions + counts.accomplishments == 0 {
+            return nil
+        }
+        return counts
+    }
+}
+
+private enum BriefCardTimeFormat {
+    /// Renders the backend's naive `YYYY-MM-DDTHH:MM:00` reveal timestamp as
+    /// a human time of day ("7:00a"). Returns nil for malformed input.
+    static func timeOfDay(_ revealAt: String) -> String? {
+        let parser = DateFormatter()
+        parser.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        parser.timeZone = TimeZone(identifier: "America/New_York")
+        guard let date = parser.date(from: revealAt) else { return nil }
+        let out = DateFormatter()
+        out.dateFormat = "h:mma"
+        out.timeZone = TimeZone(identifier: "America/New_York")
+        out.amSymbol = "a"
+        out.pmSymbol = "p"
+        return out.string(from: date)
     }
 }
 
