@@ -1,113 +1,38 @@
 import SwiftUI
 
+// MARK: - Feed Shell
+
+/// Top-level Feed (Home tab). Composes four explicit sections —
+/// header → needs-input → next-up → events — replacing the previous
+/// single-list layout. See `Plans/FEED_RESTRUCTURE_PLAN.md` PR 1.
 struct FeedView: View {
     @State private var viewModel = FeedViewModel()
     @State private var rosaryState = RosaryState()
-    @State private var dailyNote = DailyNote()
-    @State private var showingNoteEditor = false
     @State private var showingRosary = false
+    @State private var showingActiveAgents = false
     @State private var expandedBrief: BriefFullScreenContext?
-    @State private var showingAllTasks = false
-
-    private var todayISO: String { Date().isoDate }
-
-    private var todaysSlots: [ScheduleSlot] {
-        viewModel.todaySlots
-            .filter { $0.date == todayISO }
-            .sorted { $0.time < $1.time }
-    }
-
-    private var remainingCount: Int {
-        todaysSlots.filter { $0.status != .done && $0.status != .skipped }.count
-    }
-
-    private var nextSlot: ScheduleSlot? {
-        if let active = todaysSlots.first(where: { $0.status == .inProgress }) { return active }
-        let now = Self.currentHHMM()
-        return todaysSlots.first { $0.status != .done && $0.status != .skipped && $0.time >= now }
-            ?? todaysSlots.first { $0.status != .done && $0.status != .skipped }
-    }
-
-    private var shouldShowNoteNudge: Bool {
-        let hour = Calendar.current.component(.hour, from: Date())
-        return hour >= 14 && dailyNote.text.isEmpty
-    }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 14) {
-                    // Lane A — Agent activity. Each card only renders when
-                    // it has data, so an idle agent yields an empty lane and
-                    // the brief takes the top of the feed.
-                    ForEach(viewModel.runningInvocations) { inv in
-                        AgentWorkingCard(
-                            invocation: inv,
-                            agentName: viewModel.agentName(for: inv.agentId),
-                            agentEmoji: viewModel.agentEmoji(for: inv.agentId)
-                        )
-                    }
-                    ForEach(viewModel.errorInvocations) { inv in
-                        AgentErrorCard(
-                            invocation: inv,
-                            agentName: viewModel.agentName(for: inv.agentId),
-                            agentEmoji: viewModel.agentEmoji(for: inv.agentId)
-                        )
-                    }
-                    ForEach(viewModel.recentCompleteInvocations) { inv in
-                        AgentFinishedCard(
-                            invocation: inv,
-                            agentName: viewModel.agentName(for: inv.agentId),
-                            agentEmoji: viewModel.agentEmoji(for: inv.agentId)
-                        )
-                    }
-                    ForEach(viewModel.queuedAgentSlots) { slot in
-                        AgentQueuedCard(slot: slot)
-                    }
-
-                    // C1 — One BriefCard per revealed brief. Pre-reveal briefs
-                    // are intentionally absent; the Feed never speculates about
-                    // a brief that hasn't been finalized.
-                    ForEach(viewModel.revealedBriefsToday) { brief in
-                        BriefCard(brief: brief, onTap: { openBrief(brief) })
-                    }
-
-                    // §7.4 — Missed-brief rollup. A single follow-up card per
-                    // unacknowledged brief from the prior 48h, rendered above
-                    // the day's other content so the user notices.
-                    ForEach(viewModel.missedBriefs) { brief in
-                        MissedBriefCard(brief: brief, onTap: { openBrief(brief) })
-                    }
-
-                    // D1 — Today's liturgy. Taps into the existing rosary
-                    // sheet (no Faith deep-link exists yet).
-                    LiturgyCard(
-                        mystery: RosaryMystery.forDate(Date()),
-                        progress: rosaryState.checkedMysteries.count,
-                        onTap: { showingRosary = true }
-                    )
-
-                    // E1 — Note nudge, only after 2 PM and only when blank.
-                    if shouldShowNoteNudge {
-                        NoteNudgeCard(onTap: { showingNoteEditor = true })
-                    }
-
-                    NextUpCard(
-                        slot: nextSlot,
-                        allSlots: todaysSlots,
-                        remaining: remainingCount,
-                        showingAll: $showingAllTasks,
-                        onDone: { slot in Task { await viewModel.doneSlot(slot) } }
-                    )
-
-                    // E2 — Status strip pinned at the bottom as the day's
-                    // running summary instead of the headline.
-                    StatusStrip(
-                        rosaryMystery: RosaryMystery.forDate(Date()),
+                    HomeHeaderCard(
+                        viewModel: viewModel,
                         rosaryState: rosaryState,
-                        dailyNote: dailyNote,
                         onOpenRosary: { showingRosary = true },
-                        onOpenNote: { showingNoteEditor = true }
+                        onOpenActiveAgents: { showingActiveAgents = true }
+                    )
+
+                    NeedsInputSection(
+                        viewModel: viewModel,
+                        onOpenBrief: openBrief
+                    )
+
+                    NextUpSection(viewModel: viewModel)
+
+                    EventListSection(
+                        viewModel: viewModel,
+                        onOpenBrief: openBrief
                     )
                 }
                 .padding(.horizontal, 16)
@@ -125,11 +50,15 @@ struct FeedView: View {
                     await viewModel.refreshLive()
                 }
             }
-            .sheet(isPresented: $showingNoteEditor) {
-                DailyNoteEditorView(note: dailyNote)
-            }
             .sheet(isPresented: $showingRosary) {
                 RosaryQuickSheet(mystery: RosaryMystery.forDate(Date()), state: rosaryState)
+            }
+            .sheet(isPresented: $showingActiveAgents) {
+                ActiveAgentsSheet(
+                    invocations: viewModel.runningInvocations,
+                    agentName: viewModel.agentName(for:),
+                    agentEmoji: viewModel.agentEmoji(for:)
+                )
             }
             .navigationDestination(item: $expandedBrief) { ctx in
                 BriefFullScreenView(
@@ -170,30 +99,507 @@ struct FeedView: View {
         f.timeZone = TimeZone(identifier: "America/New_York")
         return f.date(from: s)
     }
+}
 
-    private static func currentHHMM() -> String {
-        let f = DateFormatter()
-        f.dateFormat = "HH:mm"
-        f.timeZone = TimeZone(identifier: "America/New_York")
-        return f.string(from: Date())
+// MARK: - Section: Home Header
+
+/// Composed "right now" card. Aggregates the date, today's Rosary,
+/// active-agent chip, brief status, and an Up-Next single-line summary.
+/// PR 2 fills in the calendar peek; PR 4 adds the streak chip.
+private struct HomeHeaderCard: View {
+    @Bindable var viewModel: FeedViewModel
+    @Bindable var rosaryState: RosaryState
+    let onOpenRosary: () -> Void
+    let onOpenActiveAgents: () -> Void
+
+    private var dateLine: String {
+        Date.now.formatted(.dateTime.weekday(.wide).month(.wide).day())
+    }
+
+    private var primarySlot: ScheduleSlot? {
+        if let inProgress = viewModel.todaySlots.first(where: { $0.status == .inProgress && $0.date == Date().isoDate }) {
+            return inProgress
+        }
+        return viewModel.nextUpSlots.first
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Date row
+            HStack {
+                Text(dateLine)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                Spacer()
+                ActiveAgentChip(
+                    count: viewModel.runningInvocations.count,
+                    onTap: onOpenActiveAgents
+                )
+            }
+
+            Divider().opacity(0.3)
+
+            // Rosary row
+            Button(action: onOpenRosary) {
+                HStack(spacing: 10) {
+                    Image(systemName: "cross.fill")
+                        .foregroundStyle(.indigo)
+                        .font(.subheadline)
+                    let mystery = RosaryMystery.forDate(Date())
+                    Text("\(mystery.rawValue) Mysteries")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    let progress = rosaryState.checkedMysteries.count
+                    Text(progress == 5 ? "Complete" : "\(progress) of 5 prayed")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .buttonStyle(.plain)
+
+            // Brief status row
+            BriefStatusRow(status: viewModel.headerBriefStatus)
+
+            // Up-Next single-line
+            if let slot = primarySlot {
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.right.circle")
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                    Text("Up next")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("\(slot.time) · \(slot.typeLabel)")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                    Spacer()
+                }
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
 }
 
-// MARK: - Brief Feed Cards (Lane C)
+private struct BriefStatusRow: View {
+    let status: HeaderBriefStatus
+
+    var body: some View {
+        switch status {
+        case .none:
+            EmptyView()
+        case .scheduled(let kind, let revealAt):
+            HStack(spacing: 8) {
+                Image(systemName: kind.icon)
+                    .foregroundStyle(kind.color)
+                    .font(.caption)
+                if let revealAt, let formatted = BriefCardTimeFormat.timeOfDay(revealAt) {
+                    Text("\(kind.label) at \(formatted)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(kind.label)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+        case .ready(let brief):
+            HStack(spacing: 8) {
+                Image(systemName: brief.kind.icon)
+                    .foregroundStyle(brief.kind.color)
+                    .font(.caption)
+                Text("\(brief.kind.label) ready")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+                RedDot()
+                Spacer()
+            }
+        case .acknowledged(let brief):
+            HStack(spacing: 8) {
+                Image(systemName: brief.kind.icon)
+                    .foregroundStyle(brief.kind.color.opacity(0.6))
+                    .font(.caption)
+                Text("\(brief.kind.label) read")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+            }
+        }
+    }
+}
+
+// MARK: - Section: Needs Input
+
+/// Surfaces work that requires the user's attention: missed briefs from the
+/// prior 48h, open questions raised inside today's revealed briefs, and
+/// failed agent runs from the last 24h. Hidden entirely when nothing is
+/// outstanding.
+private struct NeedsInputSection: View {
+    @Bindable var viewModel: FeedViewModel
+    let onOpenBrief: (Brief) -> Void
+
+    private var isEmpty: Bool {
+        viewModel.missedBriefs.isEmpty &&
+        viewModel.openQuestionsToday.isEmpty &&
+        viewModel.errorInvocations.isEmpty
+    }
+
+    var body: some View {
+        if isEmpty {
+            EmptyView()
+        } else {
+            VStack(spacing: 10) {
+                HStack {
+                    Text("Needs input")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+
+                ForEach(viewModel.missedBriefs) { brief in
+                    MissedBriefCard(brief: brief, onTap: { onOpenBrief(brief) })
+                }
+
+                ForEach(viewModel.openQuestionsToday, id: \.question.id) { pair in
+                    OpenQuestionRow(brief: pair.brief, question: pair.question, onTap: { onOpenBrief(pair.brief) })
+                }
+
+                ForEach(viewModel.errorInvocations) { inv in
+                    AgentErrorRow(
+                        invocation: inv,
+                        agentName: viewModel.agentName(for: inv.agentId),
+                        agentEmoji: viewModel.agentEmoji(for: inv.agentId)
+                    )
+                }
+            }
+        }
+    }
+}
+
+private struct OpenQuestionRow: View {
+    let brief: Brief
+    let question: BriefQuestionItem
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "questionmark.bubble")
+                    .foregroundStyle(.orange)
+                    .font(.subheadline)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Text(brief.kind.shortLabel + " brief")
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.secondary)
+                        FeedActorChip(actor: .agent)
+                        Spacer()
+                        RedDot()
+                    }
+                    Text(question.prompt)
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(3)
+                }
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct AgentErrorRow: View {
+    let invocation: AgentInvocation
+    let agentName: String
+    let agentEmoji: String
+
+    private var errorClass: String {
+        switch invocation.status {
+        case .timeout: return "Timed out"
+        case .cancelled: return "Cancelled"
+        default:
+            if let err = invocation.error?.split(separator: ":").first {
+                return String(err)
+            }
+            return "Failed"
+        }
+    }
+
+    var body: some View {
+        NavigationLink(value: invocation) {
+            HStack(spacing: 10) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.red)
+                    .font(.subheadline)
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text("\(agentEmoji) \(agentName)")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                        FeedActorChip(actor: .agent)
+                        Spacer()
+                        RedDot()
+                    }
+                    Text(errorClass)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Section: Next Up
+
+/// Collapsible list of today's remaining schedule slots. Hidden entirely
+/// when nothing is upcoming so the feed stays tight on a quiet day.
+private struct NextUpSection: View {
+    @Bindable var viewModel: FeedViewModel
+    @State private var expanded = false
+
+    var body: some View {
+        let slots = viewModel.nextUpSlots
+        if slots.isEmpty {
+            EmptyView()
+        } else {
+            VStack(spacing: 0) {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { expanded.toggle() }
+                } label: {
+                    HStack {
+                        Label("Next up · \(slots.count) upcoming", systemImage: "arrow.right.circle")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Image(systemName: expanded ? "chevron.up" : "chevron.down")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 14)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+                }
+                .buttonStyle(.plain)
+
+                if expanded {
+                    VStack(spacing: 8) {
+                        ForEach(slots) { slot in
+                            CompactNextUpRow(slot: slot)
+                        }
+                    }
+                    .padding(.top, 8)
+                }
+            }
+        }
+    }
+}
+
+private struct CompactNextUpRow: View {
+    let slot: ScheduleSlot
+
+    private var breadcrumb: String? {
+        guard let desc = slot.agentAssignment?.description, !desc.isEmpty else { return nil }
+        return desc
+    }
+
+    var body: some View {
+        NavigationLink(value: slot) {
+            HStack(spacing: 10) {
+                VStack(spacing: 2) {
+                    Text(slot.time)
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                    Image(systemName: slot.typeIcon)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(width: 44)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(slot.typeLabel)
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                        .lineLimit(2)
+                    if let crumb = breadcrumb {
+                        Text(crumb)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+
+                Spacer()
+
+                Image(systemName: slot.statusIcon)
+                    .foregroundStyle(slot.statusColor)
+                    .font(.subheadline)
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Section: Event List
+
+/// Strict-descending list of past-completed events for today. PR 1 renders
+/// every category; PR 4 introduces the filter chip bar.
+private struct EventListSection: View {
+    @Bindable var viewModel: FeedViewModel
+    let onOpenBrief: (Brief) -> Void
+
+    var body: some View {
+        let events = viewModel.completedEventsToday
+        if events.isEmpty {
+            EmptyView()
+        } else {
+            VStack(spacing: 12) {
+                ForEach(events) { event in
+                    eventCard(event)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func eventCard(_ event: FeedEvent) -> some View {
+        switch event {
+        case .agentRunning(let inv):
+            AgentWorkingCard(
+                invocation: inv,
+                agentName: viewModel.agentName(for: inv.agentId),
+                agentEmoji: viewModel.agentEmoji(for: inv.agentId)
+            )
+        case .agentError(let inv):
+            AgentErrorCard(
+                invocation: inv,
+                agentName: viewModel.agentName(for: inv.agentId),
+                agentEmoji: viewModel.agentEmoji(for: inv.agentId)
+            )
+        case .agentFinished(let inv):
+            AgentFinishedCard(
+                invocation: inv,
+                agentName: viewModel.agentName(for: inv.agentId),
+                agentEmoji: viewModel.agentEmoji(for: inv.agentId)
+            )
+        case .briefRevealed(let brief):
+            BriefCard(brief: brief, onTap: { onOpenBrief(brief) })
+        }
+    }
+}
+
+// MARK: - Active Agents Chip + Sheet
+
+/// Header chip showing the count of currently running autonomous agent
+/// invocations. Pulses while any are running. See `Plans/FEED_RESTRUCTURE_PLAN.md`
+/// §2.3.
+private struct ActiveAgentChip: View {
+    let count: Int
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 6) {
+                Image(systemName: "person.wave.2")
+                    .symbolRenderingMode(.palette)
+                    .foregroundStyle(Color.white, Color.green)
+                    .symbolEffect(.pulse.byLayer, options: .repeating, isActive: count > 0)
+                Text("\(count)")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .monospacedDigit()
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(Color.green.opacity(0.15), in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(count == 0)
+        .opacity(count == 0 ? 0.5 : 1)
+    }
+}
+
+/// Sheet listing currently running invocations. Each row routes into
+/// `InvocationDetailView`.
+// TODO: per-agent chat session view — see Plans/FEED_RESTRUCTURE_PLAN.md §6.
+private struct ActiveAgentsSheet: View {
+    let invocations: [AgentInvocation]
+    let agentName: (String) -> String
+    let agentEmoji: (String) -> String
+
+    var body: some View {
+        NavigationStack {
+            List(invocations) { inv in
+                NavigationLink(value: inv) {
+                    HStack(spacing: 10) {
+                        ProgressView().controlSize(.small)
+                        Text("\(agentEmoji(inv.agentId)) \(agentName(inv.agentId))")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        Spacer()
+                        Text(inv.trigger.displayName)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .overlay {
+                if invocations.isEmpty {
+                    ContentUnavailableView("No active agents", systemImage: "person.wave.2")
+                }
+            }
+            .navigationTitle("Active agents")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(for: AgentInvocation.self) { inv in
+                InvocationDetailView(invocationId: inv.id)
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+}
+
+// MARK: - Primitives
+
+/// Centralized red-dot indicator. Used wherever a surface needs to signal
+/// "needs your attention." Replaces the scattered inline
+/// `Circle().fill(.red).frame(width: 7, height: 7)` pattern.
+private struct RedDot: View {
+    var body: some View {
+        Circle().fill(Color.red).frame(width: 7, height: 7)
+    }
+}
+
+// MARK: - Brief Feed Cards
 
 /// C1 — Compressed Feed view of a single revealed brief. Shows the reveal
 /// label ("Morning Brief · 7:00a"), one-line summary, and a count strip for
-/// agent outputs / accomplishments / open questions. Per §7.3 the Feed never
-/// renders the full section list — that lives in the Briefs tab.
+/// agent outputs / accomplishments / open questions.
 private struct BriefCard: View {
     let brief: Brief
     let onTap: () -> Void
 
     private var availability: BriefAvailability { BriefAvailability.from(brief: brief) }
 
-    /// Falls back to a deterministic line when synthesis hasn't produced a
-    /// summary yet (e.g. `synthesisFailed = true` on `references`). The Feed
-    /// never invents copy — empty states are explicit.
     private var summaryLine: String {
         if let summary = brief.decodedBody?.summary, !summary.isEmpty {
             return summary
@@ -228,7 +634,7 @@ private struct BriefCard: View {
                     FeedActorChip(actor: .agent)
                     Spacer()
                     if availability.hasUnreadBadge {
-                        Circle().fill(Color.red).frame(width: 7, height: 7)
+                        RedDot()
                     }
                 }
 
@@ -271,8 +677,7 @@ private struct BriefCard: View {
 }
 
 /// §7.4 — Missed-brief rollup. Single follow-up card pointing at an
-/// unacknowledged brief from the prior 48h. Tap → `BriefFullScreenView`,
-/// which acknowledges on appear.
+/// unacknowledged brief from the prior 48h.
 private struct MissedBriefCard: View {
     let brief: Brief
     let onTap: () -> Void
@@ -309,6 +714,7 @@ private struct MissedBriefCard: View {
                         .foregroundStyle(.primary)
                     FeedActorChip(actor: .agent)
                     Spacer()
+                    RedDot()
                     Image(systemName: "chevron.right")
                         .font(.caption)
                         .foregroundStyle(.tertiary)
@@ -383,221 +789,6 @@ private enum BriefCardTimeFormat {
     }
 }
 
-// MARK: - Next Up + Full-Day Reveal
-
-private struct NextUpCard: View {
-    let slot: ScheduleSlot?
-    let allSlots: [ScheduleSlot]
-    let remaining: Int
-    @Binding var showingAll: Bool
-    let onDone: (ScheduleSlot) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Label("Next up", systemImage: "arrow.right.circle")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                if !allSlots.isEmpty {
-                    Text("\(remaining) of \(allSlots.count) left")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(.bottom, 10)
-
-            if let slot {
-                NextUpRow(slot: slot, onDone: onDone)
-            } else {
-                HStack(spacing: 10) {
-                    Image(systemName: allSlots.isEmpty ? "calendar.badge.exclamationmark" : "checkmark.seal")
-                        .foregroundStyle(allSlots.isEmpty ? Color.secondary : Color.green)
-                    Text(allSlots.isEmpty ? "Nothing scheduled today" : "Day complete")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                }
-                .padding(.vertical, 6)
-            }
-
-            if allSlots.count > 1 {
-                Divider().padding(.vertical, 10)
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) { showingAll.toggle() }
-                } label: {
-                    HStack {
-                        Text(showingAll ? "Hide full day" : "See all today (\(allSlots.count))")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                        Spacer()
-                        Image(systemName: showingAll ? "chevron.up" : "chevron.down")
-                            .font(.caption)
-                    }
-                    .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-
-                if showingAll {
-                    VStack(spacing: 6) {
-                        ForEach(allSlots) { s in
-                            NavigationLink(value: s) {
-                                SlotCard(slot: s, showBreadcrumb: true)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .padding(.top, 10)
-                }
-            }
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
-    }
-}
-
-private struct NextUpRow: View {
-    let slot: ScheduleSlot
-    let onDone: (ScheduleSlot) -> Void
-
-    private var breadcrumb: String? {
-        guard let desc = slot.agentAssignment?.description, !desc.isEmpty else { return nil }
-        return desc
-    }
-
-    var body: some View {
-        NavigationLink(value: slot) {
-            HStack(spacing: 12) {
-                VStack(spacing: 2) {
-                    Text(slot.time)
-                        .font(.system(.footnote, design: .monospaced))
-                        .foregroundStyle(.secondary)
-                    Image(systemName: slot.typeIcon)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(width: 48)
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(slot.typeLabel)
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                        .lineLimit(2)
-                    if let crumb = breadcrumb {
-                        Text(crumb)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
-                }
-
-                Spacer()
-
-                if slot.type == .agentAssignment && slot.status != .done {
-                    Button {
-                        onDone(slot)
-                    } label: {
-                        Image(systemName: "checkmark.circle")
-                            .font(.title2)
-                            .foregroundStyle(.green)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Mark done")
-                } else {
-                    Image(systemName: slot.statusIcon)
-                        .foregroundStyle(slot.statusColor)
-                        .font(.title3)
-                }
-            }
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Status Strip
-
-private struct StatusStrip: View {
-    let rosaryMystery: RosaryMystery
-    @Bindable var rosaryState: RosaryState
-    @Bindable var dailyNote: DailyNote
-    let onOpenRosary: () -> Void
-    let onOpenNote: () -> Void
-
-    // Mock targets — will come from Health/nutrition services later.
-    private let mealsTotal = 4
-    private let mealsLogged = 0
-    private let workoutPlanned = true
-    private let workoutDone = false
-
-    private var rosaryDone: Bool {
-        rosaryState.checkedMysteries.count == 5
-    }
-
-    var body: some View {
-        HStack(spacing: 8) {
-            FeedStatusPill(
-                icon: "cross",
-                title: "Rosary",
-                value: "\(rosaryState.checkedMysteries.count)/5",
-                tint: rosaryDone ? .green : .secondary,
-                action: onOpenRosary
-            )
-            FeedStatusPill(
-                icon: "fork.knife",
-                title: "Meals",
-                value: "\(mealsLogged)/\(mealsTotal)",
-                tint: mealsLogged >= mealsTotal ? .green : .secondary,
-                action: {}
-            )
-            FeedStatusPill(
-                icon: workoutDone ? "figure.strengthtraining.traditional" : "figure.run",
-                title: "Workout",
-                value: workoutDone ? "Done" : (workoutPlanned ? "Planned" : "—"),
-                tint: workoutDone ? .green : .secondary,
-                action: {}
-            )
-            FeedStatusPill(
-                icon: dailyNote.text.isEmpty ? "square.and.pencil" : "note.text",
-                title: "Note",
-                value: dailyNote.text.isEmpty ? "Add" : "Saved",
-                tint: dailyNote.text.isEmpty ? .secondary : .blue,
-                action: onOpenNote
-            )
-        }
-    }
-}
-
-private struct FeedStatusPill: View {
-    let icon: String
-    let title: String
-    let value: String
-    let tint: Color
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.subheadline)
-                    .foregroundStyle(tint)
-                Text(value)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-                Text(title)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
-        }
-        .buttonStyle(.plain)
-    }
-}
-
 // MARK: - Rosary Quick Sheet
 
 private struct RosaryQuickSheet: View {
@@ -645,31 +836,6 @@ private struct RosaryQuickSheet: View {
         }
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
-    }
-}
-
-// MARK: - Daily Note Editor
-
-struct DailyNoteEditorView: View {
-    let note: DailyNote
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            TextEditor(text: Binding(
-                get: { note.text },
-                set: { note.text = $0 }
-            ))
-            .font(.body)
-            .padding(12)
-            .navigationTitle(note.date)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
-        }
     }
 }
 
@@ -764,8 +930,7 @@ private struct AgentWorkingCard: View {
     }
 }
 
-/// A4 — Agent error. Failed/timed-out runs in the last 24h. Tap → invocation
-/// detail so the user can read the error and decide whether to retry.
+/// A4 — Agent error. Failed/timed-out runs in the last 24h.
 private struct AgentErrorCard: View {
     let invocation: AgentInvocation
     let agentName: String
@@ -869,126 +1034,7 @@ private struct AgentFinishedCard: View {
     }
 }
 
-/// A3 — Agent queued. Next 1–2 agent-assignment slots that haven't run yet.
-private struct AgentQueuedCard: View {
-    let slot: ScheduleSlot
-
-    private var title: String {
-        slot.agentAssignment?.title ?? "Agent Assignment"
-    }
-
-    var body: some View {
-        NavigationLink(value: slot) {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: "clock.badge")
-                    .foregroundStyle(.purple)
-                    .font(.title3)
-
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 6) {
-                        Text("Queued for \(slot.time)")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                        FeedActorChip(actor: .agent)
-                        Spacer()
-                    }
-                    Text(title)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
-            }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(Color.purple.opacity(0.2), lineWidth: 1)
-            )
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Feed: World + Human Cards (Lanes D, E)
-
-/// D1 — Today's liturgy. Compact card showing today's Rosary mystery and the
-/// user's progress through it. Taps into the existing rosary sheet.
-private struct LiturgyCard: View {
-    let mystery: RosaryMystery
-    let progress: Int
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 12) {
-                Image(systemName: "cross.fill")
-                    .foregroundStyle(.indigo)
-                    .font(.title3)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Text("\(mystery.rawValue) Mysteries")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.primary)
-                        FeedActorChip(actor: .world)
-                    }
-                    Text(progress == 5 ? "Complete" : "\(progress) of 5 prayed")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-/// E1 — Note nudge. Surfaces after 2 PM if today's daily note is still empty.
-private struct NoteNudgeCard: View {
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 12) {
-                Image(systemName: "square.and.pencil")
-                    .foregroundStyle(.blue)
-                    .font(.title3)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Text("Today's note")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.primary)
-                        FeedActorChip(actor: .you)
-                    }
-                    Text("You haven't written one yet — capture a quick reflection.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.leading)
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-            }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Briefs (data model + inline detail)
+// MARK: - Briefs (data model)
 
 /// Lightweight identifier for the three daily reveal slots. Display copy
 /// (`summary`, `highlights`, etc.) lives on the real `Brief` row fetched from
@@ -1026,4 +1072,3 @@ enum DailyBrief: String, Identifiable, CaseIterable {
         }
     }
 }
-

@@ -108,6 +108,67 @@ final class FeedViewModel {
             }
     }
 
+    /// Today's slots that are still ahead (time >= now), not done/skipped, and
+    /// not currently running. Drives the collapsible "Next up" section in the
+    /// restructured Feed. Sorted ascending by time.
+    var nextUpSlots: [ScheduleSlot] {
+        let today = Date().isoDate
+        let now = Self.currentHHMM()
+        return todaySlots
+            .filter { $0.date == today }
+            .filter { $0.status != .done && $0.status != .skipped && $0.status != .inProgress }
+            .filter { $0.time >= now }
+            .sorted { $0.time < $1.time }
+    }
+
+    /// Open questions surfaced by today's revealed (and still-unacknowledged)
+    /// briefs. Each tuple is paired with its parent brief so the UI can route
+    /// taps into the brief detail.
+    var openQuestionsToday: [(brief: Brief, question: BriefQuestionItem)] {
+        revealedBriefsToday
+            .filter { $0.acknowledgedAt == nil }
+            .flatMap { brief -> [(Brief, BriefQuestionItem)] in
+                guard let questions = brief.decodedBody?.sections.openQuestions else { return [] }
+                return questions.map { (brief, $0) }
+            }
+    }
+
+    /// Past-only event list rendered chronologically descending. PR 1
+    /// combines running/error/finished autonomous invocations and revealed
+    /// briefs. PR 2 extends with past calendar events; PR 4 may extend with
+    /// completed-Rosary snapshots.
+    var completedEventsToday: [FeedEvent] {
+        var events: [FeedEvent] = []
+        events.append(contentsOf: runningInvocations.map(FeedEvent.agentRunning))
+        events.append(contentsOf: errorInvocations.map(FeedEvent.agentError))
+        events.append(contentsOf: recentCompleteInvocations.map(FeedEvent.agentFinished))
+        events.append(contentsOf: revealedBriefsToday.map(FeedEvent.briefRevealed))
+        return events.sorted { $0.sortKey > $1.sortKey }
+    }
+
+    /// PR 1 stub for the header brief-status row. PR 3 will replace this with
+    /// a full enum that includes the `.drafting` partial-counts case.
+    var headerBriefStatus: HeaderBriefStatus {
+        let today = Date().isoDate
+        let revealed = revealedBriefsToday
+        if let unread = revealed.first(where: { $0.acknowledgedAt == nil && $0.status == .ready }) {
+            return .ready(brief: unread)
+        }
+        if let last = revealed.last {
+            return .acknowledged(brief: last)
+        }
+        // No revealed brief yet — pick the next pending one with a revealAt.
+        let scheduled = recentBriefs
+            .filter { $0.date == today }
+            .filter { $0.status == .pending || $0.status == .drafting }
+            .sorted { ($0.revealAt ?? "") < ($1.revealAt ?? "") }
+            .first
+        if let s = scheduled {
+            return .scheduled(kind: s.kind, revealAt: s.revealAt)
+        }
+        return .none
+    }
+
     /// Acknowledge a `ready` brief opened from the Feed. Mirrors the same
     /// logic in `BriefsViewModel.acknowledge` but operates on `recentBriefs`.
     /// Falls back to optimistic local-only acknowledgement on network error so
@@ -366,22 +427,6 @@ final class RosaryState {
 
     private func persistScriptures() {
         UserDefaults.standard.set(Array(checkedScriptures), forKey: "scripture-\(date)")
-    }
-}
-
-// MARK: - Daily Note (UserDefaults per date)
-
-@Observable
-final class DailyNote {
-    let date: String
-
-    var text: String {
-        didSet { UserDefaults.standard.set(text, forKey: "note-\(date)") }
-    }
-
-    init(date: String = Date().isoDate) {
-        self.date = date
-        self.text = UserDefaults.standard.string(forKey: "note-\(date)") ?? ""
     }
 }
 
