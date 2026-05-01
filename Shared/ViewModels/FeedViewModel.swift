@@ -2,7 +2,7 @@ import Foundation
 import Observation
 
 @Observable
-final class HomeViewModel {
+final class FeedViewModel {
     var todaySlots: [ScheduleSlot] = []
     var board: BoardResponse?
     var isLoading = false

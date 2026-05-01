@@ -9,7 +9,7 @@ struct ContentView: View {
         @Bindable var chatContextStore = chatContextStore
 
         TabView(selection: $selectedTab) {
-            HomeView()
+            FeedView()
                 .floatingChatButton(isPresented: $chatContextStore.showingChat)
                 .tabItem { Label("Feed", systemImage: "newspaper") }
                 .tag(0)
@@ -68,7 +68,7 @@ struct ContentView: View {
         guard let link else { return }
         chatContextStore.showingChat = false
         switch link {
-        case .home:
+        case .feed:
             selectedTab = 0
             deepLinkRouter.consume()
         case .task, .goal, .initiative:

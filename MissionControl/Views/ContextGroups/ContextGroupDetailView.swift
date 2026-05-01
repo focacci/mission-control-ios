@@ -214,7 +214,7 @@ private struct ContextGroupMemberCard: View {
     private func typeDisplayName(_ type: String) -> String {
         switch type {
         case "app":            return "App"
-        case "home":           return "Home"
+        case "feed", "home":   return "Feed"
         case "agents":         return "Agents"
         case "agent":          return "Agent Details"
         case "agent_chat":     return "Agent Chat"

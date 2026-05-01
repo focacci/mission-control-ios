@@ -2,7 +2,7 @@ import SwiftUI
 
 enum ChatContextKind: Equatable, Hashable {
     case app
-    case home
+    case feed
     case agents
     case agent(id: String, name: String, emoji: String)
     case agentChat(id: String, name: String, emoji: String)
@@ -71,7 +71,7 @@ enum ChatContextKind: Equatable, Hashable {
     var contextType: String {
         switch self {
         case .app:          return "app"
-        case .home:         return "home"
+        case .feed:         return "feed"
         case .agents:       return "agents"
         case .agent:        return "agent"
         case .agentChat:    return "agent_chat"
@@ -269,7 +269,7 @@ final class ChatContextStore {
     func label(for kind: ChatContextKind) -> String {
         switch kind {
         case .app:                       return "Mission Control"
-        case .home:
+        case .feed:
             return Date().formatted(.dateTime.weekday(.wide).month().day())
         case .agents:                    return "List"
         case .agent(_, let n, _):        return n
@@ -309,7 +309,7 @@ final class ChatContextStore {
     func icon(for kind: ChatContextKind) -> String {
         switch kind {
         case .app:          return "cpu"
-        case .home:         return "newspaper"
+        case .feed:         return "newspaper"
         case .agents:       return "person.2.wave.2"
         case .agent:        return "person.wave.2"
         case .agentChat:    return "bubble.left.and.text.bubble.right"
@@ -344,7 +344,7 @@ final class ChatContextStore {
     func typeName(for kind: ChatContextKind) -> String {
         switch kind {
         case .app:          return "App"
-        case .home:         return "Feed"
+        case .feed:         return "Feed"
         case .agents:       return "Agents"
         case .agent:        return "Agent Details"
         case .agentChat:    return "Agent Chat"
@@ -429,7 +429,7 @@ final class ChatContextStore {
             return "You're in the **\(s)** view. I can help you create, organize, or prioritize items."
         case .faith(let s):
             return "You're in **\(s)**. I can help you reflect on scripture, find a prayer, or explore the liturgical calendar."
-        case .home:
+        case .feed:
             return "Good to see you. What's on your mind today?"
         case .agents:
             return "Hey! What do you want to work through? Goals, tasks, schedule — I'm ready."

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Parsed form of a `MessagePart.navigate.route` string. The agent emits free-
-/// form path strings (`/tasks/<id>`, `/schedule?date=2026-04-30`, `/home`,
+/// form path strings (`/tasks/<id>`, `/schedule?date=2026-04-30`, `/feed`,
 /// etc.); `DeepLink.parse` turns them into a typed enum so the iOS nav stack
 /// can dispatch without scattering string parsing throughout view code.
 ///
@@ -14,7 +14,7 @@ enum DeepLink: Equatable, Hashable {
     case initiative(id: String)
     case agentAssignment(id: String)
     case schedule(date: Date?)
-    case home
+    case feed
     case unknown(raw: String)
 
     /// `true` for any case that resolves to a real destination iOS knows how
@@ -42,8 +42,8 @@ enum DeepLink: Equatable, Hashable {
         }
 
         switch head {
-        case "home":
-            return .home
+        case "feed", "home":
+            return .feed
 
         case "tasks", "task":
             if segments.count >= 2 { return .task(id: segments[1]) }

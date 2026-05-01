@@ -58,7 +58,7 @@ struct NavigateRow: View {
         case .initiative:       return "flag.pattern.checkered"
         case .agentAssignment:  return "person.badge.clock"
         case .schedule:         return "calendar"
-        case .home:             return "house"
+        case .feed:             return "newspaper"
         case .unknown:          return "link"
         }
     }

@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct HomeView: View {
-    @State private var viewModel = HomeViewModel()
+struct FeedView: View {
+    @State private var viewModel = FeedViewModel()
     @State private var rosaryState = RosaryState()
     @State private var dailyNote = DailyNote()
     @State private var showingNoteEditor = false
@@ -114,7 +114,7 @@ struct HomeView: View {
                 .padding(.top, 8)
                 .padding(.bottom, 24)
             }
-            .chatContext(.home)
+            .chatContext(.feed)
             .chatContextToolbar()
             .refreshable { await viewModel.load() }
             .errorAlert(message: $viewModel.error)
@@ -537,28 +537,28 @@ private struct StatusStrip: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            HomeStatusPill(
+            FeedStatusPill(
                 icon: "cross",
                 title: "Rosary",
                 value: "\(rosaryState.checkedMysteries.count)/5",
                 tint: rosaryDone ? .green : .secondary,
                 action: onOpenRosary
             )
-            HomeStatusPill(
+            FeedStatusPill(
                 icon: "fork.knife",
                 title: "Meals",
                 value: "\(mealsLogged)/\(mealsTotal)",
                 tint: mealsLogged >= mealsTotal ? .green : .secondary,
                 action: {}
             )
-            HomeStatusPill(
+            FeedStatusPill(
                 icon: workoutDone ? "figure.strengthtraining.traditional" : "figure.run",
                 title: "Workout",
                 value: workoutDone ? "Done" : (workoutPlanned ? "Planned" : "—"),
                 tint: workoutDone ? .green : .secondary,
                 action: {}
             )
-            HomeStatusPill(
+            FeedStatusPill(
                 icon: dailyNote.text.isEmpty ? "square.and.pencil" : "note.text",
                 title: "Note",
                 value: dailyNote.text.isEmpty ? "Add" : "Saved",
@@ -569,7 +569,7 @@ private struct StatusStrip: View {
     }
 }
 
-private struct HomeStatusPill: View {
+private struct FeedStatusPill: View {
     let icon: String
     let title: String
     let value: String
