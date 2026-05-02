@@ -158,10 +158,32 @@ final class FeedViewModel {
 
     var calendarAuthStatus: EKAuthorizationStatus { calendarService.authStatus }
 
-    /// PR 1 stub for the header brief-status row. PR 3 will replace this with
-    /// a full enum that includes the `.drafting` partial-counts case.
-    var headerBriefStatus: HeaderBriefStatus {
+    /// Today's briefs that are still being assembled (`pending` before
+    /// evidence lands, `drafting` once it has). Sorted ascending by reveal
+    /// time. Drives the header's live partial-counts row.
+    var inProgressBriefsToday: [Brief] {
         let today = Date().isoDate
+        return recentBriefs
+            .filter { $0.date == today }
+            .filter { $0.status == .pending || $0.status == .drafting || $0.status == .generating }
+            .sorted { ($0.revealAt ?? "") < ($1.revealAt ?? "") }
+    }
+
+    /// Header brief-status row. Resolution priority: an actively-drafting
+    /// brief wins (its live counts are the most informative thing we can
+    /// show), then unread reveals, then read reveals, then the next
+    /// scheduled reveal, then nothing. The polling loop reloads
+    /// `recentBriefs` so counts climb tick-by-tick.
+    var headerBriefStatus: HeaderBriefStatus {
+        if let drafting = inProgressBriefsToday.first(where: { $0.status == .drafting || $0.status == .generating }) {
+            let sections = drafting.decodedBody?.sections
+            return .drafting(
+                brief: drafting,
+                agentRuns: sections?.agentWork.count ?? 0,
+                openQuestions: sections?.openQuestions.count ?? 0,
+                accomplishments: sections?.userAccomplishments.count ?? 0
+            )
+        }
         let revealed = revealedBriefsToday
         if let unread = revealed.first(where: { $0.acknowledgedAt == nil && $0.status == .ready }) {
             return .ready(brief: unread)
@@ -169,13 +191,7 @@ final class FeedViewModel {
         if let last = revealed.last {
             return .acknowledged(brief: last)
         }
-        // No revealed brief yet — pick the next pending one with a revealAt.
-        let scheduled = recentBriefs
-            .filter { $0.date == today }
-            .filter { $0.status == .pending || $0.status == .drafting }
-            .sorted { ($0.revealAt ?? "") < ($1.revealAt ?? "") }
-            .first
-        if let s = scheduled {
+        if let s = inProgressBriefsToday.first {
             return .scheduled(kind: s.kind, revealAt: s.revealAt)
         }
         return .none
@@ -273,17 +289,22 @@ final class FeedViewModel {
     }
 
     /// Lightweight refresh used by the Feed's polling loop. Re-fetches only
-    /// the invocation lanes that change minute-to-minute — slots, board, and
-    /// agents are stable enough to refresh on `load()` only.
+    /// the lanes that change minute-to-minute — invocations and today's
+    /// briefs (briefs change when evidence is appended during `drafting`).
+    /// Slots, board, and agents are stable enough to refresh on `load()` only.
     func refreshLive() async {
+        let today = Date().isoDate
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date())?.isoDate ?? today
         do {
             async let runningTask = APIClient.shared.invocations(status: "running", limit: 10)
             async let errorTask = APIClient.shared.invocations(status: "error", limit: 10)
             async let completeTask = APIClient.shared.invocations(status: "complete", limit: 10)
-            let (running, errors, complete) = try await (runningTask, errorTask, completeTask)
+            async let briefsTask = APIClient.shared.listBriefs(from: yesterday, to: today)
+            let (running, errors, complete, briefs) = try await (runningTask, errorTask, completeTask, briefsTask)
             self.runningInvocations = filterAutonomous(running)
             self.errorInvocations = filterRecentErrors(errors)
             self.recentCompleteInvocations = filterAutonomous(complete).prefix(3).map { $0 }
+            self.recentBriefs = briefs
         } catch {
             // Swallow polling errors — the next tick will retry. Surfacing
             // these would flap the error banner every 10s on a flaky network.

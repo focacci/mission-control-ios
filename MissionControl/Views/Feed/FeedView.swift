@@ -24,7 +24,8 @@ struct FeedView: View {
                         viewModel: viewModel,
                         rosaryState: rosaryState,
                         onOpenRosary: { showingRosary = true },
-                        onOpenActiveAgents: { showingActiveAgents = true }
+                        onOpenActiveAgents: { showingActiveAgents = true },
+                        onOpenBrief: openBrief
                     )
 
                     NeedsInputSection(
@@ -115,6 +116,7 @@ private struct HomeHeaderCard: View {
     @Bindable var rosaryState: RosaryState
     let onOpenRosary: () -> Void
     let onOpenActiveAgents: () -> Void
+    let onOpenBrief: (Brief) -> Void
 
     private var dateLine: String {
         Date.now.formatted(.dateTime.weekday(.wide).month(.wide).day())
@@ -164,7 +166,7 @@ private struct HomeHeaderCard: View {
             .buttonStyle(.plain)
 
             // Brief status row
-            BriefStatusRow(status: viewModel.headerBriefStatus)
+            BriefStatusRow(status: viewModel.headerBriefStatus, onOpenBrief: onOpenBrief)
 
             // Calendar peek (PR 2)
             CalendarPeekRow(
@@ -198,12 +200,15 @@ private struct HomeHeaderCard: View {
 
 private struct BriefStatusRow: View {
     let status: HeaderBriefStatus
+    let onOpenBrief: (Brief) -> Void
 
     var body: some View {
         switch status {
         case .none:
             EmptyView()
         case .scheduled(let kind, let revealAt):
+            // Pre-reveal briefs are not openable (FEED_PLAN §7.3); render as
+            // a non-interactive label.
             HStack(spacing: 8) {
                 Image(systemName: kind.icon)
                     .foregroundStyle(kind.color)
@@ -219,29 +224,63 @@ private struct BriefStatusRow: View {
                 }
                 Spacer()
             }
-        case .ready(let brief):
+        case .drafting(let brief, let runs, let questions, let wins):
+            // Live counts pulled from the brief's evolving body. Tap is
+            // intentionally disabled — the brief isn't viewable until reveal.
             HStack(spacing: 8) {
                 Image(systemName: brief.kind.icon)
                     .foregroundStyle(brief.kind.color)
                     .font(.caption)
-                Text("\(brief.kind.label) ready")
+                    .symbolEffect(.pulse, options: .repeating)
+                Text(draftingLabel(kind: brief.kind, runs: runs, questions: questions, wins: wins))
                     .font(.caption)
-                    .fontWeight(.medium)
                     .foregroundStyle(.primary)
-                RedDot()
+                    .lineLimit(2)
                 Spacer()
             }
+        case .ready(let brief):
+            Button { onOpenBrief(brief) } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: brief.kind.icon)
+                        .foregroundStyle(brief.kind.color)
+                        .font(.caption)
+                    Text("\(brief.kind.label) ready")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.primary)
+                    RedDot()
+                    Spacer()
+                }
+            }
+            .buttonStyle(.plain)
         case .acknowledged(let brief):
-            HStack(spacing: 8) {
-                Image(systemName: brief.kind.icon)
-                    .foregroundStyle(brief.kind.color.opacity(0.6))
-                    .font(.caption)
-                Text("\(brief.kind.label) read")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Spacer()
+            Button { onOpenBrief(brief) } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: brief.kind.icon)
+                        .foregroundStyle(brief.kind.color.opacity(0.6))
+                        .font(.caption)
+                    Text("\(brief.kind.label) read")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
             }
+            .buttonStyle(.plain)
         }
+    }
+
+    /// Builds the live-counts string. Suppresses zero-count clauses entirely
+    /// so a brief that has only collected agent runs reads "Evening brief ·
+    /// 3 runs collected" instead of "… · 3 runs, 0 questions, 0 wins …".
+    private func draftingLabel(kind: BriefKind, runs: Int, questions: Int, wins: Int) -> String {
+        var parts: [String] = []
+        if runs > 0 { parts.append("\(runs) \(runs == 1 ? "run" : "runs")") }
+        if questions > 0 { parts.append("\(questions) \(questions == 1 ? "question" : "questions")") }
+        if wins > 0 { parts.append("\(wins) \(wins == 1 ? "win" : "wins")") }
+        if parts.isEmpty {
+            return "\(kind.label) · drafting…"
+        }
+        return "\(kind.label) · \(parts.joined(separator: ", ")) collected"
     }
 }
 

@@ -55,11 +55,14 @@ enum FeedFilterCategory: String, CaseIterable, Hashable {
     case all, agents, briefs, schedule, you
 }
 
-/// Brief slot status surfaced in the Feed header. PR 3 extends with a
-/// `.drafting` case carrying live partial-counts.
+/// Brief slot status surfaced in the Feed header. The `.drafting` case
+/// carries live partial-counts pulled from `Brief.body.sections` while the
+/// drafting pipeline appends evidence. Counts increment over the polling
+/// loop so the user sees the brief assembling in real time.
 enum HeaderBriefStatus: Hashable {
     case none
     case scheduled(kind: BriefKind, revealAt: String?)
+    case drafting(brief: Brief, agentRuns: Int, openQuestions: Int, accomplishments: Int)
     case ready(brief: Brief)
     case acknowledged(brief: Brief)
 }
