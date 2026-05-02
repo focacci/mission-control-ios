@@ -49,10 +49,23 @@ private func calendarEventId(_ e: EKEvent) -> String {
     return "cal:\(e.calendarItemIdentifier):\(e.startDate.timeIntervalSince1970)"
 }
 
-/// Filter chip identity for `EventListSection`. PR 1 ships the model only;
-/// PR 4 wires the chips into the section.
+/// Filter chip identity for `EventListSection`. PR 4 wires this into the
+/// `EventFilterBar` and the section's filtered render. The `schedule`
+/// category currently has no `FeedEvent` producers (slots route to
+/// NextUp), but the chip ships per the plan and will pick up data when
+/// completed-slot events are added.
 enum FeedFilterCategory: String, CaseIterable, Hashable {
     case all, agents, briefs, schedule, you
+
+    var label: String {
+        switch self {
+        case .all:      return "All"
+        case .agents:   return "Agents"
+        case .briefs:   return "Briefs"
+        case .schedule: return "Schedule"
+        case .you:      return "You"
+        }
+    }
 }
 
 /// Brief slot status surfaced in the Feed header. The `.drafting` case

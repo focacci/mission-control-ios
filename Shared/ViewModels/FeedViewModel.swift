@@ -8,6 +8,10 @@ final class FeedViewModel {
     /// slice. Refreshed on `load()` and every `refreshLive()` tick.
     let calendarService = CalendarService()
 
+    /// Tracks the user's daily Rosary streak. Recomputed on `load()` and
+    /// after the Rosary sheet dismisses (today's count may have changed).
+    let streakService = StreakService()
+
     var todaySlots: [ScheduleSlot] = []
     var board: BoardResponse?
     var isLoading = false
@@ -158,6 +162,24 @@ final class FeedViewModel {
 
     var calendarAuthStatus: EKAuthorizationStatus { calendarService.authStatus }
 
+    /// Per-category counts for the EventList filter bar. `.all` is the union;
+    /// the others mirror `FeedEvent.category`.
+    var eventCategoryCounts: [FeedFilterCategory: Int] {
+        var counts: [FeedFilterCategory: Int] = [:]
+        let events = completedEventsToday
+        counts[.all] = events.count
+        for cat in FeedFilterCategory.allCases where cat != .all {
+            counts[cat] = events.filter { $0.category == cat }.count
+        }
+        return counts
+    }
+
+    func filteredEvents(_ selection: FeedFilterCategory) -> [FeedEvent] {
+        let events = completedEventsToday
+        guard selection != .all else { return events }
+        return events.filter { $0.category == selection }
+    }
+
     /// Today's briefs that are still being assembled (`pending` before
     /// evidence lands, `drafting` once it has). Sorted ascending by reveal
     /// time. Drives the header's live partial-counts row.
@@ -285,7 +307,14 @@ final class FeedViewModel {
         // store hit and shouldn't block the feed if EventKit hiccups.
         await calendarService.requestAccessIfNeeded()
         await calendarService.refresh()
+        streakService.recompute()
         isLoading = false
+    }
+
+    /// Re-reads UserDefaults to bump the streak count after the user
+    /// completes today's Rosary. Cheap; safe to call on sheet dismiss.
+    func recomputeStreaks() {
+        streakService.recompute()
     }
 
     /// Lightweight refresh used by the Feed's polling loop. Re-fetches only

@@ -55,7 +55,9 @@ struct FeedView: View {
                     await viewModel.refreshLive()
                 }
             }
-            .sheet(isPresented: $showingRosary) {
+            .sheet(isPresented: $showingRosary, onDismiss: {
+                viewModel.recomputeStreaks()
+            }) {
                 RosaryQuickSheet(mystery: RosaryMystery.forDate(Date()), state: rosaryState)
             }
             .sheet(isPresented: $showingActiveAgents) {
@@ -139,6 +141,7 @@ private struct HomeHeaderCard: View {
                 Spacer()
                 ActiveAgentChip(
                     count: viewModel.runningInvocations.count,
+                    hasError: !viewModel.errorInvocations.isEmpty,
                     onTap: onOpenActiveAgents
                 )
             }
@@ -156,6 +159,9 @@ private struct HomeHeaderCard: View {
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundStyle(.primary)
+                    if viewModel.streakService.rosary > 0 {
+                        RosaryStreakChip(streak: viewModel.streakService.rosary)
+                    }
                     Spacer()
                     let progress = rosaryState.checkedMysteries.count
                     Text(progress == 5 ? "Complete" : "\(progress) of 5 prayed")
@@ -579,20 +585,45 @@ private struct CompactNextUpRow: View {
 
 // MARK: - Section: Event List
 
-/// Strict-descending list of past-completed events for today. PR 1 renders
-/// every category; PR 4 introduces the filter chip bar.
+/// Strict-descending list of past-completed events for today. PR 4 wires
+/// the filter chip bar; selection persists across launches via
+/// `@AppStorage`.
 private struct EventListSection: View {
     @Bindable var viewModel: FeedViewModel
     let onOpenBrief: (Brief) -> Void
 
+    @AppStorage("home.feedFilter") private var rawSelection: String = FeedFilterCategory.all.rawValue
+
+    private var selection: Binding<FeedFilterCategory> {
+        Binding(
+            get: { FeedFilterCategory(rawValue: rawSelection) ?? .all },
+            set: { rawSelection = $0.rawValue }
+        )
+    }
+
     var body: some View {
-        let events = viewModel.completedEventsToday
-        if events.isEmpty {
+        let allEvents = viewModel.completedEventsToday
+        if allEvents.isEmpty {
             EmptyView()
         } else {
-            VStack(spacing: 12) {
-                ForEach(events) { event in
-                    eventCard(event)
+            VStack(spacing: 10) {
+                EventFilterBar(
+                    selection: selection,
+                    counts: viewModel.eventCategoryCounts
+                )
+                let events = viewModel.filteredEvents(selection.wrappedValue)
+                if events.isEmpty {
+                    Text("No \(selection.wrappedValue.label.lowercased()) events today")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 24)
+                } else {
+                    VStack(spacing: 12) {
+                        ForEach(events) { event in
+                            eventCard(event)
+                        }
+                    }
                 }
             }
         }
@@ -627,6 +658,49 @@ private struct EventListSection: View {
     }
 }
 
+/// Horizontal chip bar above the event list. Selection persists via the
+/// caller's `@AppStorage`. Counts are sourced from
+/// `FeedViewModel.eventCategoryCounts`; categories with zero events still
+/// render so the layout stays stable as data flows in.
+private struct EventFilterBar: View {
+    @Binding var selection: FeedFilterCategory
+    let counts: [FeedFilterCategory: Int]
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(FeedFilterCategory.allCases, id: \.self) { cat in
+                    Button {
+                        selection = cat
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(cat.label)
+                                .font(.caption)
+                                .fontWeight(.medium)
+                            if let n = counts[cat], n > 0 {
+                                Text("\(n)")
+                                    .font(.caption2.monospacedDigit())
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .foregroundStyle(selection == cat ? Color.accentColor : .primary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(
+                            selection == cat
+                                ? Color.accentColor.opacity(0.18)
+                                : Color.secondary.opacity(0.08),
+                            in: Capsule()
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 2)
+        }
+    }
+}
+
 // MARK: - Active Agents Chip + Sheet
 
 /// Header chip showing the count of currently running autonomous agent
@@ -634,6 +708,7 @@ private struct EventListSection: View {
 /// §2.3.
 private struct ActiveAgentChip: View {
     let count: Int
+    let hasError: Bool
     let onTap: () -> Void
 
     var body: some View {
@@ -651,10 +726,48 @@ private struct ActiveAgentChip: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .background(Color.green.opacity(0.15), in: Capsule())
+            .overlay(alignment: .topTrailing) {
+                // Red-dot signals at least one errored autonomous run in the
+                // last 24h. Even when there are no *active* agents, the user
+                // should know something needs attention.
+                if hasError {
+                    RedDot()
+                        .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 1))
+                        .offset(x: 3, y: -3)
+                }
+            }
         }
         .buttonStyle(.plain)
-        .disabled(count == 0)
-        .opacity(count == 0 ? 0.5 : 1)
+        .disabled(count == 0 && !hasError)
+        .opacity(count == 0 && !hasError ? 0.5 : 1)
+    }
+}
+
+/// Daily Rosary streak chip rendered next to the mystery name in the
+/// header. Hidden when the streak is zero; the number is the longest run
+/// of consecutive completed days ending today (today included once today's
+/// mysteries are all checked).
+private struct RosaryStreakChip: View {
+    let streak: Int
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "flame.fill")
+                .foregroundStyle(.orange)
+                .font(.caption2)
+            Text("\(streak)")
+                .font(.caption.monospacedDigit())
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+            Text(streak == 1 ? "day" : "days")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .background(Color.orange.opacity(0.12), in: Capsule())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Rosary streak: \(streak) \(streak == 1 ? "day" : "days")")
     }
 }
 
