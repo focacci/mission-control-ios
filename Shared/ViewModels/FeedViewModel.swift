@@ -1,8 +1,13 @@
 import Foundation
 import Observation
+import EventKit
 
 @Observable
 final class FeedViewModel {
+    /// Owns calendar permissions and the next-event / past-today-events
+    /// slice. Refreshed on `load()` and every `refreshLive()` tick.
+    let calendarService = CalendarService()
+
     var todaySlots: [ScheduleSlot] = []
     var board: BoardResponse?
     var isLoading = false
@@ -133,9 +138,9 @@ final class FeedViewModel {
             }
     }
 
-    /// Past-only event list rendered chronologically descending. PR 1
-    /// combines running/error/finished autonomous invocations and revealed
-    /// briefs. PR 2 extends with past calendar events; PR 4 may extend with
+    /// Past-only event list rendered chronologically descending. Combines
+    /// running/error/finished autonomous invocations, revealed briefs, and
+    /// today's already-finished calendar events. PR 4 may extend with
     /// completed-Rosary snapshots.
     var completedEventsToday: [FeedEvent] {
         var events: [FeedEvent] = []
@@ -143,8 +148,15 @@ final class FeedViewModel {
         events.append(contentsOf: errorInvocations.map(FeedEvent.agentError))
         events.append(contentsOf: recentCompleteInvocations.map(FeedEvent.agentFinished))
         events.append(contentsOf: revealedBriefsToday.map(FeedEvent.briefRevealed))
+        events.append(contentsOf: calendarService.pastTodayEvents.map(FeedEvent.calendarEvent))
         return events.sorted { $0.sortKey > $1.sortKey }
     }
+
+    /// Next upcoming calendar event used by the header peek row. `nil` when
+    /// access is denied/unrequested or no event is within the 2-day window.
+    var calendarPeek: EKEvent? { calendarService.nextEvent }
+
+    var calendarAuthStatus: EKAuthorizationStatus { calendarService.authStatus }
 
     /// PR 1 stub for the header brief-status row. PR 3 will replace this with
     /// a full enum that includes the `.drafting` partial-counts case.
@@ -253,6 +265,10 @@ final class FeedViewModel {
         } catch {
             self.error = error.localizedDescription
         }
+        // Calendar lives outside the API try/catch — its refresh is a local
+        // store hit and shouldn't block the feed if EventKit hiccups.
+        await calendarService.requestAccessIfNeeded()
+        await calendarService.refresh()
         isLoading = false
     }
 
@@ -272,6 +288,7 @@ final class FeedViewModel {
             // Swallow polling errors — the next tick will retry. Surfacing
             // these would flap the error banner every 10s on a flaky network.
         }
+        await calendarService.refresh()
     }
 
     private func filterAutonomous(_ invocations: [AgentInvocation]) -> [AgentInvocation] {

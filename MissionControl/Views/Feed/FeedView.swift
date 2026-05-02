@@ -1,4 +1,8 @@
 import SwiftUI
+import EventKit
+#if canImport(UIKit)
+import UIKit
+#endif
 
 // MARK: - Feed Shell
 
@@ -162,6 +166,12 @@ private struct HomeHeaderCard: View {
             // Brief status row
             BriefStatusRow(status: viewModel.headerBriefStatus)
 
+            // Calendar peek (PR 2)
+            CalendarPeekRow(
+                peek: viewModel.calendarPeek,
+                authStatus: viewModel.calendarAuthStatus
+            )
+
             // Up-Next single-line
             if let slot = primarySlot {
                 HStack(spacing: 8) {
@@ -233,6 +243,75 @@ private struct BriefStatusRow: View {
             }
         }
     }
+}
+
+/// Header row showing the next upcoming calendar event, or a "Connect
+/// Calendar" CTA when access is denied / undetermined. Hidden entirely when
+/// access is granted but no event is in the 2-day lookahead — the row
+/// shouldn't visibly take up space on a quiet day.
+private struct CalendarPeekRow: View {
+    let peek: EKEvent?
+    let authStatus: EKAuthorizationStatus
+
+    var body: some View {
+        if let peek {
+            HStack(spacing: 8) {
+                Image(systemName: "calendar")
+                    .foregroundStyle(.secondary)
+                    .font(.caption)
+                Text(label(for: peek))
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                Spacer()
+            }
+        } else if authStatus == .denied || authStatus == .notDetermined || authStatus == .restricted {
+            Button(action: openSettings) {
+                HStack(spacing: 8) {
+                    Image(systemName: "calendar.badge.plus")
+                        .foregroundStyle(.blue)
+                        .font(.caption)
+                    Text("Connect Calendar")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.blue)
+                    Spacer()
+                }
+            }
+            .buttonStyle(.plain)
+        } else {
+            EmptyView()
+        }
+    }
+
+    private func label(for event: EKEvent) -> String {
+        let title = event.title ?? "Event"
+        if event.isAllDay {
+            return "All day · \(title)"
+        }
+        return "\(CalendarTimeFormat.short(event.startDate)) · \(title)"
+    }
+
+    private func openSettings() {
+        #if canImport(UIKit)
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+        #endif
+    }
+}
+
+private enum CalendarTimeFormat {
+    private static let formatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "h:mma"
+        f.amSymbol = "a"
+        f.pmSymbol = "p"
+        return f
+    }()
+
+    static func short(_ date: Date) -> String { formatter.string(from: date) }
 }
 
 // MARK: - Section: Needs Input
@@ -503,6 +582,8 @@ private struct EventListSection: View {
             )
         case .briefRevealed(let brief):
             BriefCard(brief: brief, onTap: { onOpenBrief(brief) })
+        case .calendarEvent(let event):
+            CalendarEventCard(event: event)
         }
     }
 }
@@ -1031,6 +1112,45 @@ private struct AgentFinishedCard: View {
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// Past calendar event surfaced in the EventList. Tagged `YOU` because the
+/// user attended/lived through it, distinguishing it from agent activity.
+private struct CalendarEventCard: View {
+    let event: EKEvent
+
+    private var timeRange: String {
+        if event.isAllDay { return "All day" }
+        return "\(CalendarTimeFormat.short(event.startDate))–\(CalendarTimeFormat.short(event.endDate))"
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "calendar")
+                .foregroundStyle(.blue)
+                .font(.title3)
+
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 6) {
+                    Text(event.title ?? "Event")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .lineLimit(1)
+                    FeedActorChip(actor: .you)
+                    Spacer()
+                    Text(FeedRelativeTime.string(from: ISO8601DateFormatter().string(from: event.endDate)))
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                Text(timeRange)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
     }
 }
 

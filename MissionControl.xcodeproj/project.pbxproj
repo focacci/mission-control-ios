@@ -23,6 +23,8 @@
 		1EFA112559079BFBE8B638AA /* AgentInvocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE9061180BC8423ADC61F41 /* AgentInvocation.swift */; };
 		FE001AAAB91CFEED01000001 /* FeedEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE001AAAB91CFEED01000000 /* FeedEvent.swift */; };
 		FE001AAAB91CFEED02000001 /* FeedEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE001AAAB91CFEED01000000 /* FeedEvent.swift */; };
+		FE001AAAB91CFEED03000001 /* CalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE001AAAB91CFEED03000000 /* CalendarService.swift */; };
+		FE001AAAB91CFEED03000002 /* CalendarService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE001AAAB91CFEED03000000 /* CalendarService.swift */; };
 		B71EF00100000000000000A1 /* Brief.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71EF00000000000000000A0 /* Brief.swift */; };
 		B71EF00200000000000000A2 /* Brief.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71EF00000000000000000A0 /* Brief.swift */; };
 		B71EF00300000000000000B1 /* BriefsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B71EF00000000000000000B0 /* BriefsViewModel.swift */; };
@@ -198,6 +200,7 @@
 		4CBCCE83A0C142DF62F424E3 /* ChatContextPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatContextPanel.swift; sourceTree = "<group>"; };
 		4CE9061180BC8423ADC61F41 /* AgentInvocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentInvocation.swift; sourceTree = "<group>"; };
 		FE001AAAB91CFEED01000000 /* FeedEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedEvent.swift; sourceTree = "<group>"; };
+		FE001AAAB91CFEED03000000 /* CalendarService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarService.swift; sourceTree = "<group>"; };
 		B71EF00000000000000000A0 /* Brief.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Brief.swift; sourceTree = "<group>"; };
 		B71EF00000000000000000B0 /* BriefsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BriefsViewModel.swift; sourceTree = "<group>"; };
 		513EBEA9872A4F80D2B6EF4B /* CompleteTaskSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompleteTaskSheet.swift; sourceTree = "<group>"; };
@@ -337,6 +340,7 @@
 			isa = PBXGroup;
 			children = (
 				6D2985EADFC1BB30478399B4 /* APIClient.swift */,
+				FE001AAAB91CFEED03000000 /* CalendarService.swift */,
 				56F9998AB821AA17A650E376 /* ChatStream.swift */,
 				2EF761014DAAC328C8194850 /* DeepLinkRouter.swift */,
 				41470B3963C0A1A54A736F63 /* EntityCache.swift */,
@@ -833,6 +837,7 @@
 				C287CEC7D98C036C50D34C0F /* GoalEditSheet.swift in Sources */,
 				AAF18F78BE5F14CF2E70848E /* HealthView.swift in Sources */,
 				FE001AAAB91CFEED01000001 /* FeedEvent.swift in Sources */,
+				FE001AAAB91CFEED03000001 /* CalendarService.swift in Sources */,
 				E0F8533BD6DCCB2CC0A3AB70 /* FeedView.swift in Sources */,
 				DE3A729E67092469A109E7FD /* FeedViewModel.swift in Sources */,
 				45412D0517FB2B7484B661B5 /* Initiative.swift in Sources */,
@@ -904,6 +909,7 @@
 				92197F371846FA756FCD29DC /* Goal.swift in Sources */,
 				C4053FCC27CB97800CEF0F39 /* GoalDetailViewModel.swift in Sources */,
 				FE001AAAB91CFEED02000001 /* FeedEvent.swift in Sources */,
+				FE001AAAB91CFEED03000002 /* CalendarService.swift in Sources */,
 				86FA599B403C2EEC3F5D01CE /* FeedViewModel.swift in Sources */,
 				7253034D7B1F2B29A52110A8 /* Initiative.swift in Sources */,
 				CBE924C9BC4B4851B0B2F5D4 /* InitiativeDetailViewModel.swift in Sources */,

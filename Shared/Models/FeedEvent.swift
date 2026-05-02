@@ -1,12 +1,14 @@
 import Foundation
+import EventKit
 
 /// One entry in the Feed's past-only event list. Combines agent activity and
-/// revealed briefs today; later PRs add calendar events and Rosary snapshots.
+/// revealed briefs today; later PRs add Rosary snapshots.
 enum FeedEvent: Identifiable, Hashable {
     case agentRunning(AgentInvocation)
     case agentError(AgentInvocation)
     case agentFinished(AgentInvocation)
     case briefRevealed(Brief)
+    case calendarEvent(EKEvent)
 
     var id: String {
         switch self {
@@ -14,6 +16,7 @@ enum FeedEvent: Identifiable, Hashable {
         case .agentError(let i):    return "error:\(i.id)"
         case .agentFinished(let i): return "finished:\(i.id)"
         case .briefRevealed(let b): return "brief:\(b.id)"
+        case .calendarEvent(let e): return calendarEventId(e)
         }
     }
 
@@ -23,6 +26,7 @@ enum FeedEvent: Identifiable, Hashable {
         case .agentError(let i):    return parseISOTimestamp(i.endedAt) ?? .distantPast
         case .agentFinished(let i): return parseISOTimestamp(i.endedAt) ?? .distantPast
         case .briefRevealed(let b): return parseRevealAt(b.revealAt) ?? .distantPast
+        case .calendarEvent(let e): return e.endDate
         }
     }
 
@@ -30,8 +34,19 @@ enum FeedEvent: Identifiable, Hashable {
         switch self {
         case .agentRunning, .agentError, .agentFinished: return .agents
         case .briefRevealed:                              return .briefs
+        case .calendarEvent:                              return .you
         }
     }
+}
+
+// `EKEvent.eventIdentifier` is nullable for some store types (e.g. unsaved
+// or certain delegated calendars). Fall back to a deterministic composite so
+// SwiftUI's `ForEach` doesn't collapse rows that happen to share `nil`.
+private func calendarEventId(_ e: EKEvent) -> String {
+    if let id = e.eventIdentifier, !id.isEmpty {
+        return "cal:\(id)"
+    }
+    return "cal:\(e.calendarItemIdentifier):\(e.startDate.timeIntervalSince1970)"
 }
 
 /// Filter chip identity for `EventListSection`. PR 1 ships the model only;

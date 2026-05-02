@@ -20,6 +20,10 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Mission Control reads your calendar to surface today's events alongside agent activity.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Mission Control reads your calendar to surface today's events alongside agent activity.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
